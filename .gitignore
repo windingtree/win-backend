@@ -12,10 +12,12 @@
 
 # database
 database
+database_test
 
 # temp files
 temp
 cache
+.eslintcache
 
 # node
 node_modules

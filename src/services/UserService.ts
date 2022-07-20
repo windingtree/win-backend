@@ -1,26 +1,22 @@
-import { AppRole, User, UserDTO } from '../types';
+import { AppRole, User, UserDbData, UserDTO } from '../types';
 import bcrypt from 'bcrypt';
 import tokenService, { TokenService } from './TokenService';
 import ApiError from '../exceptions/ApiError';
-import { defaultManagerLogin } from '../config';
 import { MetricsService } from './MetricsService';
 import userRepository, { UserRepository } from '../repositories/UserRepository';
-import mainRepository, { MainRepository } from '../repositories/MainRepository';
 
 export class UserService {
   private tokenService: TokenService;
   private repository: UserRepository;
-  private mainRepository: MainRepository;
 
   constructor() {
     this.tokenService = tokenService;
     this.repository = userRepository;
-    this.mainRepository = mainRepository;
   }
 
   public async getAllUsers() {
     const users = new Set<UserDTO>();
-    const dbUsers: User[] = await this.repository.getAllUsers();
+    const dbUsers: UserDbData[] = await this.repository.getAllUsers();
 
     dbUsers.map((i) => {
       const userDTO = this.getUserDTO(i);
@@ -35,51 +31,29 @@ export class UserService {
     password: string,
     roles: AppRole[]
   ): Promise<void> {
-    const userExists = await this.repository.getUserIdByLogin(login);
-    if (userExists) {
-      throw ApiError.BadRequest('User already exists');
-    }
-
-    const id = await this.mainRepository.getId();
     const rounds = 2;
     const hashedPassword = await bcrypt.hash(String(password), rounds);
-    await this.repository.createUser(id, login, hashedPassword, roles);
-
-    await this.mainRepository.setUserDBIncrement(String(id));
-
-    if (login !== defaultManagerLogin && roles.includes(AppRole.MANAGER)) {
-      await this.deleteDefaultManagerAccount();
-    }
+    await this.repository.createUser(login, hashedPassword, roles);
   }
 
-  public async getUserByLogin(login: string): Promise<User | null> {
-    const id = await this.repository.getUserIdByLogin(login);
-    if (!id) {
-      return null;
-    }
-    return await this.repository.getUserById(id);
+  public async getUserByLogin(login: string): Promise<UserDbData> {
+    return await this.repository.getUserByLogin(login);
   }
 
-  public getUserDTO(user: User): UserDTO {
+  public getUserDTO(user: UserDbData): UserDTO {
+    if (!user._id) {
+      throw ApiError.BadRequest('Incorrect userId');
+    }
+
     return {
-      id: user.id,
+      id: user._id.toString(),
       login: user.login,
       roles: user.roles
     };
   }
 
-  public async deleteUser(id: number): Promise<void> {
-    try {
-      const user = await this.repository.getUserById(id);
-      const login = user.login;
-
-      await this.repository.deleteUser(String(id), login);
-      await this.tokenService.revokeAllUserTokens(id);
-    } catch (e) {
-      if (e.status !== 404) {
-        throw e;
-      }
-    }
+  public async deleteUser(id: string): Promise<void> {
+    await this.repository.deleteUser(id);
   }
 
   public async checkCredentials(
@@ -97,7 +71,7 @@ export class UserService {
 
     try {
       const user = await this.getUserByLogin(login);
-      if (!user) {
+      if (!user || !user._id) {
         throw ApiError.BadRequest('Incorrect login');
       }
 
@@ -106,7 +80,7 @@ export class UserService {
         throw ApiError.BadRequest('Incorrect password');
       }
 
-      const userDTO = this.getUserDTO(user);
+      const userDTO: UserDTO = this.getUserDTO(user);
 
       const tokens = this.tokenService.generateTokens(userDTO);
       await this.tokenService.saveToken(tokens.refreshToken, userDTO.id);
@@ -150,26 +124,15 @@ export class UserService {
     };
   }
 
-  private async deleteDefaultManagerAccount(): Promise<void> {
-    const managerId = await this.repository.getUserIdByLogin(
-      defaultManagerLogin
-    );
-
-    if (managerId) {
-      await this.deleteUser(managerId);
-    }
-  }
-
   public async updateUserPassword(
-    userId: number,
+    userId: string,
     password: string
   ): Promise<void> {
     try {
-      const user = await this.repository.getUserById(userId);
       const rounds = 2;
-      user.password = await bcrypt.hash(String(password), rounds);
+      const newPassword = await bcrypt.hash(String(password), rounds);
 
-      await this.repository.updateUser(String(userId), user);
+      await this.repository.updateUser(userId, { password: newPassword });
     } catch (e) {
       if (e.status === 404) {
         throw ApiError.BadRequest('User not found');
@@ -179,7 +142,7 @@ export class UserService {
   }
 
   public async updateUserRoles(
-    userId: number,
+    userId: string,
     roles: AppRole[]
   ): Promise<void> {
     try {

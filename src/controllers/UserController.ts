@@ -1,17 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import userService from '../services/UserService';
 import { AppRole, AuthRequest } from '../types';
-import { validationResult } from 'express-validator';
 import ApiError from '../exceptions/ApiError';
 import { refreshTokenMaxAge } from '../config';
 
 export class UserController {
   public async login(req: Request, res: Response, next: NextFunction) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return next(ApiError.BadRequest('Validation error', errors.array()));
-      }
       const { login, password } = req.body;
       const data = await userService.login(login, password);
 
@@ -44,10 +39,6 @@ export class UserController {
 
   public async createUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return next(ApiError.BadRequest('Validation error', errors.array()));
-      }
       const login = req.body.login;
       const password = req.body.password;
       const roles: AppRole[] = req.body.roles;
@@ -105,11 +96,6 @@ export class UserController {
     res: Response,
     next: NextFunction
   ) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return next(ApiError.BadRequest('Validation error', errors.array()));
-    }
-
     const userId = req.body.userId;
     const password = req.body.password;
 
@@ -131,16 +117,23 @@ export class UserController {
     res: Response,
     next: NextFunction
   ) {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return next(ApiError.BadRequest('Validation error', errors.array()));
-    }
-
     try {
-      const userId: number = req.body.userId;
+      const userId: string = req.body.userId;
       const roles: AppRole[] = req.body.roles;
 
       await userService.updateUserRoles(userId, roles);
+
+      return res.json({ success: true });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async deleteUser(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const userId: string = req.body.userId;
+
+      await userService.deleteUser(userId);
 
       return res.json({ success: true });
     } catch (e) {

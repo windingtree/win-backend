@@ -27,8 +27,8 @@ describe('test', async () => {
   it('make manager', async () => {
     await userService.createUser(managerLogin, managerPass, [AppRole.MANAGER]);
 
-    const userId = await userRepository.getUserIdByLogin(managerLogin);
-    expect(userId).to.be.an('number');
+    const user = await userRepository.getUserByLogin(managerLogin);
+    expect(user._id?.toString()).to.be.an('string');
   });
 
   it('manager can login', async () => {
@@ -72,6 +72,21 @@ describe('test', async () => {
     expect(accessToken).to.not.equal(oldAccessToken);
   });
 
+  it('should throw err when try refresh token with revoked token', async () => {
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    //without sleep script is very fast and refreshed access token is equal with old
+    await sleep(1000);
+
+    await requestWithSupertest
+      .post('/api/user/refresh')
+      .set('Accept', 'application/json')
+      .set('Cookie', [`refreshToken=${refreshToken}`])
+      .expect(401);
+  });
+
   it('create new user with refreshed access token', async () => {
     const res = await requestWithSupertest
       .post('/api/user/create')
@@ -109,6 +124,17 @@ describe('test', async () => {
       .set('Accept', 'application/json');
 
     expect(res.status).to.equal(403);
+  });
+
+  it(`staff can't delete users`, async () => {
+    await requestWithSupertest
+      .delete('/api/user')
+      .send({
+        userId: staffUserId
+      })
+      .set('Authorization', `Bearer ${staffAccessToken}`)
+      .set('Accept', 'application/json')
+      .expect(403);
   });
 
   it(`staff can get auth APIs`, async () => {
@@ -162,17 +188,29 @@ describe('test', async () => {
     expect(res.status).to.equal(200);
   });
 
-  it('delete users', async () => {
-    //todo think about APIs for delete users
-    const id = await userRepository.getUserIdByLogin(managerLogin);
-    const anotherUser = await userRepository.getUserIdByLogin(
-      anotherUserForTest
-    );
-    await userService.deleteUser(Number(id));
-    await userService.deleteUser(Number(staffUserId));
-    await userService.deleteUser(Number(anotherUser));
+  it(`manager can delete users`, async () => {
+    await requestWithSupertest
+      .delete('/api/user')
+      .send({
+        userId: staffUserId
+      })
+      .set('Authorization', `Bearer ${accessToken}`)
+      .set('Accept', 'application/json')
+      .expect(200);
+  });
 
-    const checkId = await userRepository.getUserIdByLogin(managerLogin);
-    expect(checkId).to.be.null;
+  it('should throw error when deleted user login', async () => {
+    await requestWithSupertest
+      .post('/api/user/login')
+      .send({ login: staffLogin, password: staffPass })
+      .set('Accept', 'application/json')
+      .expect(404);
+  });
+
+  it('delete users', async () => {
+    const manager = await userRepository.getUserByLogin(managerLogin);
+    const anotherUser = await userRepository.getUserByLogin(anotherUserForTest);
+    await userService.deleteUser(manager._id?.toString() || '');
+    await userService.deleteUser(anotherUser._id?.toString() || '');
   });
 });

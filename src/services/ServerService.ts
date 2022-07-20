@@ -1,3 +1,4 @@
+import { Server as HttpServer } from 'http';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -9,11 +10,14 @@ import errorMiddleware from '../middlewares/ErrorMiddleware';
 import { debugEnabled } from '../config';
 import responseTime from 'response-time';
 import { MetricsService } from './MetricsService';
+import * as openApiValidator from 'express-openapi-validator';
+import path from 'path';
+import { validationMiddleware } from '../middlewares/ValidationMiddleware';
 
 export default class ServerService {
   protected PORT: number;
   protected app: Express;
-  protected server;
+  protected server: HttpServer;
 
   constructor(port: number) {
     this.PORT = port;
@@ -77,6 +81,16 @@ export default class ServerService {
       this.app.use(morgan('dev'));
     }
 
+    const apiSpec = path.join(path.resolve(), 'swagger/swagger.yaml');
+
+    this.app.use(
+      openApiValidator.middleware({
+        apiSpec
+      })
+    );
+
+    this.app.use(validationMiddleware);
+
     this.app.use('/api', router);
 
     this.app.use(errorMiddleware);
@@ -86,14 +100,28 @@ export default class ServerService {
     return this.app;
   }
 
-  async start() {
-    try {
-      this.server = this.app.listen(this.PORT, () =>
-        console.log(`Server started on PORT = ${this.PORT}`)
-      );
-    } catch (e) {
-      console.error(e);
-    }
-    return this.server;
+  async start(): Promise<HttpServer> {
+    return await new Promise((resolve, reject) => {
+      try {
+        const server = this.server;
+        this.server = this.app.listen(this.PORT, () => {
+          console.log(`Server started on PORT = ${this.PORT}`);
+          resolve(server);
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  async stop(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      try {
+        this.server.once('close', resolve);
+        this.server.close();
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 }

@@ -1,22 +1,20 @@
-import { Request } from 'express';
+import { Request, Router } from 'express';
+import { ObjectId } from 'mongodb';
 
 export interface User {
-  id: number;
   login: string;
   password: string;
   roles: AppRole[];
 }
 
-export interface UserDTO {
-  id: number;
-  login: string;
-  roles: AppRole[];
+export interface UserDbData extends User {
+  _id: ObjectId | null;
 }
 
-export enum ServiceRole {
-  ADMIN = 'admin',
-  BIDDER = 'bidder',
-  API = 'api'
+export interface UserDTO {
+  id: string;
+  login: string;
+  roles: AppRole[];
 }
 
 export enum AppRole {
@@ -25,7 +23,13 @@ export enum AppRole {
 }
 
 export interface Token {
+  createdAt: Date;
+  userId: string;
   refresh: string;
+}
+
+export interface TokenDbData extends Token {
+  _id: ObjectId | null;
 }
 
 export interface Tokens {
@@ -33,26 +37,8 @@ export interface Tokens {
   refreshToken: string;
 }
 
-export const walletAccounts = [
-  ServiceRole.API,
-  ServiceRole.BIDDER,
-  AppRole.MANAGER,
-  AppRole.STAFF
-];
-
-export enum walletAccountsIndexes {
-  API = 0,
-  BIDDER = 1,
-  MANAGER = 2,
-  STAFF = 3
-}
-
-export interface walletAccount {
-  id: number;
-  address: string;
-  role: string;
-}
-
 export interface AuthRequest extends Request {
   user: UserDTO;
 }
+
+export type RouterInitializer = (router: Router) => void;

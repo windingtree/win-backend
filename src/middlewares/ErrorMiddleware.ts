@@ -14,15 +14,23 @@ export default (
     if (debugEnabled) {
       LogService.yellow(`Handle error: ${err.message}`);
     }
-    return res
-      .status(err.status)
-      .json({ message: err.message, errors: err.errors });
+    return res.status(err.status).json({
+      success: false,
+      ...(process.env.NODE_ENV === 'development'
+        ? {
+            message: err.message,
+            errors: err.errors
+          }
+        : {})
+    });
   }
   if (debugEnabled) {
-    LogService.red(`Fatal error: ${err.message}`);
+    LogService.obj(err);
   }
 
   MetricsService.fatalErrorCounter.inc();
 
-  return res.status(500).json({ message: 'Something went wrong' });
+  return res
+    .status(500)
+    .json({ message: err.message || 'Something went wrong' });
 };
