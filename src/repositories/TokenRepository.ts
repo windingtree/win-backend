@@ -22,11 +22,11 @@ export class TokenRepository {
     const result: TokenDbData[] = [];
     const collection = await this.getCollection();
     const query = { userId };
-    const cursor = await collection.find(query);
 
-    if ((await cursor.count()) === 0) {
+    if ((await collection.countDocuments()) === 0) {
       return [];
     }
+    const cursor = await collection.find(query);
 
     await cursor.forEach((item) => {
       result.push(item);

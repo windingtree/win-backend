@@ -23,11 +23,11 @@ export class UserRepository {
   public async getAllUsers() {
     const result: UserDbData[] = [];
     const collection = await this.getCollection();
-    const cursor = await collection.find({});
 
-    if ((await cursor.count()) === 0) {
+    if ((await collection.countDocuments()) === 0) {
       return [];
     }
+    const cursor = await collection.find();
 
     await cursor.forEach((item) => {
       result.push(item);

@@ -4,6 +4,7 @@ import ServerService from '../src/services/ServerService';
 import { AppRole } from '../src/types';
 import userService from '../src/services/UserService';
 import userRepository from '../src/repositories/UserRepository';
+import MongoDBService from '../src/services/MongoDBService';
 
 describe('test', async () => {
   const appService = await new ServerService(3005);
@@ -212,5 +213,7 @@ describe('test', async () => {
     const anotherUser = await userRepository.getUserByLogin(anotherUserForTest);
     await userService.deleteUser(manager._id?.toString() || '');
     await userService.deleteUser(anotherUser._id?.toString() || '');
+
+    await MongoDBService.getInstance().cleanUp();
   });
 });
