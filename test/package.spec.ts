@@ -216,4 +216,34 @@ describe('test', async () => {
 
     await MongoDBService.getInstance().cleanUp();
   });
+
+  describe('proxy', async () => {
+    it('get all hotels', async () => {
+      const res = await requestWithSupertest
+        .get('/api/derby_soft/hotels')
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body.data).to.be.a('array');
+      expect(res.body.status).to.equal('success');
+    }).timeout(5000);
+
+    it('get all hotels by rectangle', async () => {
+      const rectangle = {
+        south: 34.748995 + 2.5,
+        west: -80.387982 + 15,
+        north: 34.748995 - 2.5,
+        east: -80.387982 - 6
+      };
+
+      const res = await requestWithSupertest
+        .post('/api/derby_soft/hotels/search')
+        .send({ rectangle })
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body.data).to.be.a('array');
+      expect(res.body.status).to.equal('success');
+    }).timeout(5000);
+  });
 });
