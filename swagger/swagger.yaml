@@ -225,3 +225,54 @@ paths:
         500:
           description: Some server error
   #end users
+
+  #proxy
+  /derby_soft/hotels:
+    get:
+      responses:
+        200:
+          description: It's ok
+        400:
+          description: Handled Error
+        401:
+          description: User is not Auth
+        500:
+          description: Some server error
+
+  /derby_soft/hotels/search:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - rectangle
+              properties:
+                rectangle:
+                  type: object
+                  required:
+                    - south
+                    - west
+                    - north
+                    - east
+                  properties:
+                    south:
+                      type: number
+                    west:
+                      type: number
+                    north:
+                      type: number
+                    east:
+                      type: number
+      responses:
+        200:
+          description: It's ok
+        400:
+          description: Handled Error
+        401:
+          description: User is not Auth
+        500:
+          description: Some server error
+  #end proxy

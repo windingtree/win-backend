@@ -18,7 +18,9 @@ checkEnvVariables([
   'APP_LINE',
   'APP_VERSION',
   'MONGODB_URL',
-  'DB_NAME'
+  'DB_NAME',
+  'DERBYSOFT_PROXY_URL',
+  'CLIENT_JWT'
 ]);
 
 export const port = Number(process.env.PORT);
@@ -35,3 +37,5 @@ export const defaultManagerLogin = 'manager';
 export const defaultManagerPassword = 'winwin';
 export const mongoDBUrl = String(process.env.MONGODB_URL);
 export const DBName = String(process.env.DB_NAME);
+export const derbysoftProxyUrl = String(process.env.DERBYSOFT_PROXY_URL);
+export const clientJwt = String(process.env.CLIENT_JWT);
