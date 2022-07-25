@@ -276,3 +276,39 @@ paths:
         500:
           description: Some server error
   #end proxy
+
+  #booking
+  /booking:
+    get:
+      responses:
+        200:
+          description: It's ok
+        400:
+          description: Handled Error
+        401:
+          description: User is not Auth
+        500:
+          description: Some server error
+    post:
+      responses:
+        200:
+          description: It's ok
+        400:
+          description: Handled Error
+        401:
+          description: User is not Auth
+        500:
+          description: Some server error
+
+  /booking/price/{id}:
+    get:
+      responses:
+        200:
+          description: It's ok
+        400:
+          description: Handled Error
+        401:
+          description: User is not Auth
+        500:
+          description: Some server error
+  #end booking
