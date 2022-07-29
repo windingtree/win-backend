@@ -4,8 +4,14 @@ import { Router } from 'express';
 import usersRoutes from './users';
 import proxyRoutes from './proxy';
 import bookingRoutes from './booking';
+import hotelRoutes from './hotel';
 
-const routes: RouterInitializer[] = [usersRoutes, proxyRoutes, bookingRoutes];
+const routes: RouterInitializer[] = [
+  usersRoutes,
+  proxyRoutes,
+  bookingRoutes,
+  hotelRoutes
+];
 
 const router = Router();
 

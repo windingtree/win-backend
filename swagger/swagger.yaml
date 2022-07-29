@@ -9,6 +9,34 @@ components:
       type: 'http'
       scheme: 'bearer'
       bearerFormat: 'JWT'
+  schemas:
+    AdultPassenger:
+      type: object
+      required:
+        - type
+        - count
+      properties:
+        type:
+          type: string
+          enum: ['ADT']
+        count:
+          type: number
+    ChildPassenger:
+      type: object
+      required:
+        - type
+        - count
+        - childrenAges
+      properties:
+        type:
+          type: string
+          enum: ['CHD']
+        count:
+          type: number
+        childrenAges:
+          type: array
+          items:
+            type: number
 
 servers:
   - url: http://localhost:5000/api
@@ -227,7 +255,7 @@ paths:
   #end users
 
   #proxy
-  /derby_soft/hotels:
+  /derby-soft/hotels:
     get:
       responses:
         200:
@@ -239,7 +267,38 @@ paths:
         500:
           description: Some server error
 
-  /derby_soft/hotels/search:
+  /derby-soft/hotels/search:
+    get:
+      parameters:
+        - in: query
+          name: lon
+          schema:
+            type: number
+            default: -77.387982
+          required: true
+        - in: query
+          name: lat
+          schema:
+            type: number
+            default: 34.748995
+          required: true
+        - in: query
+          name: radius
+          schema:
+            type: number
+            default: 2000
+            maximum: 20000
+      responses:
+        200:
+          description: It's ok
+        400:
+          description: Handled Error
+        401:
+          description: User is not Auth
+        500:
+          description: Some server error
+
+  /derby-soft/offers/search:
     post:
       requestBody:
         required: true
@@ -248,24 +307,62 @@ paths:
             schema:
               type: object
               required:
-                - rectangle
+                - accommodation
+                - passengers
               properties:
-                rectangle:
+                accommodation:
                   type: object
                   required:
-                    - south
-                    - west
-                    - north
-                    - east
+                    - location
+                    - arrival
+                    - departure
+                    - roomCount
                   properties:
-                    south:
+                    location:
+                      type: object
+                      required:
+                        - lon
+                        - lat
+                        - radius
+                      properties:
+                        lon:
+                          type: number
+                        lat:
+                          type: number
+                        radius:
+                          type: number
+                    arrival:
+                      type: string
+                      format: date-time
+                    departure:
+                      type: string
+                      format: date-time
+                    roomCount:
                       type: number
-                    west:
-                      type: number
-                    north:
-                      type: number
-                    east:
-                      type: number
+                passengers:
+                  type: array
+                  items:
+                    oneOf:
+                      - $ref: '#/components/schemas/AdultPassenger'
+                      - $ref: '#/components/schemas/ChildPassenger'
+      responses:
+        200:
+          description: It's ok
+        400:
+          description: Handled Error
+        401:
+          description: User is not Auth
+        500:
+          description: Some server error
+
+  /derby-soft/offers/{offerId}/price:
+    post:
+      parameters:
+        - in: path
+          name: offerId
+          schema:
+            type: string
+          required: true
       responses:
         200:
           description: It's ok
@@ -312,3 +409,32 @@ paths:
         500:
           description: Some server error
   #end booking
+
+  #hotels
+  /hotels:
+    get:
+      parameters:
+        - in: query
+          name: lon
+          schema:
+            type: number
+          required: true
+        - in: query
+          name: lat
+          schema:
+            type: number
+          required: true
+        - in: query
+          name: radius
+          schema:
+            type: number
+      responses:
+        200:
+          description: It's ok
+        400:
+          description: Handled Error
+        401:
+          description: User is not Auth
+        500:
+          description: Some server error
+  #end hotels
