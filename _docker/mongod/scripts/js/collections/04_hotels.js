@@ -1,0 +1,5 @@
+db.createCollection('hotels');
+db.hotels.createIndex({ location: '2dsphere' });
+db.hotels.createIndex({ hotelId: 1 });
+db.hotels.createIndex({ provider: 1 });
+db.hotels.createIndex({ createdAt: 1 }, { expireAfterSeconds: 12 * 60 * 60 }); //12h

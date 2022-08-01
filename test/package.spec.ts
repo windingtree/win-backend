@@ -220,30 +220,72 @@ describe('test', async () => {
   describe('proxy', async () => {
     it('get all hotels', async () => {
       const res = await requestWithSupertest
-        .get('/api/derby_soft/hotels')
+        .get('/api/derby-soft/hotels')
         .set('Accept', 'application/json')
         .expect(200);
 
       expect(res.body.data).to.be.a('array');
       expect(res.body.status).to.equal('success');
-    }).timeout(5000);
+    }).timeout(10000);
 
     it('get all hotels by rectangle', async () => {
-      const rectangle = {
-        south: 34.748995 + 2.5,
-        west: -80.387982 + 15,
-        north: 34.748995 - 2.5,
-        east: -80.387982 - 6
+      const getParams = { lon: -77.387982, lat: 34.748995, radius: 2000 };
+      const res = await requestWithSupertest
+        .get('/api/derby-soft/hotels/search')
+        .query({ ...getParams })
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body.data).to.be.a('array');
+    }).timeout(10000);
+
+    let offerId;
+
+    it('get all offers by rectangle', async () => {
+      const body = {
+        accommodation: {
+          location: {
+            lon: -65.387982,
+            lat: 34.748995,
+            radius: 2000
+          },
+          arrival: '2022-08-01T07:19:00.809Z',
+          departure: '2022-08-03T07:19:00.809Z',
+          roomCount: 1
+        },
+        passengers: [
+          {
+            type: 'ADT',
+            count: 1
+          },
+          {
+            type: 'CHD',
+            count: 1,
+            childrenAges: [13]
+          }
+        ]
       };
 
       const res = await requestWithSupertest
-        .post('/api/derby_soft/hotels/search')
-        .send({ rectangle })
+        .post('/api/derby-soft/offers/search')
+        .send(body)
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(res.body.data).to.be.a('array');
-      expect(res.body.status).to.equal('success');
-    }).timeout(5000);
+      expect(res.body.data).to.be.a('object');
+      expect(res.body.data.derbySoft.status).to.be.equal('success');
+
+      offerId = Object.keys(res.body.data.derbySoft.data.offers)[0];
+    }).timeout(10000);
+
+    it('get all offer price', async () => {
+      const res = await requestWithSupertest
+        .post(`/api/derby-soft/offers/${offerId}/price`)
+        .send({})
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body.data).to.be.a('object');
+    }).timeout(10000);
   });
 });

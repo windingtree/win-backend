@@ -37,5 +37,6 @@ export const defaultManagerLogin = 'manager';
 export const defaultManagerPassword = 'winwin';
 export const mongoDBUrl = String(process.env.MONGODB_URL);
 export const DBName = String(process.env.DB_NAME);
-export const derbysoftProxyUrl = String(process.env.DERBYSOFT_PROXY_URL);
+export const derbySoftProxyUrl = String(process.env.DERBYSOFT_PROXY_URL);
 export const clientJwt = String(process.env.CLIENT_JWT);
+export const defaultRadius = 2000; //in meters
