@@ -438,3 +438,11 @@ paths:
         500:
           description: Some server error
   #end hotels
+
+  #health
+  /health:
+    get:
+      responses:
+        200:
+          description: It's ok
+  #end health
