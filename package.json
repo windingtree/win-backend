@@ -28,7 +28,7 @@
     "coverage": "c8 --all --exclude typechain* --exclude coverage --exclude dist --exclude src/proto* --exclude test npm test && c8 report --all --exclude typechain* --exclude coverage --exclude dist --exclude test --exclude src/proto* -r html",
     "build": "yarn clean && yarn tsc -p tsconfig-build.json",
     "prepare": "husky install",
-    "start": "node dist/esm/src/index.js"
+    "start": "node --experimental-specifier-resolution=node ./dist/esm/src/index.js"
   },
   "files": [
     "dist/"
