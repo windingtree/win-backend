@@ -362,10 +362,19 @@ describe('test', async () => {
     it('check booked with simard api', async () => {
       await sleep(10000);
 
-      const deals = await dealRepository.getUserDeals(constants.AddressZero);
+      const res = await requestWithSupertest
+        .get(`/api/booking/${constants.AddressZero}`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      const deals = res.body.data;
 
       const deal = deals.find((v) => v.offerId === pricedOfferId);
       expect(deal.status).to.be.equal('booked');
     }).timeout(20000);
+
+    after(() => {
+      process.exit(0);
+    });
   });
 });
