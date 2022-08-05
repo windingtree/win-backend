@@ -38,6 +38,103 @@ components:
           items:
             type: number
 
+    Email:
+      description: An email
+      type: string
+      pattern: '^.+?@.+\..+?$'
+      example: contact@org.co.uk
+
+    PhoneNumber:
+      description: A phone number
+      type: string
+      pattern: '^\+[0-9]+$'
+      example: "+32123456789"
+
+    Name:
+      description: First, middle or last name
+      type: string
+      minLength: 1
+      maxLength: 42
+      example: "Bob"
+
+    Passenger:
+      description: A representation of a passenger
+      type: object
+      required: [ "type" ]
+      properties:
+        type:
+          description: The passenger type code as per IATA definitions
+          type: string
+          minLength: 3
+          maxLength: 3
+          enum:
+            - ADT # Adult (12+y)
+            - CHD # Child (2-11y)
+            - INF # Infant without a seat (<2y)
+          example: ADT
+        count:
+          description: Number of associated passengers of the same type
+          type: integer
+          example: 2
+          default: 1
+        civility:
+          description: The civility of the passenger
+          type: string
+          enum:
+            - MR
+            - MRS
+          example: "MR"
+        lastnames:
+          description: The list of last names of this passenger
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/Name"
+        firstnames:
+          description: The list of first names of this passenger
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/Name"
+        middlenames:
+          description: The list of middle names of this passenger
+          type: array
+          minItems: 1
+          maxItems: 5
+          items:
+            $ref: "#/components/schemas/Name"
+        gender:
+          description: The gender of the passenger
+          type: string
+          enum:
+            - Male
+            - Female
+          example: Male
+        birthdate:
+          description: The birthdate of the passenger
+          type: string
+          format: date-time
+          example: "1980-03-21"
+        contactInformation:
+          description: The contact informations of the passenger
+          type: array
+          minItems: 1
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/PhoneNumber"
+              - $ref: "#/components/schemas/Email"
+      example:
+        {
+          "type": "ADT",
+          "lastnames": [ "Marley" ],
+          "firstnames": [ "Bob" ],
+          "gender": "Male",
+          "birthdate": "1980-03-21",
+          "contactInformation": [ "+32123456789", "contact@org.co.uk" ]
+        }
+
 servers:
   - url: http://localhost:5000/api
     description: local server
@@ -375,18 +472,8 @@ paths:
   #end proxy
 
   #booking
-  /booking:
+  /booking/{address}:
     get:
-      responses:
-        200:
-          description: It's ok
-        400:
-          description: Handled Error
-        401:
-          description: User is not Auth
-        500:
-          description: Some server error
-    post:
       responses:
         200:
           description: It's ok
@@ -397,8 +484,17 @@ paths:
         500:
           description: Some server error
 
-  /booking/price/{id}:
-    get:
+  /booking/{offerId}/set-passengers:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Passenger'
+              minItems: 1
       responses:
         200:
           description: It's ok

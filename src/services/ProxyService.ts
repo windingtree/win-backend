@@ -3,6 +3,7 @@ import { clientJwt, derbySoftProxyUrl } from '../config';
 import hotelRepository from '../repositories/HotelRepository';
 import { makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
+import offerRepository from '../repositories/OfferRepository';
 
 interface HotelResponse {
   data: Array<unknown>;
@@ -76,12 +77,37 @@ export class ProxyService {
     }
 
     await hotelRepository.upsertHotels(Array.from(hotels));
-
     data.accommodations = await hotelRepository.searchByRadius(
       lon,
       lat,
       radius
     );
+
+    const { offers } = res.data.data;
+
+    const offersSet = new Set();
+
+    Object.keys(offers).map((k) => {
+      const v = offers[k];
+      v.id = k;
+      v.expiration = new Date(v.expiration);
+      const { pricePlansReferences } = v;
+      const { accommodation, roomType } =
+        pricePlansReferences[Object.keys(pricePlansReferences)[0]];
+
+      v.accomodation = {
+        ...data.accommodations.find((v) => v.id === accommodation)
+      };
+
+      v.accomodation.roomType = v.accomodation.roomTypes[roomType];
+      delete v.accomodation.roomTypes;
+      v.pricedItems = null;
+      v.disclosures = null;
+
+      offersSet.add(v);
+    });
+
+    await offerRepository.bulkCreate(Array.from(offersSet));
 
     return {
       data,
@@ -98,6 +124,20 @@ export class ProxyService {
           headers: { Authorization: `Bearer ${clientJwt}` }
         }
       );
+      const offer = await offerRepository.getOne(offerId);
+
+      const { data } = res.data;
+      const expiration = new Date(data.offer.expiration);
+
+      offer.id = data.offerId;
+      offer._id = null;
+      offer.expiration = expiration;
+      offer.price = data.offer.price;
+      offer.pricedItems = data.offer.pricedItems;
+      offer.disclosures = data.offer.disclosures;
+
+      await offerRepository.create(offer);
+
       return res.data;
     } catch (e) {
       LogService.red(e);

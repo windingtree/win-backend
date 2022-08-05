@@ -3,33 +3,29 @@ import { NextFunction, Response } from 'express';
 import bookingService from '../services/BookingService';
 
 export class BookingController {
-  public async booking(req: AuthRequest, res: Response, next: NextFunction) {
-    try {
-      await bookingService.booking();
-
-      res.json({ success: true });
-    } catch (e) {
-      next(e);
-    }
-  }
-
   public async myBookings(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const bookings = await bookingService.myBookings();
+      const { address } = req.params;
+      const bookings = await bookingService.myBookings(address);
 
-      res.json({ data: bookings, success: true });
+      res.json({ data: bookings });
     } catch (e) {
       next(e);
     }
   }
 
-  public async price(req: AuthRequest, res: Response, next: NextFunction) {
+  public async setPassengers(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
-      const { id } = req.params;
+      const { offerId } = req.params;
+      const passengers = req.body;
 
-      const price = await bookingService.price(id);
+      const data = await bookingService.setPassengers(offerId, passengers);
 
-      res.json({ data: price, success: true });
+      res.json({ data, success: true });
     } catch (e) {
       next(e);
     }

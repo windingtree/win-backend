@@ -35,6 +35,8 @@ function create_collections {
     "02_users"
     "03_tokens"
     "04_hotels"
+    "05_offers"
+    "06_deals"
   )
 
   for script in ${COLLECTION_SCRIPTS[@]}; do

@@ -5,6 +5,8 @@ import { AppRole } from '../src/types';
 import userService from '../src/services/UserService';
 import userRepository from '../src/repositories/UserRepository';
 import MongoDBService from '../src/services/MongoDBService';
+import dealRepository from '../src/repositories/DealRepository';
+import { constants } from 'ethers';
 
 describe('test', async () => {
   const appService = await new ServerService(3005);
@@ -24,6 +26,10 @@ describe('test', async () => {
   let staffUserId;
 
   const anotherUserForTest = 'test_staff_for_tests';
+
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
   it('make manager', async () => {
     await userService.createUser(managerLogin, managerPass, [AppRole.MANAGER]);
@@ -56,10 +62,6 @@ describe('test', async () => {
   });
 
   it('refresh token', async () => {
-    function sleep(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
     //without sleep script is very fast and refreshed access token is equal with old
     await sleep(1000);
 
@@ -74,10 +76,6 @@ describe('test', async () => {
   });
 
   it('should throw err when try refresh token with revoked token', async () => {
-    function sleep(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
     //without sleep script is very fast and refreshed access token is equal with old
     await sleep(1000);
 
@@ -240,6 +238,39 @@ describe('test', async () => {
     }).timeout(10000);
 
     let offerId;
+    let pricedOfferId;
+
+    it('get all offers by rectangle with wrong data', async () => {
+      const body = {
+        accommodation: {
+          location: {
+            lon: -65.387982,
+            lat: 34.748995,
+            radius: '2 thousand'
+          },
+          arrival: '2022-08-01T07:19:00.809Z',
+          departure: '2022-08-03T07:19:00.809Z',
+          roomCount: 1
+        },
+        passengers: [
+          {
+            type: 'ADT',
+            count: '1'
+          },
+          {
+            type: 'CHD',
+            count: '1',
+            childrenAges: [13]
+          }
+        ]
+      };
+
+      const res = await requestWithSupertest
+        .post('/api/derby-soft/offers/search')
+        .send(body)
+        .set('Accept', 'application/json')
+        .expect(400);
+    }).timeout(10000);
 
     it('get all offers by rectangle', async () => {
       const body = {
@@ -286,6 +317,55 @@ describe('test', async () => {
         .expect(200);
 
       expect(res.body.data).to.be.a('object');
+      pricedOfferId = res.body.data.offerId;
     }).timeout(10000);
+
+    it('set users and get error with wrong data', async () => {
+      const passengers = [
+        {
+          type: 'ADT',
+          civility: 'MR',
+          lastnames: ['Marley'],
+          firstnames: ['Bob'],
+          gender: 'Male',
+          birthdate: '1980-03-21T00:00:00Z',
+          contactInformation: [32123456789, 'contact@org.co.uk']
+        }
+      ];
+      const res = await requestWithSupertest
+        .post(`/api/booking/${pricedOfferId}/set-passengers`)
+        .send(passengers)
+        .set('Accept', 'application/json')
+        .expect(400);
+    });
+
+    it('set users', async () => {
+      const passengers = [
+        {
+          type: 'ADT',
+          civility: 'MR',
+          lastnames: ['Marley'],
+          firstnames: ['Bob'],
+          gender: 'Male',
+          birthdate: '1980-03-21T00:00:00Z',
+          contactInformation: ['+32123456789', 'contact@org.co.uk']
+        }
+      ];
+      await requestWithSupertest
+        .post(`/api/booking/${pricedOfferId}/set-passengers`)
+        .send(passengers)
+        .set('Accept', 'application/json')
+        .expect(200);
+      await sleep(10000);
+    }).timeout(20000);
+
+    it('check booked with simard api', async () => {
+      await sleep(10000);
+
+      const deals = await dealRepository.getUserDeals(constants.AddressZero);
+
+      const deal = deals.find((v) => v.offerId === pricedOfferId);
+      expect(deal.status).to.be.equal('booked');
+    }).timeout(20000);
   });
 });

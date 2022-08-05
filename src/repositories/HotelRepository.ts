@@ -18,7 +18,13 @@ export class HotelRepository {
 
   public async searchByRadius(lon: number, lat: number, radius: number) {
     const collection = await this.getCollection();
-
+    await collection.createIndex({ location: '2dsphere' });
+    await collection.createIndex({ hotelId: 1 });
+    await collection.createIndex({ provider: 1 });
+    await collection.createIndex(
+      { createdAt: 1 },
+      { expireAfterSeconds: 12 * 60 * 60 }
+    );
     const cursor = await collection.find({
       location: {
         $nearSphere: {
