@@ -1,6 +1,6 @@
 import { AuthRequest } from '../types';
 import { NextFunction, Response } from 'express';
-import gitCommit from 'src/gitCommit';
+import gitCommit from '../gitCommit';
 
 export class HealthController {
   public async getBasicHealth(
