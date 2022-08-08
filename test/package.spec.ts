@@ -265,7 +265,7 @@ describe('test', async () => {
         ]
       };
 
-      const res = await requestWithSupertest
+      await requestWithSupertest
         .post('/api/derby-soft/offers/search')
         .send(body)
         .set('Accept', 'application/json')
@@ -273,18 +273,24 @@ describe('test', async () => {
     }).timeout(10000);
 
     it('get all offers by rectangle', async () => {
+      const today = new Date();
+      const arrival = new Date();
+      const departure = new Date();
+      arrival.setDate(today.getDate() + 7);
+      departure.setDate(today.getDate() + 8);
+
       const body = {
         accommodation: {
           location: {
-            lon: -71.387982,
+            lon: -65.387982,
             lat: 34.748995,
             radius: 2000
           },
-          arrival: '2022-08-01T07:19:00.809Z',
-          departure: '2022-08-03T07:19:00.809Z',
+          arrival,
+          departure,
           roomCount: 1
         },
-        guests: [
+        passengers: [
           {
             type: 'ADT',
             count: 1

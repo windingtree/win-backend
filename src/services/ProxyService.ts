@@ -38,9 +38,7 @@ export class ProxyService {
   public async getDerbySoftOffers(body): Promise<any> {
     const { lon, lat, radius } = body.accommodation.location;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
-    console.log(rectangle);
     body.accommodation.location = { rectangle };
-
     let res;
     try {
       res = await axios.post(`${derbySoftProxyUrl}/offers/search`, body, {

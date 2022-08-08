@@ -405,7 +405,7 @@ paths:
               type: object
               required:
                 - accommodation
-                - guests
+                - passengers
               properties:
                 accommodation:
                   type: object
@@ -436,7 +436,7 @@ paths:
                       format: date-time
                     roomCount:
                       type: number
-                guests:
+                passengers:
                   type: array
                   items:
                     oneOf:
