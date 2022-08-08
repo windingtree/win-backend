@@ -1,5 +1,5 @@
 import { Server as HttpServer } from 'http';
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -13,7 +13,6 @@ import { MetricsService } from './MetricsService';
 import * as openApiValidator from 'express-openapi-validator';
 import path from 'path';
 import { validationMiddleware } from '../middlewares/ValidationMiddleware';
-import MongoDBService from './MongoDBService';
 
 export default class ServerService {
   protected PORT: number;
@@ -91,14 +90,6 @@ export default class ServerService {
     );
 
     this.app.use(validationMiddleware);
-
-    this.app.use((request: Request, response: Response, next: NextFunction) => {
-      response.on('finish', async () => {
-        await MongoDBService.getInstance().cleanUp();
-      });
-
-      next();
-    });
 
     this.app.use('/api', router);
 

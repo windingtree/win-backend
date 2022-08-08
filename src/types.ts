@@ -41,4 +41,18 @@ export interface AuthRequest extends Request {
   user: UserDTO;
 }
 
+export enum State {
+  UNINITIALIZED,
+  PAID,
+  REFUNDED
+}
+
+export interface DealStorage {
+  provider: string;
+  customer: string;
+  asset: string;
+  value: string;
+  state: State;
+}
+
 export type RouterInitializer = (router: Router) => void;

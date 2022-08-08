@@ -1007,6 +1007,16 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
+"@openzeppelin/contracts-upgradeable@^4.7.1":
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts-upgradeable/-/contracts-upgradeable-4.7.2.tgz#414096e21f048200cbb7ad4fe4c6de2e822513bf"
+  integrity sha512-3dgc6qVmFch/uOmlmKnw5/v3JxwXcZD4T10/9CI1OUbX8AqjoZrBGKfxN1z3QxnIXRU/X31/BItJezJSDDTe7Q==
+
+"@openzeppelin/contracts@^4.7.1":
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/@openzeppelin/contracts/-/contracts-4.7.2.tgz#7587416fe2d35abf574193515b8971bfe9f64bc7"
+  integrity sha512-4n/JL9izql8303mPqPdubuna/DWEMbmOzWYUWyCPhjhiEr2w3nQrjE7vZz1fBF+wzzP6dZbIcsgqACk53c9FGA==
+
 "@tsconfig/node10@^1.0.7":
   version "1.0.8"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.8.tgz#c1e4e80d6f964fbecb3359c43bd48b40f7cadad9"
@@ -1396,6 +1406,14 @@
     "@windingtree/org.id-auth" "^1.0.0-beta.47"
     "@windingtree/org.id-utils" "^1.0.0-beta.47"
     "@windingtree/org.json-schema" "1.0.2"
+
+"@windingtree/win-pay@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@windingtree/win-pay/-/win-pay-1.1.0.tgz#742568dfd54c49539addc77ebd755190d0d7e5d9"
+  integrity sha512-ptE8BLlfSfosweCwTU+QYsp4OOd8it7umm/LLnuaHVCJBrN0xTxOmkVkZ1vCHMOJFJ1nVhb0f/U4Xiw2u9PjVA==
+  dependencies:
+    "@openzeppelin/contracts" "^4.7.1"
+    "@openzeppelin/contracts-upgradeable" "^4.7.1"
 
 "@zxing/text-encoding@0.9.0":
   version "0.9.0"
