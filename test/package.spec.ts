@@ -216,27 +216,6 @@ describe('test', async () => {
   });
 
   describe('proxy', async () => {
-    it('get all hotels', async () => {
-      const res = await requestWithSupertest
-        .get('/api/derby-soft/hotels')
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      expect(res.body.data).to.be.a('array');
-      expect(res.body.status).to.equal('success');
-    }).timeout(10000);
-
-    it('get all hotels by rectangle', async () => {
-      const getParams = { lon: -77.387982, lat: 34.748995, radius: 2000 };
-      const res = await requestWithSupertest
-        .get('/api/derby-soft/hotels/search')
-        .query({ ...getParams })
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      expect(res.body.data).to.be.a('array');
-    }).timeout(10000);
-
     let offerId;
     let pricedOfferId;
 
@@ -339,7 +318,7 @@ describe('test', async () => {
         }
       ];
       const res = await requestWithSupertest
-        .post(`/api/booking/${pricedOfferId}/set-passengers`)
+        .post(`/api/booking/${pricedOfferId}/guests`)
         .send(passengers)
         .set('Accept', 'application/json')
         .expect(400);

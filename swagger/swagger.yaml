@@ -352,49 +352,6 @@ paths:
   #end users
 
   #proxy
-  /derby-soft/hotels:
-    get:
-      responses:
-        200:
-          description: It's ok
-        400:
-          description: Handled Error
-        401:
-          description: User is not Auth
-        500:
-          description: Some server error
-
-  /derby-soft/hotels/search:
-    get:
-      parameters:
-        - in: query
-          name: lon
-          schema:
-            type: number
-            default: -77.387982
-          required: true
-        - in: query
-          name: lat
-          schema:
-            type: number
-            default: 34.748995
-          required: true
-        - in: query
-          name: radius
-          schema:
-            type: number
-            default: 2000
-            maximum: 20000
-      responses:
-        200:
-          description: It's ok
-        400:
-          description: Handled Error
-        401:
-          description: User is not Auth
-        500:
-          description: Some server error
-
   /derby-soft/offers/search:
     post:
       requestBody:
@@ -505,35 +462,6 @@ paths:
         500:
           description: Some server error
   #end booking
-
-  #hotels
-  /hotels:
-    get:
-      parameters:
-        - in: query
-          name: lon
-          schema:
-            type: number
-          required: true
-        - in: query
-          name: lat
-          schema:
-            type: number
-          required: true
-        - in: query
-          name: radius
-          schema:
-            type: number
-      responses:
-        200:
-          description: It's ok
-        400:
-          description: Handled Error
-        401:
-          description: User is not Auth
-        500:
-          description: Some server error
-  #end hotels
 
   #health
   /health:

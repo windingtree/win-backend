@@ -5,35 +5,7 @@ import { makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
 
-interface HotelResponse {
-  data: Array<unknown>;
-  status: string;
-}
-
 export class ProxyService {
-  public async getAllHotels(): Promise<HotelResponse> {
-    const res = await axios.get(`${derbySoftProxyUrl}/hotels`, {
-      headers: { Authorization: `Bearer ${clientJwt}` }
-    });
-
-    return res.data;
-  }
-
-  public async getHotels(
-    lon: number,
-    lat: number,
-    radius: number
-  ): Promise<any[]> {
-    const rectangle = makeCircumscribedSquare(lon, lat, radius);
-    const res = await axios.post(
-      `${derbySoftProxyUrl}/hotels/search`,
-      { location: { rectangle } },
-      { headers: { Authorization: `Bearer ${clientJwt}` } }
-    );
-
-    return res.data.data;
-  }
-
   //todo typings
   public async getDerbySoftOffers(body): Promise<any> {
     const { lon, lat, radius } = body.accommodation.location;
