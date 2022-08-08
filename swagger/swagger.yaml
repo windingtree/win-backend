@@ -10,7 +10,7 @@ components:
       scheme: 'bearer'
       bearerFormat: 'JWT'
   schemas:
-    AdultPassenger:
+    AdultGuest:
       type: object
       required:
         - type
@@ -21,7 +21,7 @@ components:
           enum: ['ADT']
         count:
           type: number
-    ChildPassenger:
+    ChildGuest:
       type: object
       required:
         - type
@@ -57,13 +57,13 @@ components:
       maxLength: 42
       example: "Bob"
 
-    Passenger:
-      description: A representation of a passenger
+    Guest:
+      description: A representation of a Guest
       type: object
       required: [ "type" ]
       properties:
         type:
-          description: The passenger type code as per IATA definitions
+          description: The Guest type code as per IATA definitions
           type: string
           minLength: 3
           maxLength: 3
@@ -73,52 +73,52 @@ components:
             - INF # Infant without a seat (<2y)
           example: ADT
         count:
-          description: Number of associated passengers of the same type
+          description: Number of associated Guests of the same type
           type: integer
           example: 2
           default: 1
         civility:
-          description: The civility of the passenger
+          description: The civility of the Guest
           type: string
           enum:
             - MR
             - MRS
           example: "MR"
         lastnames:
-          description: The list of last names of this passenger
+          description: The list of last names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
             $ref: "#/components/schemas/Name"
         firstnames:
-          description: The list of first names of this passenger
+          description: The list of first names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
             $ref: "#/components/schemas/Name"
         middlenames:
-          description: The list of middle names of this passenger
+          description: The list of middle names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
             $ref: "#/components/schemas/Name"
         gender:
-          description: The gender of the passenger
+          description: The gender of the Guest
           type: string
           enum:
             - Male
             - Female
           example: Male
         birthdate:
-          description: The birthdate of the passenger
+          description: The birthdate of the Guest
           type: string
           format: date-time
           example: "1980-03-21"
         contactInformation:
-          description: The contact informations of the passenger
+          description: The contact informations of the Guest
           type: array
           minItems: 1
           items:
@@ -405,7 +405,7 @@ paths:
               type: object
               required:
                 - accommodation
-                - passengers
+                - guests
               properties:
                 accommodation:
                   type: object
@@ -436,12 +436,12 @@ paths:
                       format: date-time
                     roomCount:
                       type: number
-                passengers:
+                guests:
                   type: array
                   items:
                     oneOf:
-                      - $ref: '#/components/schemas/AdultPassenger'
-                      - $ref: '#/components/schemas/ChildPassenger'
+                      - $ref: '#/components/schemas/AdultGuest'
+                      - $ref: '#/components/schemas/ChildGuest'
       responses:
         200:
           description: It's ok
@@ -484,7 +484,7 @@ paths:
         500:
           description: Some server error
 
-  /booking/{offerId}/set-passengers:
+  /booking/{offerId}/guests:
     post:
       requestBody:
         required: true
@@ -493,7 +493,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/Passenger'
+                $ref: '#/components/schemas/Guest'
               minItems: 1
       responses:
         200:

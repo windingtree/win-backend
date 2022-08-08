@@ -276,7 +276,7 @@ describe('test', async () => {
       const body = {
         accommodation: {
           location: {
-            lon: -65.387982,
+            lon: -71.387982,
             lat: 34.748995,
             radius: 2000
           },
@@ -284,7 +284,7 @@ describe('test', async () => {
           departure: '2022-08-03T07:19:00.809Z',
           roomCount: 1
         },
-        passengers: [
+        guests: [
           {
             type: 'ADT',
             count: 1
@@ -340,7 +340,7 @@ describe('test', async () => {
     });
 
     it('set users', async () => {
-      const passengers = [
+      const guests = [
         {
           type: 'ADT',
           civility: 'MR',
@@ -352,8 +352,8 @@ describe('test', async () => {
         }
       ];
       await requestWithSupertest
-        .post(`/api/booking/${pricedOfferId}/set-passengers`)
-        .send(passengers)
+        .post(`/api/booking/${pricedOfferId}/guests`)
+        .send(guests)
         .set('Accept', 'application/json')
         .expect(200);
       await sleep(10000);
