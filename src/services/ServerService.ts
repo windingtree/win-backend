@@ -13,6 +13,8 @@ import { MetricsService } from './MetricsService';
 import * as openApiValidator from 'express-openapi-validator';
 import path from 'path';
 import { validationMiddleware } from '../middlewares/ValidationMiddleware';
+import swaggerUI from 'swagger-ui-express';
+import YAML from 'yamljs';
 
 export default class ServerService {
   protected PORT: number;
@@ -94,6 +96,10 @@ export default class ServerService {
     this.app.use('/api', router);
 
     this.app.use(errorMiddleware);
+
+    const swaggerDocument = YAML.load('./swagger/swagger.yaml');
+
+    this.app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
   }
 
   get getApp(): Express {
