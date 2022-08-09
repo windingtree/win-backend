@@ -138,6 +138,8 @@ components:
 servers:
   - url: http://localhost:5000/api
     description: local server
+  - url: https://test-win-backend-api.win.so/api
+    description: dev server
 
 paths:
   #users
