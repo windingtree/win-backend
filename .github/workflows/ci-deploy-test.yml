@@ -1,0 +1,29 @@
+name: ci-deploy-test
+
+on:
+  # Triggers the workflow on push events only.
+  push:
+    branches: [ main ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: "Deploy to test env"
+    runs-on: ubuntu-latest
+    environment:
+      name: test
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Trigger instance refresh
+        run: |
+          aws autoscaling start-instance-refresh \
+            --auto-scaling-group-name ${{ secrets.AWS_AUTOSCALING_GROUP_NAME }} \
+            --preferences '{"InstanceWarmup": 300, "MinHealthyPercentage": 30}'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: 'eu-central-1'
