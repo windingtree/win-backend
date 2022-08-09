@@ -7,7 +7,7 @@ import morgan from 'morgan';
 import router from '../router/index';
 import { Express } from 'express-serve-static-core';
 import errorMiddleware from '../middlewares/ErrorMiddleware';
-import { debugEnabled } from '../config';
+import { allowLocalhostUI, clientUrl, debugEnabled } from '../config';
 import responseTime from 'response-time';
 import { MetricsService } from './MetricsService';
 import * as openApiValidator from 'express-openapi-validator';
@@ -33,8 +33,14 @@ export default class ServerService {
     this.app.use(cookieParser());
 
     // CORS
+    let origins;
+    if (allowLocalhostUI) {
+      origins = [clientUrl, 'http://localhost:3000'];
+    } else {
+      origins = clientUrl;
+    }
     const corsOptions = {
-      origin: process.env.CLIENT_URL, // @todo Add handling of origins array
+      origin: origins,
       optionsSuccessStatus: 200,
       methods: 'GET,PUT,POST,DELETE,PATCH,OPTIONS',
       allowedHeaders:
