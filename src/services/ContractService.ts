@@ -4,18 +4,12 @@ import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, State } from '../types';
+import { allowedNetworks, assetsCurrencies, NetworkInfo } from '../config';
 
 export class ContractService {
   protected offer: any;
   protected passengers: any;
   private stopPoller: () => void;
-  private contracts = [
-    {
-      address: '0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82', //todo list of contracts
-      rpc: 'http://127.0.0.1:8545/',
-      network: ''
-    }
-  ];
 
   constructor(offer, passengers: any) {
     this.offer = offer;
@@ -31,7 +25,7 @@ export class ContractService {
   }
 
   public eventListener = async (offer: any, passengers: any) => {
-    this.contracts.forEach((contract) => {
+    allowedNetworks.forEach((contract) => {
       this.checkPaidBooking(contract).then((dealStorage) => {
         if (dealStorage) {
           bookingService.booking(offer, dealStorage, passengers);
@@ -41,11 +35,9 @@ export class ContractService {
     });
   };
 
-  public async checkPaidBooking(contract): Promise<null | any> {
-    const { address, rpc } = contract;
-    const serviceId = this.offer.id;
-    const provider = new providers.JsonRpcProvider(rpc);
-
+  public async checkPaidBooking(
+    contractInfo: NetworkInfo
+  ): Promise<null | any> {
     if (process.env.NODE_IS_TEST === 'true') {
       const dealStorage: DealStorage = {
         asset: utils.id('some_asset'),
@@ -54,48 +46,54 @@ export class ContractService {
         state: 1,
         value: this.offer.price.public
       };
-      await dealRepository.createDeal(this.offer, dealStorage, contract);
+      await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
       return dealStorage;
     }
 
-    const wipPay = WinPay__factory.connect(address, provider);
-    const deal = await wipPay.deals(utils.id(serviceId));
+    try {
+      const { rpc, chainId, contracts } = contractInfo;
+      const serviceId = this.offer.id;
+      const provider = new providers.JsonRpcProvider(rpc, chainId);
 
-    const dealStorage: DealStorage = {
-      asset: deal.asset,
-      customer: deal.customer,
-      provider: deal.provider,
-      state: deal.state,
-      value: deal.value.toString()
-    };
+      const wipPay = WinPay__factory.connect(contracts.winPay, provider);
+      const deal = await wipPay.deals(utils.id(serviceId));
 
-    const statusDeal = dealStorage.state === State.PAID;
+      const dealStorage: DealStorage = {
+        asset: deal.asset,
+        customer: deal.customer,
+        provider: deal.provider,
+        state: deal.state,
+        value: deal.value.toString()
+      };
 
-    if (statusDeal) {
-      await dealRepository.createDeal(this.offer, dealStorage, contract);
+      const statusDeal = dealStorage.state === State.PAID;
 
-      if (String(this.offer.price.public) !== dealStorage.value.toString()) {
-        await dealRepository.updateDealStatus(
-          serviceId,
-          'paymentError',
-          'Invalid value of offer'
-        );
-        this.stop();
-        return null;
+      if (statusDeal) {
+        await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
+
+        if (String(this.offer.price.public) !== dealStorage.value.toString()) {
+          await dealRepository.updateDealStatus(
+            serviceId,
+            'paymentError',
+            'Invalid value of offer'
+          );
+          this.stop();
+          return null;
+        }
+
+        if (!assetsCurrencies.includes(this.offer.price.currency)) {
+          await dealRepository.updateDealStatus(
+            serviceId,
+            'paymentError',
+            'Invalid currency of offer'
+          );
+          this.stop();
+          return null; //todo how to rightly check value of transaction?
+        }
+        return dealStorage;
       }
-
-      // todo check for currency
-      if ('JPY' !== this.offer.price.currency) {
-        await dealRepository.updateDealStatus(
-          serviceId,
-          'paymentError',
-          'Invalid currency of offer'
-        );
-        this.stop();
-        return null; //todo how to rightly check value of transaction?
-      }
-
-      return dealStorage;
+    } catch (e) {
+      console.log(e);
     }
 
     return null;
