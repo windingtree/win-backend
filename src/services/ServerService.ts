@@ -35,7 +35,7 @@ export default class ServerService {
     // CORS
     let origins;
     if (allowLocalhostUI) {
-      origins = [clientUrl, 'http://localhost:3000'];
+      origins = [clientUrl, 'http://localhost:3000', 'https://localhost:3000'];
     } else {
       origins = clientUrl;
     }
