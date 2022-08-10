@@ -20,7 +20,7 @@ checkEnvVariables([
   'CLIENT_JWT',
   'SIMARD_JWT',
   'SIMARD_ORG_ID',
-  'SUMARD_URL'
+  'SIMARD_URL'
 ]);
 
 export const port = Number(process.env.PORT);
@@ -40,7 +40,7 @@ export const clientJwt = String(process.env.CLIENT_JWT);
 export const clientUrl = String(process.env.CLIENT_URL);
 export const simardJwt = String(process.env.SIMARD_JWT);
 export const simardOrgId = String(process.env.SIMARD_ORG_ID);
-export const simardUrl = String(process.env.SUMARD_URL);
+export const simardUrl = String(process.env.SIMARD_URL);
 export const defaultRadius = 2000; //in meters
 export const allowLocalhostUI = Boolean(
   process.env.ALLOW_LOCALHOST_UI === 'true'
