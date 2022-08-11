@@ -339,7 +339,7 @@ describe('test', async () => {
         }
       ];
       const res = await requestWithSupertest
-        .post(`/api/booking/${pricedOfferId}/set-passengers`)
+        .post(`/api/booking/${pricedOfferId}/guests`)
         .send(passengers)
         .set('Accept', 'application/json')
         .expect(400);
