@@ -20,7 +20,10 @@ checkEnvVariables([
   'CLIENT_JWT',
   'SIMARD_JWT',
   'SIMARD_ORG_ID',
-  'SIMARD_URL'
+  'SIMARD_URL',
+  'SENDGRID_API_KEY',
+  'SENDGRID_EMAIL_FROM',
+  'SENDGRID_EMAIL_TEMPLATE_ID'
 ]);
 
 export const port = Number(process.env.PORT);
@@ -41,6 +44,12 @@ export const clientUrl = String(process.env.CLIENT_URL);
 export const simardJwt = String(process.env.SIMARD_JWT);
 export const simardOrgId = String(process.env.SIMARD_ORG_ID);
 export const simardUrl = String(process.env.SIMARD_URL);
+export const sendgridApiKey = String(process.env.SENDGRID_API_KEY);
+export const sendgridEmailFrom = String(process.env.SENDGRID_EMAIL_FROM);
+export const sendgridEmailTo = String(process.env.SENDGRID_EMAIL_TO || '');
+export const sendgridEmailTemplateId = String(
+  process.env.SENDGRID_EMAIL_TEMPLATE_ID
+);
 export const defaultRadius = 2000; //in meters
 export const allowLocalhostUI = Boolean(
   process.env.ALLOW_LOCALHOST_UI === 'true'

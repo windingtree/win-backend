@@ -37,6 +37,7 @@ export class ProxyService {
   //todo typings
   public async getDerbySoftOffers(body): Promise<any> {
     const { lon, lat, radius } = body.accommodation.location;
+    const { arrival, departure } = body.accommodation;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
     body.accommodation.location = { rectangle };
     let res;
@@ -100,6 +101,8 @@ export class ProxyService {
 
       v.accomodation.roomType = v.accomodation.roomTypes[roomType];
       delete v.accomodation.roomTypes;
+      v.arrival = arrival;
+      v.departure = departure;
       v.pricedItems = null;
       v.disclosures = null;
 
