@@ -16,24 +16,6 @@ const main = async (): Promise<void> => {
     await MetricsService.startMetricsServer();
   }
 
-  const offer = await offerRepository.getOne(
-    '3a7cf3f1-1c74-4cee-8f1c-c8038d2a76cf'
-  );
-  const passengers = {
-    PAX1: {
-      type: 'ADT',
-      civility: 'MR',
-      lastnames: ['Marley'],
-      firstnames: ['Bob'],
-      gender: 'Male',
-      birthdate: '1980-03-21T00:00:00Z',
-      contactInformation: ['32123456789', 'galeaf11@inbox.ru']
-    }
-  };
-  const emailService = new EmailSenderService();
-  emailService.setMessage(offer, passengers);
-  await emailService.sendEmail();
-
   await server.start();
 };
 
