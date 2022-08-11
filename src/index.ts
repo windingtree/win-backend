@@ -1,8 +1,6 @@
 import ServerService from './services/ServerService';
 import { port, prometheusEnabled } from './config';
 import { MetricsService } from './services/MetricsService';
-import EmailSenderService from './services/EmailSenderService';
-import offerRepository from './repositories/OfferRepository';
 
 process.on('unhandledRejection', async (error) => {
   console.log(error);
