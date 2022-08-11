@@ -58,7 +58,7 @@ export const allowHardhatNetwork = Boolean(
   process.env.ALLOW_HARDHAT_NETWORK === 'true'
 );
 
-export const assetsCurrencies = ['EUR', 'USD', 'JPY']; // currency the asset is pegged to
+export const assetsCurrencies = ['EUR', 'USD', 'JPY', 'CNY']; // currency the asset is pegged to
 export type AssetCurrency = typeof assetsCurrencies[number];
 
 export interface CryptoAsset {
