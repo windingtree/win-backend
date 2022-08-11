@@ -72,8 +72,9 @@ export class ContractService {
         await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
 
         if (
-          String(this.offer.price.public) !==
-          utils.parseEther(dealStorage.value).toString()
+          !utils
+            .parseEther(this.offer.price.public.toString())
+            .eq(dealStorage.value)
         ) {
           await dealRepository.updateDealStatus(
             serviceId,
