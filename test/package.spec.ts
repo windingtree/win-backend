@@ -261,9 +261,9 @@ describe('test', async () => {
       const body = {
         accommodation: {
           location: {
-            lon: -65.387982,
-            lat: 34.748995,
-            radius: 2000
+            lon: 13.3888599,
+            lat: 52.5170365,
+            radius: 20000
           },
           arrival,
           departure,

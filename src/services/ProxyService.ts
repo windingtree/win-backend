@@ -9,6 +9,7 @@ export class ProxyService {
   //todo typings
   public async getDerbySoftOffers(body): Promise<any> {
     const { lon, lat, radius } = body.accommodation.location;
+    const { arrival, departure } = body.accommodation;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
     body.accommodation.location = { rectangle };
     let res;
@@ -66,12 +67,14 @@ export class ProxyService {
       const { accommodation, roomType } =
         pricePlansReferences[Object.keys(pricePlansReferences)[0]];
 
-      v.accomodation = {
+      v.accommodation = {
         ...data.accommodations.find((v) => v.id === accommodation)
       };
 
-      v.accomodation.roomType = v.accomodation.roomTypes[roomType];
-      delete v.accomodation.roomTypes;
+      v.accommodation.roomType = v.accommodation.roomTypes[roomType];
+      delete v.accommodation.roomTypes;
+      v.arrival = arrival;
+      v.departure = departure;
       v.pricedItems = null;
       v.disclosures = null;
 

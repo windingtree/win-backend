@@ -11,6 +11,7 @@ import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
 import { ContractService } from './ContractService';
 import LogService from './LogService';
+import EmailSenderService from './EmailSenderService';
 
 export class BookingService {
   public async booking(offer: any, dealStorage: any, passengers: any) {
@@ -49,15 +50,15 @@ export class BookingService {
           headers: { Authorization: `Bearer ${clientJwt}` }
         }
       );
-      order = orderReq.data.data;
+      order = orderReq.data.data.order;
 
-      if (order.order.status === 'CONFIRMED') {
+      if (order.status === 'CONFIRMED') {
         await dealRepository.updateDealStatus(offer.id, 'booked', null);
       } else {
         await dealRepository.updateDealStatus(
           offer.id,
           'paymentError',
-          `Booking failed by status ${order.order.status}`
+          `Booking failed by status ${order.status}`
         );
       }
     } catch (e) {
@@ -67,6 +68,12 @@ export class BookingService {
         'paymentError',
         'Booking failed'
       );
+    }
+
+    if (order.status === 'CONFIRMED') {
+      const emailService = new EmailSenderService();
+      emailService.setMessage(offer, passengers);
+      await emailService.sendEmail();
     }
 
     return true;
