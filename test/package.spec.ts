@@ -5,7 +5,6 @@ import { AppRole } from '../src/types';
 import userService from '../src/services/UserService';
 import userRepository from '../src/repositories/UserRepository';
 import MongoDBService from '../src/services/MongoDBService';
-import dealRepository from '../src/repositories/DealRepository';
 import { constants } from 'ethers';
 
 describe('test', async () => {
@@ -30,6 +29,7 @@ describe('test', async () => {
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+  console.log(123);
 
   it('make manager', async () => {
     await userService.createUser(managerLogin, managerPass, [AppRole.MANAGER]);
@@ -287,14 +287,13 @@ describe('test', async () => {
         .send(body)
         .set('Accept', 'application/json')
         .expect(200);
-
       expect(res.body.data).to.be.a('object');
       expect(res.body.data.derbySoft.status).to.be.equal('success');
 
       offerId = Object.keys(res.body.data.derbySoft.data.offers)[0];
     }).timeout(10000);
 
-    it('get all offer price', async () => {
+    it('get offer price', async () => {
       const res = await requestWithSupertest
         .post(`/api/derby-soft/offers/${offerId}/price`)
         .send({})
@@ -317,7 +316,7 @@ describe('test', async () => {
           contactInformation: [32123456789, 'contact@org.co.uk']
         }
       ];
-      const res = await requestWithSupertest
+      await requestWithSupertest
         .post(`/api/booking/${pricedOfferId}/guests`)
         .send(passengers)
         .set('Accept', 'application/json')
@@ -353,7 +352,6 @@ describe('test', async () => {
         .expect(200);
 
       const deals = res.body.data;
-
       const deal = deals.find((v) => v.offerId === pricedOfferId);
       expect(deal.status).to.be.equal('booked');
     }).timeout(20000);

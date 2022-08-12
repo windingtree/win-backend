@@ -1,5 +1,7 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
+import { OfferDBValue } from '../types';
+import { Collection } from 'mongodb';
 
 export class OfferRepository {
   private dbService: MongoDBService;
@@ -9,26 +11,26 @@ export class OfferRepository {
     this.dbService = MongoDBService.getInstance();
   }
 
-  protected async getCollection() {
+  protected async getCollection(): Promise<Collection<OfferDBValue>> {
     const dbClient = await this.dbService.getDbClient();
     const database = dbClient.db(DBName);
 
     return database.collection(this.collectionName);
   }
 
-  public async bulkCreate(offers: Array<any>): Promise<void> {
+  public async bulkCreate(offers: Array<OfferDBValue>): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.insertMany(offers);
   }
 
-  public async create(offer: any): Promise<void> {
+  public async create(offer: OfferDBValue): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.insertOne(offer);
   }
 
-  public async getOne(offerId: string): Promise<any> {
+  public async getOne(offerId: string): Promise<OfferDBValue | null> {
     const collection = await this.getCollection();
 
     return await collection.findOne({ id: offerId });

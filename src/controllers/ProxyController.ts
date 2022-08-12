@@ -9,11 +9,11 @@ export class ProxyController {
     next: NextFunction
   ) {
     try {
-      const hotels = await proxyService.getDerbySoftOffers(req.body);
+      const derbySoft = await proxyService.getDerbySoftOffers(req.body);
 
       res.json({
         data: {
-          derbySoft: hotels,
+          derbySoft,
           rooms: {
             data: {},
             status: 'success'
@@ -28,9 +28,9 @@ export class ProxyController {
   public async offerPrice(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { offerId } = req.params;
-      const offer = await proxyService.getDerbySoftOfferPrice(offerId);
+      const data = await proxyService.getDerbySoftOfferPrice(offerId);
 
-      res.json(offer);
+      res.json(data);
     } catch (e) {
       next(e);
     }

@@ -1,5 +1,7 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
+import { Collection } from 'mongodb';
+import { Hotel } from '../types';
 
 export class HotelRepository {
   private dbService: MongoDBService;
@@ -9,23 +11,23 @@ export class HotelRepository {
     this.dbService = MongoDBService.getInstance();
   }
 
-  protected async getCollection() {
+  protected async getCollection(): Promise<Collection<Hotel>> {
     const dbClient = await this.dbService.getDbClient();
     const database = dbClient.db(DBName);
 
     return database.collection(this.collectionName);
   }
 
-  public async searchByRadius(lon: number, lat: number, radius: number) {
+  public async searchByRadius(
+    lon: number,
+    lat: number,
+    radius: number,
+    ids: string[]
+  ): Promise<Hotel[]> {
     const collection = await this.getCollection();
-    await collection.createIndex({ location: '2dsphere' });
-    await collection.createIndex({ hotelId: 1 });
-    await collection.createIndex({ provider: 1 });
-    await collection.createIndex(
-      { createdAt: 1 },
-      { expireAfterSeconds: 12 * 60 * 60 }
-    );
+
     const cursor = await collection.find({
+      id: { $in: ids },
       location: {
         $nearSphere: {
           $geometry: {
@@ -37,7 +39,7 @@ export class HotelRepository {
       }
     });
 
-    const hotels = new Set();
+    const hotels = new Set<Hotel>();
 
     await cursor.forEach((item) => {
       hotels.add(item);
@@ -46,16 +48,10 @@ export class HotelRepository {
     return Array.from(hotels);
   }
 
-  public async upsertHotels(hotels) {
+  public async bulkCreate(hotels: Hotel[]): Promise<void> {
     const collection = await this.getCollection();
 
-    for (const hotel of hotels) {
-      await collection.updateOne(
-        { hotelId: hotel.hotelId, provider: hotel.provider },
-        { $set: hotel },
-        { upsert: true }
-      );
-    }
+    await collection.insertMany(hotels);
   }
 }
 
