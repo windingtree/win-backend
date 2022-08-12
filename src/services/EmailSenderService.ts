@@ -30,16 +30,16 @@ export default class EmailSenderService {
             }
           ],
           dynamic_template_data: {
-            name: offer.accomodation.name,
+            name: offer.accommodation.name,
             price: `${offer.price.public} ${offer.price.currency}`,
             start_date,
             end_date,
             policy: '-',
-            address: offer.accomodation.contactInformation.address,
+            address: offer.accommodation.contactInformation.address,
             contact: {
-              email: offer.accomodation.contactInformation.emails.join(', '),
+              email: offer.accommodation.contactInformation.emails.join(', '),
               phone:
-                offer.accomodation.contactInformation.phoneNumbers.join(', ')
+                offer.accommodation.contactInformation.phoneNumbers.join(', ')
             }
           }
         }

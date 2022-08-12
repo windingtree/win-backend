@@ -95,12 +95,12 @@ export class ProxyService {
       const { accommodation, roomType } =
         pricePlansReferences[Object.keys(pricePlansReferences)[0]];
 
-      v.accomodation = {
+      v.accommodation = {
         ...data.accommodations.find((v) => v.id === accommodation)
       };
 
-      v.accomodation.roomType = v.accomodation.roomTypes[roomType];
-      delete v.accomodation.roomTypes;
+      v.accommodation.roomType = v.accommodation.roomTypes[roomType];
+      delete v.accommodation.roomTypes;
       v.arrival = arrival;
       v.departure = departure;
       v.pricedItems = null;
