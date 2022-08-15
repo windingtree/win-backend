@@ -29,7 +29,6 @@ describe('test', async () => {
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
-  console.log(123);
 
   it('make manager', async () => {
     await userService.createUser(managerLogin, managerPass, [AppRole.MANAGER]);
