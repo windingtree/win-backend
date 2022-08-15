@@ -6,7 +6,7 @@ import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
 import {
   Accommodation,
-  SearchResults
+  SearchResponse
 } from '@windingtree/glider-types/types/derbysoft';
 import { DerbySoftData, Hotel, MongoLocation, OfferDBValue } from '../types';
 import ApiError from '../exceptions/ApiError';
@@ -33,7 +33,7 @@ export class ProxyService {
       };
     }
 
-    const data: SearchResults = res.data.data;
+    const data: SearchResponse = res.data.data;
     const accommodations = data.accommodations as {
       [key: string]: Accommodation;
     };
@@ -48,13 +48,12 @@ export class ProxyService {
         ],
         type: 'Point'
       };
-      delete value.location;
       const hotel = {
+        ...value,
         id: key,
         provider: 'derbySoft',
         createdAt: new Date(),
-        location,
-        ...value
+        location
       } as Hotel;
 
       hotels.add(hotel);
@@ -99,7 +98,7 @@ export class ProxyService {
         accommodation,
         arrival,
         departure,
-        expiration: new Date(offer.expiration).toISOString()
+        expiration: new Date(offer.expiration)
       };
 
       offersSet.add(offerDBValue);
@@ -154,9 +153,11 @@ export class ProxyService {
     const expiration = new Date(data.offer.expiration);
 
     const offerDBValue: OfferDBValue = {
+      arrival: offer.arrival,
+      departure: offer.departure,
       id: data.offerId,
       accommodation: offer.accommodation,
-      expiration: expiration.toISOString(),
+      expiration: expiration,
       pricedItems: data.offer.pricedItems,
       disclosures: data.offer.disclosures,
       price: data.offer.price

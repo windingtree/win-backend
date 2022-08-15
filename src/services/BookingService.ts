@@ -111,7 +111,7 @@ export class BookingService {
 
     new ContractService(offer, passengersMap).start();
 
-    return offer.expiration;
+    return offer.expiration.toISOString();
   }
 }
 

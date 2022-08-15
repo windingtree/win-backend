@@ -5,12 +5,12 @@ import {
   CheckInOutPolicy,
   ContactInformation,
   Media,
-  OfferResult,
+  Offer,
   Price,
-  PricedOffer,
   PriceItem,
-  Roomtypes,
-  SearchResults
+  PricePlanReferences,
+  RoomTypes,
+  SearchResponse
 } from '@windingtree/glider-types/types/derbysoft';
 
 export interface User {
@@ -88,25 +88,29 @@ export interface Hotel {
   otherPolicies: string[];
   media: Media;
   roomTypes: {
-    [k: string]: Roomtypes;
+    [k: string]: RoomTypes;
   };
 }
 
-export interface OfferDBValue extends SearchResults, OfferResult {
+export interface OfferDBValue {
   _id?: ObjectId;
   id: string;
   accommodation: Hotel;
   pricedItems?: PriceItem[];
   disclosures?: string[];
   price?: Price;
+  pricePlansReferences?: PricePlanReferences;
+  expiration: Date;
+  arrival: Date;
+  departure: Date;
 }
 
-export interface PricedOfferData extends PricedOffer {
+export interface PricedOfferData extends Offer {
   accommodation: Hotel;
 }
 
 export interface DerbySoftData {
-  data: SearchResults | PricedOfferData;
+  data: SearchResponse | PricedOfferData | Record<string, string>;
   status: string;
   message?: string;
 }
