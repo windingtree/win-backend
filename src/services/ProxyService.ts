@@ -10,6 +10,7 @@ import {
 } from '@windingtree/glider-types/types/derbysoft';
 import { DerbySoftData, Hotel, MongoLocation, OfferDBValue } from '../types';
 import ApiError from '../exceptions/ApiError';
+import { utils } from 'ethers';
 
 export class ProxyService {
   public async getDerbySoftOffers(body): Promise<DerbySoftData> {
@@ -74,6 +75,10 @@ export class ProxyService {
 
     Object.keys(offers).map((k) => {
       const offer = offers[k];
+      offers[k].serviceId = utils.id(k);
+      offers[k].provider = utils.keccak256(
+        utils.formatBytes32String('win_win_provider')
+      );
       const { pricePlansReferences } = offer;
       const { roomType } =
         pricePlansReferences[Object.keys(pricePlansReferences)[0]];
