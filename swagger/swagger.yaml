@@ -41,26 +41,26 @@ components:
     Email:
       description: An email
       type: string
-      pattern: '^.+?@.+\..+?$'
+      format: email
       example: contact@org.co.uk
 
     PhoneNumber:
       description: A phone number
       type: string
-      pattern: '^\+[0-9]+$'
-      example: "+32123456789"
+      pattern: '(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]‌​)\s*)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)([2-9]1[02-9]‌​|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})\s*(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+)\s*)?$'
+      example: '+32123456789'
 
     Name:
       description: First, middle or last name
       type: string
       minLength: 1
       maxLength: 42
-      example: "Bob"
+      example: 'Bob'
 
     Guest:
       description: A representation of a Guest
       type: object
-      required: [ "type" ]
+      required: ['type']
       properties:
         type:
           description: The Guest type code as per IATA definitions
@@ -83,28 +83,28 @@ components:
           enum:
             - MR
             - MRS
-          example: "MR"
+          example: 'MR'
         lastnames:
           description: The list of last names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
-            $ref: "#/components/schemas/Name"
+            $ref: '#/components/schemas/Name'
         firstnames:
           description: The list of first names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
-            $ref: "#/components/schemas/Name"
+            $ref: '#/components/schemas/Name'
         middlenames:
           description: The list of middle names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
-            $ref: "#/components/schemas/Name"
+            $ref: '#/components/schemas/Name'
         gender:
           description: The gender of the Guest
           type: string
@@ -116,24 +116,510 @@ components:
           description: The birthdate of the Guest
           type: string
           format: date-time
-          example: "1980-03-21"
+          example: '1980-03-21'
         contactInformation:
           description: The contact informations of the Guest
           type: array
           minItems: 1
           items:
             oneOf:
-              - $ref: "#/components/schemas/PhoneNumber"
-              - $ref: "#/components/schemas/Email"
+              - $ref: '#/components/schemas/PhoneNumber'
+              - $ref: '#/components/schemas/Email'
       example:
         {
-          "type": "ADT",
-          "lastnames": [ "Marley" ],
-          "firstnames": [ "Bob" ],
-          "gender": "Male",
-          "birthdate": "1980-03-21",
-          "contactInformation": [ "+32123456789", "contact@org.co.uk" ]
+          'type': 'ADT',
+          'lastnames': ['Marley'],
+          'firstnames': ['Bob'],
+          'gender': 'Male',
+          'birthdate': '1980-03-21',
+          'contactInformation': ['+32123456789', 'contact@org.co.uk']
         }
+
+    Amount:
+      description: An amount
+      type: number
+      minLength: 1
+      maxLength: 99
+      example: '40.00'
+
+    Currency:
+      description: The ISO4217 currency code
+      type: string
+      pattern: '^[A-Z]{3}$'
+      minLength: 3
+      maxLength: 3
+      example: 'EUR'
+
+    Price:
+      description: Price of the service
+      type: object
+      properties:
+        currency:
+          $ref: '#/components/schemas/Currency'
+
+        private:
+          # The private price in currency decimals for this service that the distributor owes to the supplier.
+          $ref: '#/components/schemas/Amount'
+
+        public:
+          # The public price for this service. The distributor should sell the product at this price.
+          $ref: '#/components/schemas/Amount'
+
+        commission:
+          # The distributor commission for selling this service
+          $ref: '#/components/schemas/Amount'
+
+        taxes:
+          # The taxes to be collected when selling this service.
+          $ref: '#/components/schemas/Amount'
+
+    Offer:
+      description: An offer object
+      type: object
+      properties:
+        # An offer expiration time
+        expiration:
+          description: The offer expiration time. Once this time is reached, the booking of the offer is not possible anymore.
+          type: string
+          format: date-time
+          example: '2021-04-12T23:20:50.52Z'
+
+        # The price of the offer
+        price:
+          $ref: '#/components/schemas/Price'
+
+        pricePlansReferences:
+          description: Maps a price plan with the associated elements
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              accommodation:
+                description: reference of the accomodation
+                type: string
+                example: 'prov.1234'
+              roomType:
+                description: reference of the room type in the accomodation
+                type: string
+                example: 'ND'
+          example: { 'BAR': { 'accommodation': 'prov.1234', 'roomType': 'ND' } }
+
+    Media:
+      type: array
+      nullable: true
+      items:
+        type: object
+        properties:
+          type:
+            type: string
+            enum:
+              - photo
+              - video
+          width:
+            type: integer
+          height:
+            type: integer
+          url:
+            type: string
+            format: url
+
+    Location:
+      description: An accommodation object
+      type: object
+      properties:
+        type:
+          type: string
+        coordinates:
+          type: array
+          items:
+            type: number
+
+    AccommodationType:
+      description: Type of accommodation service
+      type: string
+      maxLength: 24
+      enum:
+        - hotel
+      example: 'hotel'
+
+    ContactInformation:
+      type: object
+      properties:
+        phoneNumbers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PhoneNumber'
+        emails:
+          type: array
+          items:
+            $ref: '#/components/schemas/Email'
+        address:
+          type: object
+          properties:
+            streetAddress:
+              description: address line
+              type: string
+              example: Maskingatan 11
+            premise:
+              type: string
+              example: Gota Alv River
+            locality:
+              description: city name
+              type: string
+              example: Gothenburg
+            postalCode:
+              description: postal code
+              type: string
+              example: 417 64
+            country:
+              description: country
+              type: string
+              example: 'China'
+
+    CheckInOutPolicy:
+      description: The check-in and check-out time policy, format HH:MM
+      type: object
+      properties:
+        checkinTime:
+          type: string
+          pattern: '^[0-9]{2}:[0-9]{2}$'
+          example: '15:00'
+        checkoutTime:
+          type: string
+          pattern: '^[0-9]{2}:[0-9]{2}$'
+          example: '11:00'
+
+    Roomtypes:
+      description: A room type object
+      type: object
+      properties:
+        name:
+          description: The name of this room type
+          type: string
+          example: Twin beds
+        description:
+          description: A description of the room type
+          type: string
+          example: Standard twin rooms with two single beds
+        amenities:
+          description: The list of amenities available with this room type
+          type: array
+          items:
+            type: object
+            properties:
+              otaCode:
+                description: The OTA code for this amenity
+                type: string
+              name:
+                description: The name of this amenity
+                nullable: true
+                type: string
+              description:
+                description: Description of the amenity
+                nullable: true
+                type: string
+        size:
+          description: the size of the room
+          nullable: true
+          type: object
+          properties:
+            value:
+              description: The size value of this room
+              type: number
+              example: 15
+            unit:
+              description: The unit for this room size
+              type: string
+              enum:
+                - metric
+                - imperial
+              example: metric
+              default: metric
+        maximumOccupancy:
+          description: Maximum occupancy for this room type
+          type: object
+          properties:
+            adults:
+              type: integer
+            children:
+              type: integer
+        media:
+          $ref: '#/components/schemas/Media'
+        policies:
+          type: object
+          additionalProperties:
+            type: string
+
+    Accommodation:
+      description: An accommodation object
+      type: object
+      properties:
+        location:
+          $ref: '#/components/schemas/Location'
+        _id:
+          description: mongo id of the hotel
+          type: string
+        id:
+          description: uuid of the hotel (offer)
+          type: string
+        hotelId:
+          description: Id of the hotel
+          type: string
+          example: 'GOH202'
+        name:
+          description: The name of the property or accommodation
+          type: string
+          example: Comfort Hotel Xpress Stockholm Central
+        type:
+          $ref: '#/components/schemas/AccommodationType'
+        description:
+          description: The description of the property
+          type: string
+        rating:
+          description: The award rating as per country rules
+          type: integer
+          example: 3
+        contactInformation:
+          $ref: '#/components/schemas/ContactInformation'
+        checkinoutPolicy:
+          $ref: '#/components/schemas/CheckInOutPolicy'
+        otherPolicies:
+          type: array
+          items:
+            type: string
+        media:
+          $ref: '#/components/schemas/Media'
+        roomTypes:
+          description: Type of rooms available for this accommodation
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Roomtypes'
+
+    PricePlan:
+      description: Describes the attributes of the price plan
+      type: object
+      properties:
+        name:
+          description: The marketing name of this price plan
+          type: string
+          maxLength: 24
+          example: 'Premium Economy'
+        amenities:
+          description: The amenities for this price plan
+          type: array
+          maxItems: 99
+          items:
+            type: string
+            enum:
+              - meal
+              - wifi
+              - lounge
+              - fasttrack
+              - priorityBoarding
+              - seatSelection
+            example: meal
+        checkedBaggages:
+          description: the list of checked checkedBaggages
+          type: object
+          properties:
+            quantity:
+              type: integer
+              example: 2
+
+    SearchResults:
+      description: An object to return search results
+      type: object
+      properties:
+        # The proposed offers
+        offers:
+          description: The indexed list of offers
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Offer'
+
+        accommodations:
+          description: The acomodations matching an search request
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Accommodation'
+
+        # The price plans involved in the offer
+        pricePlans:
+          description: The indexed list of price plans
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PricePlan'
+
+        # The mapping of the passenger references
+        passengers:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/Guest'
+          example:
+            PAX1: { 'type': 'ADT' }
+
+    UUID:
+      description: Unique identifier for Offers and Orders
+      type: string
+      format: uuid
+      minLength: 36
+      maxLength: 36
+      pattern: '^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$'
+      example: '11111111-2222-3333-4444-000000000001'
+
+    TaxItem:
+      description: A tax item
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/Amount'
+        code:
+          type: string
+          pattern: '^[A-Z0-9]{2}$'
+          example: CA
+        description:
+          type: string
+          example: Air Travellers Security Charge (ATSC)
+
+    FareComponentItem:
+      type: object
+      properties:
+        name:
+          description: The name of the fare component
+          type: string
+          example: Basic
+        basisCode:
+          description: The Fare Basis code of the fare component
+          type: string
+          pattern: '^[A-Z0-9]+$'
+          example: A30ZABA
+        designator:
+          description: The Reservation Booking Designator (RBD)
+          type: string
+          pattern: '^[A-Z]{1}$'
+          example: A
+        conditions:
+          description: The fare conditions associated with the fare component
+          type: string
+          example: 'No flight changes are permitted.'
+
+    FareItem:
+      description: A fare item
+      type: object
+      properties:
+        amount:
+          $ref: '#/components/schemas/Amount'
+        description:
+          type: string
+          example: Navigation Surcharge
+        usage:
+          description: The usage of the fare item
+          type: string
+          enum:
+            - base # Base Fare
+            - surcharge # Surcharge
+          default: base
+        code:
+          description: The optional code of the fare item
+          type: string
+          pattern: '^[A-Z0-9]{2}$'
+          example: S1
+        components:
+          description: A fare component
+          type: array
+          items:
+            $ref: '#/components/schemas/FareComponentItem'
+
+    PriceItem:
+      description: Detail of a priced item
+      type: object
+      properties:
+        taxes:
+          description: Taxes included in the price
+          type: array
+          items:
+            $ref: '#/components/schemas/TaxItem'
+        fare:
+          description: Breakdown of the fare
+          type: array
+          items:
+            $ref: '#/components/schemas/FareItem'
+
+    PassengerSearch:
+      description: A representation of a passenger
+      type: object
+      required: ['type']
+      properties:
+        type:
+          description: The passenger type code as per IATA definitions
+          type: string
+          minLength: 3
+          maxLength: 3
+          enum:
+            - ADT # Adult (12+y)
+            - CHD # Child (2-11y)
+            - INF # Infant without a seat (<2y)
+          example: ADT
+        count:
+          description: Number of associated passengers of the same type
+          type: integer
+          example: 2
+          default: 1
+        childrenAges:
+          description: Array containing the ages of the children. Mandatory if PTC is INF or CHD.
+          type: array
+          items:
+            type: number
+      example: { 'type': 'ADT', 'count': 1 }
+
+    PricedOfferContent:
+      type: object
+      properties:
+        expiration:
+          description: The offer expiration time.
+          type: string
+          format: date-time
+          example: '2021-04-12T23:20:50.52Z'
+        price:
+          $ref: '#/components/schemas/Price'
+        pricedItems:
+          description: Breakdown of items priced
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceItem'
+        terms:
+          description: General terms and conditions
+          type: string
+          example: 'Air Passenger Protection Regulations Notice:..'
+        disclosures:
+          description: List of disclosures
+          nullable: true
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+              example: 'The seat charge is applicable to each one-way flight...'
+        passengers:
+          description: Indexed dictionary of the passengers
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/PassengerSearch'
+
+    PricedOffer:
+      description: An offer with confirmed price
+      type: object
+      required:
+        - offerId
+        - offer
+        - accommodation
+      properties:
+        offerId:
+          $ref: '#/components/schemas/UUID'
+        offer:
+          $ref: '#/components/schemas/PricedOfferContent'
+        accommodation:
+          $ref: '#/components/schemas/Accommodation'
 
 servers:
   - url: http://localhost:5000/api
@@ -165,11 +651,81 @@ paths:
                   description: user's password
       responses:
         200:
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - login
+                  - roles
+                  - accessToken
+                  - refreshToken
+                properties:
+                  id:
+                    type: string
+                  login:
+                    type: string
+                  roles:
+                    type: array
+                    items:
+                      type: string
+                    minItems: 1
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
           description: It's ok
         400:
           description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
 
   /user/refresh:
     post:
@@ -178,10 +734,68 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - accessToken
+                  - refreshToken
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
         400:
           description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
 
   /user/get-all:
     get:
@@ -190,6 +804,27 @@ paths:
       responses:
         200:
           description: get all users
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - users
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        login:
+                          type: string
+                        roles:
+                          type: array
+                          items:
+                            type: string
+                          minItems: 1
         401:
           description: User is not Auth
 
@@ -226,14 +861,64 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [true]
         400:
           description: Handled Error
-        401:
-          description: User is not Auth
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         403:
-          description: Access denied
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
 
   /user/update-password:
     put:
@@ -260,14 +945,64 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [true]
         400:
           description: Handled Error
-        401:
-          description: User is not Auth
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         403:
-          description: Access denied
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
 
   /user/update-roles:
     put:
@@ -298,14 +1033,64 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [true]
         400:
           description: Handled Error
-        401:
-          description: User is not Auth
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         403:
-          description: Access denied
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
   /user:
     delete:
       security:
@@ -327,14 +1112,64 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [true]
         400:
           description: Handled Error
-        401:
-          description: User is not Auth
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         403:
-          description: Access denied
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
 
   /user/logout:
     post:
@@ -345,58 +1180,67 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [true]
         400:
           description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         401:
-          description: User is not Auth
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
   #end users
 
   #proxy
-  /derby-soft/hotels:
-    get:
-      responses:
-        200:
-          description: It's ok
-        400:
-          description: Handled Error
-        401:
-          description: User is not Auth
-        500:
-          description: Some server error
-
-  /derby-soft/hotels/search:
-    get:
-      parameters:
-        - in: query
-          name: lon
-          schema:
-            type: number
-            default: -77.387982
-          required: true
-        - in: query
-          name: lat
-          schema:
-            type: number
-            default: 34.748995
-          required: true
-        - in: query
-          name: radius
-          schema:
-            type: number
-            default: 2000
-            maximum: 20000
-      responses:
-        200:
-          description: It's ok
-        400:
-          description: Handled Error
-        401:
-          description: User is not Auth
-        500:
-          description: Some server error
-
   /derby-soft/offers/search:
     post:
       requestBody:
@@ -447,12 +1291,85 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      rooms:
+                        type: object
+                        required:
+                          - data
+                          - status
+                        properties:
+                          data:
+                            type: object
+                          status:
+                            type: string
+                      derbySoft:
+                        type: object
+                        required:
+                          - data
+                          - status
+                        properties:
+                          data:
+                            $ref: '#/components/schemas/SearchResults'
+                          status:
+                            type: string
+
         400:
           description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         401:
-          description: User is not Auth
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
 
   /derby-soft/offers/{offerId}/price:
     post:
@@ -465,12 +1382,63 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/PricedOffer'
         400:
           description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         401:
-          description: User is not Auth
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
   #end proxy
 
   #booking
@@ -479,12 +1447,63 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  offer:
+                    $ref: '#/components/schemas/SearchResults'
         400:
           description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         401:
-          description: User is not Auth
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
 
   /booking/{offerId}/guests:
     post:
@@ -500,42 +1519,68 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [true]
+                  data:
+                    type: string
+                    format: 'date-time'
         400:
           description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         401:
-          description: User is not Auth
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
         500:
           description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
   #end booking
-
-  #hotels
-  /hotels:
-    get:
-      parameters:
-        - in: query
-          name: lon
-          schema:
-            type: number
-          required: true
-        - in: query
-          name: lat
-          schema:
-            type: number
-          required: true
-        - in: query
-          name: radius
-          schema:
-            type: number
-      responses:
-        200:
-          description: It's ok
-        400:
-          description: Handled Error
-        401:
-          description: User is not Auth
-        500:
-          description: Some server error
-  #end hotels
 
   #health
   /health:
@@ -543,4 +1588,13 @@ paths:
       responses:
         200:
           description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  commit:
+                    type: string
   #end health

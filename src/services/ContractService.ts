@@ -3,15 +3,16 @@ import { constants, providers, utils } from 'ethers';
 import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
-import { DealStorage, State } from '../types';
+import { DealStorage, OfferDBValue, State } from '../types';
 import { allowedNetworks, assetsCurrencies, NetworkInfo } from '../config';
+import { PassengerSearch } from '@windingtree/glider-types/types/derbysoft';
 
 export class ContractService {
-  protected offer: any;
-  protected passengers: any;
+  protected offer: OfferDBValue;
+  protected passengers: { [key: string]: PassengerSearch };
   private stopPoller: () => void;
 
-  constructor(offer, passengers: any) {
+  constructor(offer, passengers: { [key: string]: PassengerSearch }) {
     this.offer = offer;
     this.passengers = passengers;
   }
@@ -24,7 +25,10 @@ export class ContractService {
     this.stopPoller();
   }
 
-  public eventListener = async (offer: any, passengers: any) => {
+  public eventListener = async (
+    offer: OfferDBValue,
+    passengers: { [key: string]: PassengerSearch }
+  ) => {
     allowedNetworks.forEach((contract) => {
       this.checkPaidBooking(contract).then((dealStorage) => {
         if (dealStorage) {
@@ -37,14 +41,20 @@ export class ContractService {
 
   public async checkPaidBooking(
     contractInfo: NetworkInfo
-  ): Promise<null | any> {
+  ): Promise<null | DealStorage> {
+    let price = '0';
+    let currency = '';
+    if (this.offer.price) {
+      price = String(this.offer.price.public);
+      currency = String(this.offer.price.currency);
+    }
     if (process.env.NODE_IS_TEST === 'true') {
       const dealStorage: DealStorage = {
         asset: utils.id('some_asset'),
         customer: constants.AddressZero,
         provider: constants.AddressZero,
         state: 1,
-        value: this.offer.price.public
+        value: price
       };
       await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
       return dealStorage;
@@ -71,11 +81,7 @@ export class ContractService {
       if (statusDeal) {
         await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
 
-        if (
-          !utils
-            .parseEther(this.offer.price.public.toString())
-            .eq(dealStorage.value)
-        ) {
+        if (!utils.parseEther(price).eq(dealStorage.value)) {
           await dealRepository.updateDealStatus(
             serviceId,
             'paymentError',
@@ -85,7 +91,7 @@ export class ContractService {
           return null;
         }
 
-        if (!assetsCurrencies.includes(this.offer.price.currency)) {
+        if (!assetsCurrencies.includes(currency)) {
           await dealRepository.updateDealStatus(
             serviceId,
             'paymentError',
@@ -111,7 +117,8 @@ export class ContractService {
     let disabled = false;
     let failures = 0;
     const poll = async () => {
-      const expired = new Date() > new Date(this.offer.expiration);
+      const expired =
+        this.offer.expiration && new Date() > new Date(this.offer.expiration);
       if (disabled || expired) {
         return;
       }

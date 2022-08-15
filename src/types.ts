@@ -1,5 +1,17 @@
 import { Request, Router } from 'express';
 import { ObjectId } from 'mongodb';
+import {
+  AccommodationType,
+  CheckInOutPolicy,
+  ContactInformation,
+  Media,
+  Offer,
+  Price,
+  PriceItem,
+  PricePlanReferences,
+  RoomTypes,
+  SearchResponse
+} from '@windingtree/glider-types/types/derbysoft';
 
 export interface User {
   login: string;
@@ -53,6 +65,54 @@ export interface DealStorage {
   asset: string;
   value: string;
   state: State;
+}
+
+export interface MongoLocation {
+  type: string;
+  coordinates: number[];
+}
+
+export interface Hotel {
+  _id?: ObjectId;
+  id: string;
+  hotelId: string;
+  provider: string;
+  createdAt: Date;
+  name: string;
+  type: AccommodationType;
+  description: string;
+  location: MongoLocation;
+  rating: number;
+  contactInformation: ContactInformation;
+  checkinoutPolicy: CheckInOutPolicy;
+  otherPolicies: string[];
+  media: Media;
+  roomTypes: {
+    [k: string]: RoomTypes;
+  };
+}
+
+export interface OfferDBValue {
+  _id?: ObjectId;
+  id: string;
+  accommodation: Hotel;
+  pricedItems?: PriceItem[];
+  disclosures?: string[];
+  price?: Price;
+  pricePlansReferences?: PricePlanReferences;
+  expiration: Date;
+  arrival: Date;
+  departure: Date;
+}
+
+export interface PricedOfferData extends Offer {
+  accommodation: Hotel;
+}
+
+export interface DerbySoftData {
+  data: SearchResponse | PricedOfferData | Record<string, string>;
+  status: string;
+  message?: string;
 }
 
 export type RouterInitializer = (router: Router) => void;

@@ -12,12 +12,18 @@ import ApiError from '../exceptions/ApiError';
 import { ContractService } from './ContractService';
 import LogService from './LogService';
 import EmailSenderService from './EmailSenderService';
+import { PassengerSearch } from '@windingtree/glider-types/types/derbysoft';
+import { DealStorage, OfferDBValue } from '../types';
 
 export class BookingService {
-  public async booking(offer: any, dealStorage: any, passengers: any) {
+  public async booking(
+    offer: OfferDBValue,
+    dealStorage: DealStorage,
+    passengers: { [key: string]: PassengerSearch }
+  ): Promise<boolean> {
     const data = {
-      currency: offer.price.currency,
-      amount: String(offer.price.public),
+      currency: offer.price?.currency,
+      amount: String(offer.price?.public),
       receiverOrgId: simardOrgId,
       customerReferences: {
         travellerLastName: '-',
@@ -80,18 +86,17 @@ export class BookingService {
   }
 
   public async cancelOrder(orderId) {
-    const retrieveOrder = await axios.delete(
-      `${derbySoftProxyUrl}/orders/${orderId}`
-    );
-
-    return true;
+    return await axios.delete(`${derbySoftProxyUrl}/orders/${orderId}`);
   }
 
   public async myBookings(address: string) {
     return dealRepository.getUserDeals(address);
   }
 
-  public async setPassengers(offerId: string, passengers: any[]) {
+  public async setPassengers(
+    offerId: string,
+    passengers: PassengerSearch[]
+  ): Promise<string> {
     const offer = await offerRepository.getOne(offerId);
 
     const passengersMap = {};
@@ -100,13 +105,13 @@ export class BookingService {
       passengersMap[`PAX${key + 1}`] = value;
     });
 
-    if (!offer) {
+    if (!offer || !offer.expiration) {
       throw ApiError.NotFound('offer not found');
     }
 
     new ContractService(offer, passengersMap).start();
 
-    return offer.expiration;
+    return offer.expiration.toISOString();
   }
 }
 

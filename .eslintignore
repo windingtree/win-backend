@@ -3,3 +3,4 @@ node_modules
 .github
 dist
 src/proto/*.ts
+_docker

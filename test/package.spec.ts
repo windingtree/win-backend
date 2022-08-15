@@ -5,7 +5,6 @@ import { AppRole } from '../src/types';
 import userService from '../src/services/UserService';
 import userRepository from '../src/repositories/UserRepository';
 import MongoDBService from '../src/services/MongoDBService';
-import dealRepository from '../src/repositories/DealRepository';
 import { constants } from 'ethers';
 
 describe('test', async () => {
@@ -216,27 +215,6 @@ describe('test', async () => {
   });
 
   describe('proxy', async () => {
-    it('get all hotels', async () => {
-      const res = await requestWithSupertest
-        .get('/api/derby-soft/hotels')
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      expect(res.body.data).to.be.a('array');
-      expect(res.body.status).to.equal('success');
-    }).timeout(10000);
-
-    it('get all hotels by rectangle', async () => {
-      const getParams = { lon: -77.387982, lat: 34.748995, radius: 2000 };
-      const res = await requestWithSupertest
-        .get('/api/derby-soft/hotels/search')
-        .query({ ...getParams })
-        .set('Accept', 'application/json')
-        .expect(200);
-
-      expect(res.body.data).to.be.a('array');
-    }).timeout(10000);
-
     let offerId;
     let pricedOfferId;
 
@@ -308,14 +286,13 @@ describe('test', async () => {
         .send(body)
         .set('Accept', 'application/json')
         .expect(200);
-
       expect(res.body.data).to.be.a('object');
       expect(res.body.data.derbySoft.status).to.be.equal('success');
 
       offerId = Object.keys(res.body.data.derbySoft.data.offers)[0];
     }).timeout(10000);
 
-    it('get all offer price', async () => {
+    it('get offer price', async () => {
       const res = await requestWithSupertest
         .post(`/api/derby-soft/offers/${offerId}/price`)
         .send({})
@@ -338,7 +315,7 @@ describe('test', async () => {
           contactInformation: [32123456789, 'contact@org.co.uk']
         }
       ];
-      const res = await requestWithSupertest
+      await requestWithSupertest
         .post(`/api/booking/${pricedOfferId}/guests`)
         .send(passengers)
         .set('Accept', 'application/json')
@@ -374,7 +351,6 @@ describe('test', async () => {
         .expect(200);
 
       const deals = res.body.data;
-
       const deal = deals.find((v) => v.offerId === pricedOfferId);
       expect(deal.status).to.be.equal('booked');
     }).timeout(20000);

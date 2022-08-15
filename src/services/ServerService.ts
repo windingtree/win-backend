@@ -93,7 +93,8 @@ export default class ServerService {
 
     this.app.use(
       openApiValidator.middleware({
-        apiSpec
+        apiSpec,
+        validateResponses: true
       })
     );
 
