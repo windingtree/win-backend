@@ -627,7 +627,6 @@ components:
         serviceId:
           type: string
 
-
 servers:
   - url: http://localhost:5000/api
     description: local server
