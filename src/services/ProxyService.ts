@@ -75,10 +75,6 @@ export class ProxyService {
 
     Object.keys(offers).map((k) => {
       const offer = offers[k];
-      offers[k].serviceId = utils.id(k);
-      offers[k].provider = utils.keccak256(
-        utils.formatBytes32String('win_win_provider')
-      );
       const { pricePlansReferences } = offer;
       const { roomType } =
         pricePlansReferences[Object.keys(pricePlansReferences)[0]];
@@ -174,6 +170,11 @@ export class ProxyService {
       ...offer.accommodation,
       _id: offer.accommodation._id?.toString()
     };
+
+    data.serviceId = utils.id(data.offerId);
+    data.provider = utils.keccak256(
+      utils.formatBytes32String('win_win_provider')
+    );
 
     return {
       data: data,

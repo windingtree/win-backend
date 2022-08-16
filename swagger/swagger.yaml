@@ -613,6 +613,8 @@ components:
         - offerId
         - offer
         - accommodation
+        - provider
+        - serviceId
       properties:
         offerId:
           $ref: '#/components/schemas/UUID'
@@ -620,6 +622,10 @@ components:
           $ref: '#/components/schemas/PricedOfferContent'
         accommodation:
           $ref: '#/components/schemas/Accommodation'
+        provider:
+          type: string
+        serviceId:
+          type: string
 
 servers:
   - url: http://localhost:5000/api
