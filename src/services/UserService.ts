@@ -1,9 +1,15 @@
-import { AppRole, User, UserDbData, UserDTO } from '../types';
+import { AppRole, Tokens, User, UserDbData, UserDTO } from '../types';
 import bcrypt from 'bcrypt';
 import tokenService, { TokenService } from './TokenService';
 import ApiError from '../exceptions/ApiError';
 import { MetricsService } from './MetricsService';
 import userRepository, { UserRepository } from '../repositories/UserRepository';
+import { utils } from 'ethers';
+import { SignatureLike } from '@ethersproject/bytes';
+import {
+  buildSignatureDomain,
+  types
+} from '@windingtree/win-commons/dist/auth';
 
 export class UserService {
   private tokenService: TokenService;
@@ -156,6 +162,69 @@ export class UserService {
       }
       throw e;
     }
+  }
+
+  public getSecret(): string {
+    return tokenService.generateSecretToken({ createdAt: new Date() });
+  }
+
+  public async walletAuth(
+    chainId: number,
+    signature: SignatureLike,
+    secret: string,
+    wallet: string
+  ): Promise<Tokens> {
+    const value = {
+      wallet: wallet,
+      secret: secret
+    };
+
+    const domain = buildSignatureDomain(chainId);
+
+    const signerAddress = utils.verifyTypedData(
+      domain,
+      types,
+      value,
+      signature
+    );
+
+    if (signerAddress !== utils.getAddress(value.wallet)) {
+      throw new Error('Wrong signer address');
+    }
+
+    //const provider = new providers.JsonRpcProvider(network.rpc, chainId);
+    //await validateAuthSignature(provider, secret, wallet, signature); //todo why not works
+
+    const tokens = await this.tokenService.generateTokens({
+      id: wallet,
+      domain
+    });
+
+    await this.tokenService.saveToken(tokens.refreshToken, wallet);
+
+    return tokens;
+  }
+
+  public async walletRefresh(refreshToken) {
+    if (!refreshToken) {
+      throw ApiError.UnauthorizedError();
+    }
+    const data = this.tokenService.validateRefreshToken(refreshToken);
+    const tokenInDB = await this.tokenService.checkRefreshInDB(refreshToken);
+
+    if (!data || !tokenInDB) {
+      throw ApiError.UnauthorizedError();
+    }
+
+    const tokens = this.tokenService.generateTokens({
+      id: data.id,
+      domain: data.domain
+    });
+
+    await this.tokenService.revokeToken(refreshToken);
+    await this.tokenService.saveToken(tokens.refreshToken, data.id);
+
+    return tokens;
   }
 }
 

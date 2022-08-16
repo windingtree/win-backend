@@ -6,6 +6,12 @@ import userService from '../src/services/UserService';
 import userRepository from '../src/repositories/UserRepository';
 import MongoDBService from '../src/services/MongoDBService';
 import { constants } from 'ethers';
+import {
+  buildSignatureDomain,
+  buildSignatureValue,
+  types
+} from '@windingtree/win-commons/dist/auth';
+import { testWallet } from '../src/config';
 
 describe('test', async () => {
   const appService = await new ServerService(3005);
@@ -16,6 +22,9 @@ describe('test', async () => {
 
   let refreshToken;
   let accessToken;
+  let secretToken;
+  let walletAccessToken;
+  let walletRefreshToken;
 
   const staffLogin = 'test_staff_super_long_login';
   const staffPass = '123456qwerty';
@@ -205,13 +214,86 @@ describe('test', async () => {
       .expect(404);
   });
 
+  it('generate secret token', async () => {
+    const res = await requestWithSupertest
+      .get('/api/secret')
+      .set('Accept', 'application/json')
+      .expect(200);
+
+    secretToken = res.headers['set-cookie'][0];
+    secretToken = secretToken.split('=')[1].split(';')[0];
+    const dataSecretToken = res.body.data.secret;
+    expect(secretToken).to.be.a('string');
+    expect(secretToken).to.be.eq(dataSecretToken);
+  });
+
+  it('auth with wallet', async () => {
+    const chainId = 77; //sokol chain id
+    const domain = buildSignatureDomain(chainId);
+    const wallet = await testWallet;
+    const value = buildSignatureValue(wallet.address, secretToken);
+    const signature = await wallet._signTypedData(domain, types, value);
+
+    const res = await requestWithSupertest
+      .post('/api/wallet/auth')
+      .send({
+        chainId,
+        signature,
+        wallet: wallet.address
+      })
+      .set('Accept', 'application/json')
+      .set('Cookie', [`secretToken=${secretToken}`])
+      .expect(200);
+
+    walletAccessToken = res.body.data.accessToken;
+    walletRefreshToken = res.body.data.refreshToken;
+
+    expect(res.body.data.accessToken).to.be.a('string');
+    expect(res.body.data.refreshToken).to.be.a('string');
+  });
+
+  it('refresh with wallet', async () => {
+    const res = await requestWithSupertest
+      .post('/api/wallet/refresh')
+      .set('Accept', 'application/json')
+      .set('Cookie', [`refreshToken=${walletRefreshToken}`])
+      .expect(200);
+
+    walletAccessToken = res.body.data.accessToken;
+    walletRefreshToken = res.body.data.refreshToken;
+
+    expect(res.body.data.accessToken).to.be.a('string');
+    expect(res.body.data.refreshToken).to.be.a('string');
+  });
+
+  it('should throw err when get data with another address', async () => {
+    await requestWithSupertest
+      .get(`/api/booking/${constants.AddressZero}`)
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${walletAccessToken}`)
+      .expect(403);
+  });
+
+  it('should throw err when get data without token', async () => {
+    await requestWithSupertest
+      .get(`/api/booking/${constants.AddressZero}`)
+      .set('Accept', 'application/json')
+      .expect(401);
+  });
+
+  it('check booked with simard api', async () => {
+    await requestWithSupertest
+      .get(`/api/booking/${(await testWallet).address}`)
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${walletAccessToken}`)
+      .expect(200);
+  });
+
   it('delete users', async () => {
     const manager = await userRepository.getUserByLogin(managerLogin);
     const anotherUser = await userRepository.getUserByLogin(anotherUserForTest);
     await userService.deleteUser(manager._id?.toString() || '');
     await userService.deleteUser(anotherUser._id?.toString() || '');
-
-    await MongoDBService.getInstance().cleanUp();
   });
 
   describe('proxy', async () => {
@@ -346,8 +428,9 @@ describe('test', async () => {
       await sleep(10000);
 
       const res = await requestWithSupertest
-        .get(`/api/booking/${constants.AddressZero}`)
+        .get(`/api/booking/${(await testWallet).address}`)
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${walletAccessToken}`)
         .expect(200);
 
       const deals = res.body.data;
@@ -355,7 +438,8 @@ describe('test', async () => {
       expect(deal.status).to.be.equal('booked');
     }).timeout(20000);
 
-    after(() => {
+    after(async () => {
+      await MongoDBService.getInstance().cleanUp();
       process.exit(0);
     });
   });

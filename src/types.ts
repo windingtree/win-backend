@@ -53,6 +53,10 @@ export interface AuthRequest extends Request {
   user: UserDTO;
 }
 
+export interface WalletRequest extends Request {
+  walletAddress: string;
+}
+
 export enum State {
   UNINITIALIZED,
   PAID,

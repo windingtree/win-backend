@@ -31,6 +31,12 @@ export class TokenService {
     };
   }
 
+  public generateSecretToken(payload): string {
+    return jwt.sign(payload, accessTokenKey, {
+      expiresIn: accessTokenMaxAge
+    });
+  }
+
   public async saveToken(refreshToken: string, userId: string) {
     return await this.repository.setUserToken(userId, refreshToken);
   }

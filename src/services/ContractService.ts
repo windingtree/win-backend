@@ -4,7 +4,12 @@ import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferDBValue, State } from '../types';
-import { allowedNetworks, assetsCurrencies, NetworkInfo } from '../config';
+import {
+  allowedNetworks,
+  assetsCurrencies,
+  NetworkInfo,
+  testWallet
+} from '../config';
 import { PassengerSearch } from '@windingtree/glider-types/types/derbysoft';
 
 export class ContractService {
@@ -51,7 +56,7 @@ export class ContractService {
     if (process.env.NODE_IS_TEST === 'true') {
       const dealStorage: DealStorage = {
         asset: utils.id('some_asset'),
-        customer: constants.AddressZero,
+        customer: (await testWallet).address,
         provider: constants.AddressZero,
         state: 1,
         value: price
