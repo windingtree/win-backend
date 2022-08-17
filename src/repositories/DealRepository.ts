@@ -1,5 +1,7 @@
 import MongoDBService from '../services/MongoDBService';
-import { DBName } from '../config';
+import { DBName, NetworkInfo } from '../config';
+import { Collection } from 'mongodb';
+import { DealDBValue, DealStatus, DealStorage, OfferDBValue } from '../types';
 
 export class DealRepository {
   private dbService: MongoDBService;
@@ -9,17 +11,17 @@ export class DealRepository {
     this.dbService = MongoDBService.getInstance();
   }
 
-  protected async getCollection() {
+  protected async getCollection(): Promise<Collection<DealDBValue>> {
     const dbClient = await this.dbService.getDbClient();
     const database = dbClient.db(DBName);
 
     return database.collection(this.collectionName);
   }
 
-  public async getUserDeals(address: string) {
+  public async getUserDeals(address: string): Promise<DealDBValue[]> {
     const collection = await this.getCollection();
 
-    const result: any[] = [];
+    const result: DealDBValue[] = [];
     const cursor = await collection.find({ userAddress: address });
 
     await cursor.forEach((item) => {
@@ -30,9 +32,9 @@ export class DealRepository {
   }
 
   public async createDeal(
-    offer: any,
-    dealStorage: any,
-    contract: any
+    offer: OfferDBValue,
+    dealStorage: DealStorage,
+    contract: NetworkInfo
   ): Promise<void> {
     const collection = await this.getCollection();
     await collection.insertOne({
@@ -42,19 +44,23 @@ export class DealRepository {
       offerId: offer.id,
       userAddress: dealStorage.customer,
       status: 'paid',
-      message: null,
+      message: undefined,
       createdAt: new Date()
     });
   }
 
-  public async updateDealStatus(
+  public async updateDeal(
     offerId: string,
-    status: string,
-    message: string | null
+    status: DealStatus,
+    message: string | undefined = undefined,
+    orderId: string | undefined = undefined
   ): Promise<void> {
     const collection = await this.getCollection();
 
-    await collection.updateOne({ offerId }, { $set: { status, message } });
+    await collection.updateOne(
+      { offerId },
+      { $set: { status, message, orderId } }
+    );
   }
 }
 

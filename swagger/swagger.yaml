@@ -173,6 +173,22 @@ components:
           # The taxes to be collected when selling this service.
           $ref: '#/components/schemas/Amount'
 
+    PricePlansReferences:
+      description: Maps a price plan with the associated elements
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          accommodation:
+            description: reference of the accomodation
+            type: string
+            example: 'prov.1234'
+          roomType:
+            description: reference of the room type in the accomodation
+            type: string
+            example: 'ND'
+      example: { 'BAR': { 'accommodation': 'prov.1234', 'roomType': 'ND' } }
+
     Offer:
       description: An offer object
       type: object
@@ -189,20 +205,7 @@ components:
           $ref: '#/components/schemas/Price'
 
         pricePlansReferences:
-          description: Maps a price plan with the associated elements
-          type: object
-          additionalProperties:
-            type: object
-            properties:
-              accommodation:
-                description: reference of the accomodation
-                type: string
-                example: 'prov.1234'
-              roomType:
-                description: reference of the room type in the accomodation
-                type: string
-                example: 'ND'
-          example: { 'BAR': { 'accommodation': 'prov.1234', 'roomType': 'ND' } }
+          $ref: '#/components/schemas/PricePlansReferences'
 
     Media:
       type: array
@@ -572,6 +575,17 @@ components:
             type: number
       example: { 'type': 'ADT', 'count': 1 }
 
+    Disclosures:
+      description: List of disclosures
+      nullable: true
+      type: array
+      items:
+        type: array
+        items:
+          type: string
+          nullable: true
+          example: 'The seat charge is applicable to each one-way flight...'
+
     PricedOfferContent:
       type: object
       properties:
@@ -592,14 +606,7 @@ components:
           type: string
           example: 'Air Passenger Protection Regulations Notice:..'
         disclosures:
-          description: List of disclosures
-          nullable: true
-          type: array
-          items:
-            type: array
-            items:
-              type: string
-              example: 'The seat charge is applicable to each one-way flight...'
+          $ref: '#/components/schemas/Disclosures'
         passengers:
           description: Indexed dictionary of the passengers
           type: object
@@ -625,6 +632,71 @@ components:
         provider:
           type: string
         serviceId:
+          type: string
+
+    OfferDbValue:
+      description: offer in db structure
+      type: object
+      required:
+        - _id
+        - id
+        - accommodation
+        - pricedItems
+        - disclosures
+        - price
+        - pricePlansReferences
+        - expiration
+        - arrival
+        - departure
+      properties:
+        _id:
+          type: string
+        id:
+          type: string
+        accommodation:
+          $ref: '#/components/schemas/Accommodation'
+        pricedItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceItem'
+        disclosures:
+          $ref: '#/components/schemas/Disclosures'
+        price:
+          $ref: '#/components/schemas/Price'
+        pricePlansReferences:
+          $ref: '#/components/schemas/PricePlansReferences'
+        expiration:
+          type: string
+          format: date-time
+        arrival:
+          type: string
+          format: date-time
+        departure:
+          type: string
+          format: date-time
+
+    Deal:
+      description: db value of deal
+      type: object
+      required:
+        - offer
+        - offerId
+        - createdAt
+        - status
+      properties:
+        offer:
+          $ref: '#/components/schemas/OfferDbValue'
+        offerId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: ['paid', 'pending', 'booked', 'paymentError']
+        message:
+          type: string
+        orderId:
           type: string
 
 servers:
@@ -1694,7 +1766,7 @@ paths:
                 type: object
                 properties:
                   offer:
-                    $ref: '#/components/schemas/SearchResults'
+                    $ref: '#/components/schemas/Deal'
         400:
           description: Handled Error
           content:

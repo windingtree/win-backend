@@ -11,11 +11,12 @@ export class BookingController {
   ) {
     try {
       const { address } = req.params;
-      const bookings = await bookingService.myBookings(address);
 
       if (address !== req.walletAddress) {
         throw ApiError.AccessDenied();
       }
+
+      const bookings = await bookingService.myBookings(address);
 
       res.json({ data: bookings });
     } catch (e) {

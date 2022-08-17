@@ -87,7 +87,7 @@ export class ContractService {
         await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
 
         if (!utils.parseEther(price).eq(dealStorage.value)) {
-          await dealRepository.updateDealStatus(
+          await dealRepository.updateDeal(
             serviceId,
             'paymentError',
             'Invalid value of offer'
@@ -97,7 +97,7 @@ export class ContractService {
         }
 
         if (!assetsCurrencies.includes(currency)) {
-          await dealRepository.updateDealStatus(
+          await dealRepository.updateDeal(
             serviceId,
             'paymentError',
             'Invalid currency of offer'

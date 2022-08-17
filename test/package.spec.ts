@@ -13,8 +13,11 @@ import {
 } from '@windingtree/win-commons/dist/auth';
 import { testWallet } from '../src/config';
 
+let appService: ServerService;
+
 describe('test', async () => {
-  const appService = await new ServerService(3005);
+  appService = await new ServerService(3005);
+
   const requestWithSupertest = await supertest(appService.getApp);
 
   const managerLogin = 'test_manager_super_long_login';
@@ -421,11 +424,11 @@ describe('test', async () => {
         .send(guests)
         .set('Accept', 'application/json')
         .expect(200);
-      await sleep(10000);
+      await sleep(15000);
     }).timeout(20000);
 
     it('check booked with simard api', async () => {
-      await sleep(10000);
+      await sleep(15000);
 
       const res = await requestWithSupertest
         .get(`/api/booking/${(await testWallet).address}`)
@@ -437,10 +440,9 @@ describe('test', async () => {
       const deal = deals.find((v) => v.offerId === pricedOfferId);
       expect(deal.status).to.be.equal('booked');
     }).timeout(20000);
+  });
 
-    after(async () => {
-      await MongoDBService.getInstance().cleanUp();
-      process.exit(0);
-    });
+  after(async () => {
+    await MongoDBService.getInstance().cleanUp();
   });
 });

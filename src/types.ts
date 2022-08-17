@@ -12,6 +12,7 @@ import {
   RoomTypes,
   SearchResponse
 } from '@windingtree/glider-types/types/derbysoft';
+import { NetworkInfo } from './config';
 
 export interface User {
   login: string;
@@ -117,6 +118,30 @@ export interface DerbySoftData {
   data: SearchResponse | PricedOfferData | Record<string, string>;
   status: string;
   message?: string;
+}
+
+export type DealStatus = 'paid' | 'pending' | 'booked' | 'paymentError';
+
+export interface DealDBValue {
+  _id?: ObjectId;
+  offer: OfferDBValue;
+  dealStorage: DealStorage;
+  contract: NetworkInfo;
+  offerId: string;
+  userAddress: string;
+  status: DealStatus;
+  createdAt: Date;
+  orderId?: string;
+  message?: string;
+}
+
+export interface DealDTO {
+  offer: OfferDBValue;
+  offerId: string;
+  createdAt: Date;
+  status: DealStatus;
+  message?: string;
+  orderId?: string;
 }
 
 export type RouterInitializer = (router: Router) => void;
