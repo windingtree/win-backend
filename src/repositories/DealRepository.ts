@@ -34,7 +34,8 @@ export class DealRepository {
   public async createDeal(
     offer: OfferDBValue,
     dealStorage: DealStorage,
-    contract: NetworkInfo
+    contract: NetworkInfo,
+    addresses: string[]
   ): Promise<void> {
     const collection = await this.getCollection();
     await collection.insertOne({
@@ -42,7 +43,7 @@ export class DealRepository {
       offer,
       dealStorage,
       offerId: offer.id,
-      userAddress: dealStorage.customer,
+      userAddress: addresses,
       status: 'paid',
       message: undefined,
       createdAt: new Date()

@@ -61,7 +61,9 @@ export class ContractService {
         state: 1,
         value: price
       };
-      await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
+      await dealRepository.createDeal(this.offer, dealStorage, contractInfo, [
+        dealStorage.customer
+      ]);
       return dealStorage;
     }
 
@@ -84,7 +86,9 @@ export class ContractService {
       const statusDeal = dealStorage.state === State.PAID;
 
       if (statusDeal) {
-        await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
+        await dealRepository.createDeal(this.offer, dealStorage, contractInfo, [
+          dealStorage.customer
+        ]);
 
         if (!utils.parseEther(price).eq(dealStorage.value)) {
           await dealRepository.updateDeal(

@@ -128,7 +128,7 @@ export interface DealDBValue {
   dealStorage: DealStorage;
   contract: NetworkInfo;
   offerId: string;
-  userAddress: string;
+  userAddress: string[];
   status: DealStatus;
   createdAt: Date;
   orderId?: string;
