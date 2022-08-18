@@ -4,11 +4,9 @@ import tokenService, { TokenService } from './TokenService';
 import ApiError from '../exceptions/ApiError';
 import { MetricsService } from './MetricsService';
 import userRepository, { UserRepository } from '../repositories/UserRepository';
-import { providers, utils } from 'ethers';
-import { SignatureLike } from '@ethersproject/bytes';
+import { providers } from 'ethers';
 import {
   buildSignatureDomain,
-  types,
   validateAuthSignature
 } from '@windingtree/win-commons/dist/auth';
 import { allowedNetworks } from '../config';
