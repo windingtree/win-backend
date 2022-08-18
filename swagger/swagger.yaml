@@ -295,6 +295,14 @@ components:
     Roomtypes:
       description: A room type object
       type: object
+      required:
+        - name
+        - description
+        - amenities
+        - size
+        - maximumOccupancy
+        - media
+        - policies
       properties:
         name:
           description: The name of this room type
@@ -356,6 +364,18 @@ components:
     Accommodation:
       description: An accommodation object
       type: object
+      required:
+        - hotelId
+        - name
+        - type
+        - description
+        - location
+        - rating
+        - contactInformation
+        - checkinoutPolicy
+        - otherPolicies
+        - media
+        - roomTypes
       properties:
         location:
           $ref: '#/components/schemas/Location'
@@ -432,6 +452,9 @@ components:
     SearchResults:
       description: An object to return search results
       type: object
+      required:
+        - offers
+        - accommodations
       properties:
         # The proposed offers
         offers:
@@ -548,33 +571,6 @@ components:
           items:
             $ref: '#/components/schemas/FareItem'
 
-    PassengerSearch:
-      description: A representation of a passenger
-      type: object
-      required: ['type']
-      properties:
-        type:
-          description: The passenger type code as per IATA definitions
-          type: string
-          minLength: 3
-          maxLength: 3
-          enum:
-            - ADT # Adult (12+y)
-            - CHD # Child (2-11y)
-            - INF # Infant without a seat (<2y)
-          example: ADT
-        count:
-          description: Number of associated passengers of the same type
-          type: integer
-          example: 2
-          default: 1
-        childrenAges:
-          description: Array containing the ages of the children. Mandatory if PTC is INF or CHD.
-          type: array
-          items:
-            type: number
-      example: { 'type': 'ADT', 'count': 1 }
-
     Disclosures:
       description: List of disclosures
       nullable: true
@@ -588,6 +584,11 @@ components:
 
     PricedOfferContent:
       type: object
+      required:
+        - expiration
+        - price
+        - pricedItems
+        - disclosures
       properties:
         expiration:
           description: The offer expiration time.
@@ -601,17 +602,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PriceItem'
-        terms:
-          description: General terms and conditions
-          type: string
-          example: 'Air Passenger Protection Regulations Notice:..'
         disclosures:
           $ref: '#/components/schemas/Disclosures'
-        passengers:
-          description: Indexed dictionary of the passengers
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PassengerSearch'
 
     PricedOffer:
       description: An offer with confirmed price
