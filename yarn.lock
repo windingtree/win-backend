@@ -1435,10 +1435,10 @@
     "@windingtree/org.id-utils" "^1.0.0-beta.47"
     "@windingtree/org.json-schema" "1.0.2"
 
-"@windingtree/win-commons@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@windingtree/win-commons/-/win-commons-1.0.0.tgz#f4afca92816ecb17a80b5651bfc4cb3a3d546d46"
-  integrity sha512-9stEWbS+MUtXzpKn0JM1M8MIjvJQsHSc64K+b1noccse6yVElxVpX4NwJiUo9WYeafJn6bC/ueKzBUm+OcP4vQ==
+"@windingtree/win-commons@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@windingtree/win-commons/-/win-commons-1.1.0.tgz#38edbe0f6f3ee9b88b5ab10c1ab5b742e8125a99"
+  integrity sha512-746D6Zi4cOupCPLuzCZMiXseDN4isbz/Bi42hinLgAUl7SsuFwCOOFsIpLfwB3IKCtfv2OVGTOgURhOXBegd1w==
   dependencies:
     ethers "^5.6.9"
 
@@ -6617,11 +6617,6 @@ ws@7.4.6:
   version "7.4.6"
   resolved "https://registry.yarnpkg.com/ws/-/ws-7.4.6.tgz#5654ca8ecdeee47c33a9a4bf6d28e2be2980377c"
   integrity sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==
-
-wtfnode@^0.9.1:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/wtfnode/-/wtfnode-0.9.1.tgz#c385679d2df6fb4d64d734eeeaab767fcee3e0d3"
-  integrity sha512-Ip6C2KeQPl/F3aP1EfOnPoQk14Udd9lffpoqWDNH3Xt78svxPbv53ngtmtfI0q2Te3oTq79XKTnRNXVIn/GsPA==
 
 xtend@^4.0.0, xtend@^4.0.2, xtend@~4.0.0, xtend@~4.0.1:
   version "4.0.2"

@@ -4,12 +4,14 @@ import tokenService, { TokenService } from './TokenService';
 import ApiError from '../exceptions/ApiError';
 import { MetricsService } from './MetricsService';
 import userRepository, { UserRepository } from '../repositories/UserRepository';
-import { utils } from 'ethers';
+import { providers, utils } from 'ethers';
 import { SignatureLike } from '@ethersproject/bytes';
 import {
   buildSignatureDomain,
-  types
+  types,
+  validateAuthSignature
 } from '@windingtree/win-commons/dist/auth';
+import { allowedNetworks } from '../config';
 
 export class UserService {
   private tokenService: TokenService;
@@ -170,30 +172,20 @@ export class UserService {
 
   public async walletAuth(
     chainId: number,
-    signature: SignatureLike,
+    signature: string,
     secret: string,
     wallet: string
   ): Promise<Tokens> {
-    const value = {
-      wallet: wallet,
-      secret: secret
-    };
-
-    const domain = buildSignatureDomain(chainId);
-
-    const signerAddress = utils.verifyTypedData(
-      domain,
-      types,
-      value,
-      signature
+    const network = allowedNetworks.find(
+      (network) => network.chainId === chainId
     );
 
-    if (signerAddress !== utils.getAddress(value.wallet)) {
-      throw new Error('Wrong signer address');
+    if (!network) {
+      throw ApiError.NotFound('Network not found');
     }
-
-    //const provider = new providers.JsonRpcProvider(network.rpc, chainId);
-    //await validateAuthSignature(provider, secret, wallet, signature); //todo why not works
+    const domain = buildSignatureDomain(chainId);
+    const provider = new providers.JsonRpcProvider(network.rpc, chainId);
+    await validateAuthSignature(provider, secret, wallet, signature);
 
     const tokens = await this.tokenService.generateTokens({
       id: wallet,
