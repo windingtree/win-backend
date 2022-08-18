@@ -34,7 +34,7 @@ export class ProxyService {
       };
     }
 
-    const data: SearchResponse = res.data.data;
+    const data: SearchResponse = res.data;
     const accommodations = data.accommodations as {
       [key: string]: Accommodation;
     };
@@ -69,7 +69,7 @@ export class ProxyService {
       Object.keys(accommodations)
     );
 
-    const { offers } = res.data.data;
+    const { offers } = data;
 
     const offersSet = new Set<OfferDBValue>();
 
@@ -119,7 +119,7 @@ export class ProxyService {
 
     return {
       data,
-      status: res.data.status
+      status: 'success'
     };
   }
 
@@ -150,7 +150,7 @@ export class ProxyService {
       throw ApiError.NotFound('offer not found');
     }
 
-    const { data } = res.data;
+    const { data } = res;
     const expiration = new Date(data.offer.expiration);
 
     const offerDBValue: OfferDBValue = {
@@ -177,7 +177,7 @@ export class ProxyService {
     );
 
     return {
-      data: data,
+      data,
       status: 'success'
     };
   }
