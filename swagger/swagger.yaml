@@ -691,6 +691,76 @@ components:
         orderId:
           type: string
 
+    OffersSearchRequest:
+      description: Offers search request
+      type: object
+      required:
+        - accommodation
+        - passengers
+      properties:
+        accommodation:
+          type: object
+          required:
+            - location
+            - arrival
+            - departure
+            - roomCount
+          properties:
+            location:
+              type: object
+              required:
+                - lon
+                - lat
+                - radius
+              properties:
+                lon:
+                  type: number
+                lat:
+                  type: number
+                radius:
+                  type: number
+            arrival:
+              type: string
+              format: date-time
+            departure:
+              type: string
+              format: date-time
+            roomCount:
+              type: number
+        passengers:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/AdultGuest'
+              - $ref: '#/components/schemas/ChildGuest'
+
+    OffersSearchResponse:
+      description: Offers search response
+      type: object
+      properties:
+        data:
+          type: object
+          properties:
+            rooms:
+              type: object
+              required:
+                - data
+                - status
+              properties:
+                data:
+                  type: object
+                status:
+                  type: string
+            derbySoft:
+              type: object
+              required:
+                - data
+                - status
+              properties:
+                data:
+                  $ref: '#/components/schemas/SearchResults'
+                status:
+                  type: string
 servers:
   - url: http://localhost:5000/api
     description: local server
@@ -1553,78 +1623,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - accommodation
-                - passengers
-              properties:
-                accommodation:
-                  type: object
-                  required:
-                    - location
-                    - arrival
-                    - departure
-                    - roomCount
-                  properties:
-                    location:
-                      type: object
-                      required:
-                        - lon
-                        - lat
-                        - radius
-                      properties:
-                        lon:
-                          type: number
-                        lat:
-                          type: number
-                        radius:
-                          type: number
-                    arrival:
-                      type: string
-                      format: date-time
-                    departure:
-                      type: string
-                      format: date-time
-                    roomCount:
-                      type: number
-                passengers:
-                  type: array
-                  items:
-                    oneOf:
-                      - $ref: '#/components/schemas/AdultGuest'
-                      - $ref: '#/components/schemas/ChildGuest'
+              $ref: '#/components/schemas/OffersSearchRequest'
       responses:
         200:
           description: It's ok
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    properties:
-                      rooms:
-                        type: object
-                        required:
-                          - data
-                          - status
-                        properties:
-                          data:
-                            type: object
-                          status:
-                            type: string
-                      derbySoft:
-                        type: object
-                        required:
-                          - data
-                          - status
-                        properties:
-                          data:
-                            $ref: '#/components/schemas/SearchResults'
-                          status:
-                            type: string
-
+                $ref: '#/components/schemas/OffersSearchResponse'
         400:
           description: Handled Error
           content:
