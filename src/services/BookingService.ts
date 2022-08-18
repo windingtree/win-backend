@@ -59,13 +59,13 @@ export class BookingService {
           headers: { Authorization: `Bearer ${clientJwt}` }
         }
       );
-      order = orderReq.data.data.order;
+      order = orderReq.data.order;
       if (order.status === 'CONFIRMED') {
         await dealRepository.updateDeal(
           offer.id,
           'booked',
           undefined,
-          orderReq.data.data.orderId
+          orderReq.data.orderId
         );
       } else {
         await dealRepository.updateDeal(
