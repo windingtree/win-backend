@@ -36,12 +36,14 @@ export class ContractService {
     passengers: { [key: string]: PassengerSearch }
   ) => {
     allowedNetworks.forEach((contract) => {
-      this.checkPaidBooking(contract).then((dealStorage) => {
-        if (dealStorage) {
-          bookingService.booking(offer, dealStorage, passengers);
-          this.stop();
-        }
-      });
+      this.checkPaidBooking(contract)
+        .then((dealStorage) => {
+          if (dealStorage) {
+            bookingService.booking(offer, dealStorage, passengers);
+            this.stop();
+          }
+        })
+        .catch((error) => console.log(error));
     });
   };
 
