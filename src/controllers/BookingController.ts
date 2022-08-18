@@ -1,11 +1,21 @@
-import { AuthRequest } from '../types';
+import { AuthRequest, WalletRequest } from '../types';
 import { NextFunction, Response } from 'express';
 import bookingService from '../services/BookingService';
+import ApiError from '../exceptions/ApiError';
 
 export class BookingController {
-  public async myBookings(req: AuthRequest, res: Response, next: NextFunction) {
+  public async myBookings(
+    req: WalletRequest,
+    res: Response,
+    next: NextFunction
+  ) {
     try {
       const { address } = req.params;
+
+      if (address !== req.walletAddress) {
+        throw ApiError.AccessDenied();
+      }
+
       const bookings = await bookingService.myBookings(address);
 
       res.json({ data: bookings });

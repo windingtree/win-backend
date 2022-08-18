@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { ethers } from 'ethers';
 dotenv.config();
 
 export const checkEnvVariables = (vars: string[]): void =>
@@ -36,6 +37,7 @@ export const prometheusEnabled = Boolean(
 export const prometheusPort = Number(process.env.APP_PROMETHEUS_PORT);
 export const refreshTokenMaxAge = 30 * 24 * 60 * 60 * 1000; //30d
 export const accessTokenMaxAge = 30 * 60 * 1000; //30m
+export const secretTokenMaxAge = 5 * 60 * 1000; //5m
 export const mongoDBUrl = String(process.env.MONGODB_URL);
 export const DBName = String(process.env.DB_NAME);
 export const derbySoftProxyUrl = String(process.env.DERBYSOFT_PROXY_URL);
@@ -191,3 +193,11 @@ if (allowHardhatNetwork) {
 }
 
 export const allowedNetworks: readonly NetworkInfo[] = Object.freeze(networks);
+
+const encodedWallet =
+  '{"address":"b7f3f36d83924aecbb50c180ad33a3642166936e","id":"bb16c9df-b5bf-453c-ae6d-a02fc548d9c3","version":3,"Crypto":{"cipher":"aes-128-ctr","cipherparams":{"iv":"5c6f6830e15bfb3d414df302568f7708"},"ciphertext":"3c8b3d26e385ef98f89d03f9ba2339a7322cf88c5e9a2978a1954a82cae709ef","kdf":"scrypt","kdfparams":{"salt":"4149546ebebcaf13f6c9402372148cc63aef2716196ea4d144a417a526df7204","n":131072,"dklen":32,"p":1,"r":8},"mac":"5f769679ceae95c75a86d4fbd1823889d060c2d00c3cf317a7acb8351052abe2"},"x-ethers":{"client":"ethers.js","gethFilename":"UTC--2022-08-15T10-31-14.0Z--b7f3f36d83924aecbb50c180ad33a3642166936e","mnemonicCounter":"72aa34f8659338b7fd558ee61ba09507","mnemonicCiphertext":"5d9650d0b1ebe68da003e591107417fe","path":"m/44\'/60\'/0\'/0/0","locale":"en","version":"0.1"}}';
+const encodeWalletSalt = 'salt';
+export const testWallet = ethers.Wallet.fromEncryptedJson(
+  encodedWallet,
+  encodeWalletSalt
+);

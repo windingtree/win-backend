@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import bookingController from '../controllers/BookingController';
+import walletAuthMiddleware from '../middlewares/WalletAuthMiddleware';
 
 export default (router: Router): void => {
-  router.get('/booking/:address', bookingController.myBookings);
+  router.get(
+    '/booking/:address',
+    walletAuthMiddleware,
+    bookingController.myBookings
+  );
   router.post('/booking/:offerId/guests', bookingController.setPassengers);
 };

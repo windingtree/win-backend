@@ -12,8 +12,11 @@ import ApiError from '../exceptions/ApiError';
 import { ContractService } from './ContractService';
 import LogService from './LogService';
 import EmailSenderService from './EmailSenderService';
-import { PassengerSearch } from '@windingtree/glider-types/types/derbysoft';
-import { DealStorage, OfferDBValue } from '../types';
+import {
+  PassengerBooking,
+  PassengerSearch
+} from '@windingtree/glider-types/types/derbysoft';
+import { DealDBValue, DealDTO, DealStorage, OfferDBValue } from '../types';
 
 export class BookingService {
   public async booking(
@@ -31,7 +34,7 @@ export class BookingService {
       }
     };
 
-    await dealRepository.updateDealStatus(offer.id, 'pending', null);
+    await dealRepository.updateDeal(offer.id, 'pending');
 
     const travelAccount = await axios.post(
       `${simardUrl}/tokens/travel-account`,
@@ -56,12 +59,16 @@ export class BookingService {
           headers: { Authorization: `Bearer ${clientJwt}` }
         }
       );
-      order = orderReq.data.data.order;
-
+      order = orderReq.data.order;
       if (order.status === 'CONFIRMED') {
-        await dealRepository.updateDealStatus(offer.id, 'booked', null);
+        await dealRepository.updateDeal(
+          offer.id,
+          'booked',
+          undefined,
+          orderReq.data.orderId
+        );
       } else {
-        await dealRepository.updateDealStatus(
+        await dealRepository.updateDeal(
           offer.id,
           'paymentError',
           `Booking failed by status ${order.status}`
@@ -69,10 +76,10 @@ export class BookingService {
       }
     } catch (e) {
       LogService.red(e);
-      await dealRepository.updateDealStatus(
+      await dealRepository.updateDeal(
         offer.id,
         'paymentError',
-        'Booking failed'
+        'Booking failed' + e.message
       );
     }
 
@@ -89,13 +96,14 @@ export class BookingService {
     return await axios.delete(`${derbySoftProxyUrl}/orders/${orderId}`);
   }
 
-  public async myBookings(address: string) {
-    return dealRepository.getUserDeals(address);
+  public async myBookings(address: string): Promise<DealDTO[]> {
+    const deals = await dealRepository.getUserDeals(address);
+    return this.getDealsDTO(deals);
   }
 
   public async setPassengers(
     offerId: string,
-    passengers: PassengerSearch[]
+    passengers: PassengerBooking[]
   ): Promise<string> {
     const offer = await offerRepository.getOne(offerId);
 
@@ -112,6 +120,23 @@ export class BookingService {
     new ContractService(offer, passengersMap).start();
 
     return offer.expiration.toISOString();
+  }
+
+  getDealsDTO(deals: DealDBValue[]): DealDTO[] {
+    const dealsDTO = new Set<DealDTO>();
+
+    deals.forEach((value) => {
+      dealsDTO.add({
+        createdAt: value.createdAt,
+        message: value.message,
+        offer: value.offer,
+        offerId: value.offerId,
+        orderId: value.orderId,
+        status: value.status
+      });
+    });
+
+    return Array.from(dealsDTO);
   }
 }
 

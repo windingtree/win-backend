@@ -4,8 +4,14 @@ import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferDBValue, State } from '../types';
-import { allowedNetworks, assetsCurrencies, NetworkInfo } from '../config';
+import {
+  allowedNetworks,
+  assetsCurrencies,
+  NetworkInfo,
+  testWallet
+} from '../config';
 import { PassengerSearch } from '@windingtree/glider-types/types/derbysoft';
+import { getOwners } from '@windingtree/win-commons/dist/multisig';
 
 export class ContractService {
   protected offer: OfferDBValue;
@@ -30,18 +36,23 @@ export class ContractService {
     passengers: { [key: string]: PassengerSearch }
   ) => {
     allowedNetworks.forEach((contract) => {
-      this.checkPaidBooking(contract).then((dealStorage) => {
-        if (dealStorage) {
-          bookingService.booking(offer, dealStorage, passengers);
-          this.stop();
-        }
-      });
+      this.checkPaidBooking(contract)
+        .then((dealStorage) => {
+          if (dealStorage) {
+            bookingService.booking(offer, dealStorage, passengers);
+            this.stop();
+          }
+        })
+        .catch((error) => console.log(error));
     });
   };
 
   public async checkPaidBooking(
     contractInfo: NetworkInfo
   ): Promise<null | DealStorage> {
+    const { rpc, chainId, contracts } = contractInfo;
+    const provider = new providers.JsonRpcProvider(rpc, chainId);
+
     let price = '0';
     let currency = '';
     if (this.offer.price) {
@@ -51,19 +62,22 @@ export class ContractService {
     if (process.env.NODE_IS_TEST === 'true') {
       const dealStorage: DealStorage = {
         asset: utils.id('some_asset'),
-        customer: constants.AddressZero,
+        customer: (await testWallet).address,
         provider: constants.AddressZero,
         state: 1,
         value: price
       };
-      await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
+      await dealRepository.createDeal(
+        this.offer,
+        dealStorage,
+        contractInfo,
+        await getOwners(dealStorage.customer, provider)
+      );
       return dealStorage;
     }
 
     try {
-      const { rpc, chainId, contracts } = contractInfo;
       const serviceId = this.offer.id;
-      const provider = new providers.JsonRpcProvider(rpc, chainId);
 
       const wipPay = WinPay__factory.connect(contracts.winPay, provider);
       const deal = await wipPay.deals(utils.id(serviceId));
@@ -79,10 +93,15 @@ export class ContractService {
       const statusDeal = dealStorage.state === State.PAID;
 
       if (statusDeal) {
-        await dealRepository.createDeal(this.offer, dealStorage, contractInfo);
+        await dealRepository.createDeal(
+          this.offer,
+          dealStorage,
+          contractInfo,
+          await getOwners(dealStorage.customer, provider)
+        );
 
         if (!utils.parseEther(price).eq(dealStorage.value)) {
-          await dealRepository.updateDealStatus(
+          await dealRepository.updateDeal(
             serviceId,
             'paymentError',
             'Invalid value of offer'
@@ -92,7 +111,7 @@ export class ContractService {
         }
 
         if (!assetsCurrencies.includes(currency)) {
-          await dealRepository.updateDealStatus(
+          await dealRepository.updateDeal(
             serviceId,
             'paymentError',
             'Invalid currency of offer'

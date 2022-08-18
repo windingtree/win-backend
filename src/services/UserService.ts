@@ -1,9 +1,15 @@
-import { AppRole, User, UserDbData, UserDTO } from '../types';
+import { AppRole, Tokens, User, UserDbData, UserDTO } from '../types';
 import bcrypt from 'bcrypt';
 import tokenService, { TokenService } from './TokenService';
 import ApiError from '../exceptions/ApiError';
 import { MetricsService } from './MetricsService';
 import userRepository, { UserRepository } from '../repositories/UserRepository';
+import { providers } from 'ethers';
+import {
+  buildSignatureDomain,
+  validateAuthSignature
+} from '@windingtree/win-commons/dist/auth';
+import { allowedNetworks } from '../config';
 
 export class UserService {
   private tokenService: TokenService;
@@ -156,6 +162,59 @@ export class UserService {
       }
       throw e;
     }
+  }
+
+  public getSecret(): string {
+    return tokenService.generateSecretToken({ createdAt: new Date() });
+  }
+
+  public async walletAuth(
+    chainId: number,
+    signature: string,
+    secret: string,
+    wallet: string
+  ): Promise<Tokens> {
+    const network = allowedNetworks.find(
+      (network) => network.chainId === chainId
+    );
+
+    if (!network) {
+      throw ApiError.NotFound('Network not found');
+    }
+    const domain = buildSignatureDomain(chainId);
+    const provider = new providers.JsonRpcProvider(network.rpc, chainId);
+    await validateAuthSignature(provider, secret, wallet, signature);
+
+    const tokens = await this.tokenService.generateTokens({
+      id: wallet,
+      domain
+    });
+
+    await this.tokenService.saveToken(tokens.refreshToken, wallet);
+
+    return tokens;
+  }
+
+  public async walletRefresh(refreshToken) {
+    if (!refreshToken) {
+      throw ApiError.UnauthorizedError();
+    }
+    const data = this.tokenService.validateRefreshToken(refreshToken);
+    const tokenInDB = await this.tokenService.checkRefreshInDB(refreshToken);
+
+    if (!data || !tokenInDB) {
+      throw ApiError.UnauthorizedError();
+    }
+
+    const tokens = this.tokenService.generateTokens({
+      id: data.id,
+      domain: data.domain
+    });
+
+    await this.tokenService.revokeToken(refreshToken);
+    await this.tokenService.saveToken(tokens.refreshToken, data.id);
+
+    return tokens;
   }
 }
 

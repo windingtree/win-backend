@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import userService from '../services/UserService';
 import { AppRole, AuthRequest } from '../types';
 import ApiError from '../exceptions/ApiError';
-import { refreshTokenMaxAge } from '../config';
+import { refreshTokenMaxAge, secretTokenMaxAge } from '../config';
 
 export class UserController {
   public async login(req: Request, res: Response, next: NextFunction) {
@@ -136,6 +136,64 @@ export class UserController {
       await userService.deleteUser(userId);
 
       return res.json({ success: true });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async getSecret(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const secret = userService.getSecret();
+
+      res.cookie('secretToken', secret, {
+        maxAge: secretTokenMaxAge,
+        httpOnly: true
+      });
+
+      return res.json({ data: { secret } });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async walletAuth(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const { secretToken } = req.cookies;
+      const { chainId, signature, wallet } = req.body;
+
+      const tokens = await userService.walletAuth(
+        chainId,
+        signature,
+        secretToken,
+        wallet
+      );
+
+      res.cookie('refreshToken', tokens.refreshToken, {
+        maxAge: refreshTokenMaxAge,
+        httpOnly: true
+      });
+
+      return res.json({ data: { ...tokens } });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async walletRefresh(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { refreshToken } = req.cookies;
+      const tokens = await userService.walletRefresh(refreshToken);
+
+      res.cookie('refreshToken', tokens.refreshToken, {
+        maxAge: refreshTokenMaxAge,
+        httpOnly: true
+      });
+
+      return res.json({ data: { ...tokens } });
     } catch (e) {
       next(e);
     }

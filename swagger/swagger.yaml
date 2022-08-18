@@ -173,6 +173,22 @@ components:
           # The taxes to be collected when selling this service.
           $ref: '#/components/schemas/Amount'
 
+    PricePlansReferences:
+      description: Maps a price plan with the associated elements
+      type: object
+      additionalProperties:
+        type: object
+        properties:
+          accommodation:
+            description: reference of the accomodation
+            type: string
+            example: 'prov.1234'
+          roomType:
+            description: reference of the room type in the accomodation
+            type: string
+            example: 'ND'
+      example: { 'BAR': { 'accommodation': 'prov.1234', 'roomType': 'ND' } }
+
     Offer:
       description: An offer object
       type: object
@@ -189,20 +205,7 @@ components:
           $ref: '#/components/schemas/Price'
 
         pricePlansReferences:
-          description: Maps a price plan with the associated elements
-          type: object
-          additionalProperties:
-            type: object
-            properties:
-              accommodation:
-                description: reference of the accomodation
-                type: string
-                example: 'prov.1234'
-              roomType:
-                description: reference of the room type in the accomodation
-                type: string
-                example: 'ND'
-          example: { 'BAR': { 'accommodation': 'prov.1234', 'roomType': 'ND' } }
+          $ref: '#/components/schemas/PricePlansReferences'
 
     Media:
       type: array
@@ -292,6 +295,14 @@ components:
     Roomtypes:
       description: A room type object
       type: object
+      required:
+        - name
+        - description
+        - amenities
+        - size
+        - maximumOccupancy
+        - media
+        - policies
       properties:
         name:
           description: The name of this room type
@@ -353,6 +364,18 @@ components:
     Accommodation:
       description: An accommodation object
       type: object
+      required:
+        - hotelId
+        - name
+        - type
+        - description
+        - location
+        - rating
+        - contactInformation
+        - checkinoutPolicy
+        - otherPolicies
+        - media
+        - roomTypes
       properties:
         location:
           $ref: '#/components/schemas/Location'
@@ -429,6 +452,9 @@ components:
     SearchResults:
       description: An object to return search results
       type: object
+      required:
+        - offers
+        - accommodations
       properties:
         # The proposed offers
         offers:
@@ -545,35 +571,24 @@ components:
           items:
             $ref: '#/components/schemas/FareItem'
 
-    PassengerSearch:
-      description: A representation of a passenger
-      type: object
-      required: ['type']
-      properties:
-        type:
-          description: The passenger type code as per IATA definitions
+    Disclosures:
+      description: List of disclosures
+      nullable: true
+      type: array
+      items:
+        type: array
+        items:
           type: string
-          minLength: 3
-          maxLength: 3
-          enum:
-            - ADT # Adult (12+y)
-            - CHD # Child (2-11y)
-            - INF # Infant without a seat (<2y)
-          example: ADT
-        count:
-          description: Number of associated passengers of the same type
-          type: integer
-          example: 2
-          default: 1
-        childrenAges:
-          description: Array containing the ages of the children. Mandatory if PTC is INF or CHD.
-          type: array
-          items:
-            type: number
-      example: { 'type': 'ADT', 'count': 1 }
+          nullable: true
+          example: 'The seat charge is applicable to each one-way flight...'
 
     PricedOfferContent:
       type: object
+      required:
+        - expiration
+        - price
+        - pricedItems
+        - disclosures
       properties:
         expiration:
           description: The offer expiration time.
@@ -587,24 +602,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PriceItem'
-        terms:
-          description: General terms and conditions
-          type: string
-          example: 'Air Passenger Protection Regulations Notice:..'
         disclosures:
-          description: List of disclosures
-          nullable: true
-          type: array
-          items:
-            type: array
-            items:
-              type: string
-              example: 'The seat charge is applicable to each one-way flight...'
-        passengers:
-          description: Indexed dictionary of the passengers
-          type: object
-          additionalProperties:
-            $ref: '#/components/schemas/PassengerSearch'
+          $ref: '#/components/schemas/Disclosures'
 
     PricedOffer:
       description: An offer with confirmed price
@@ -625,6 +624,71 @@ components:
         provider:
           type: string
         serviceId:
+          type: string
+
+    OfferDbValue:
+      description: offer in db structure
+      type: object
+      required:
+        - _id
+        - id
+        - accommodation
+        - pricedItems
+        - disclosures
+        - price
+        - pricePlansReferences
+        - expiration
+        - arrival
+        - departure
+      properties:
+        _id:
+          type: string
+        id:
+          type: string
+        accommodation:
+          $ref: '#/components/schemas/Accommodation'
+        pricedItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceItem'
+        disclosures:
+          $ref: '#/components/schemas/Disclosures'
+        price:
+          $ref: '#/components/schemas/Price'
+        pricePlansReferences:
+          $ref: '#/components/schemas/PricePlansReferences'
+        expiration:
+          type: string
+          format: date-time
+        arrival:
+          type: string
+          format: date-time
+        departure:
+          type: string
+          format: date-time
+
+    Deal:
+      description: db value of deal
+      type: object
+      required:
+        - offer
+        - offerId
+        - createdAt
+        - status
+      properties:
+        offer:
+          $ref: '#/components/schemas/OfferDbValue'
+        offerId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: ['paid', 'pending', 'booked', 'paymentError']
+        message:
+          type: string
+        orderId:
           type: string
 
 servers:
@@ -1244,6 +1308,241 @@ paths:
                   message:
                     type: string
                     default: Something went wrong
+
+  /secret:
+    get:
+      summary: get secret
+      tags: [Auth service]
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - secret
+                    properties:
+                      secret:
+                        type: string
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
+
+  /wallet/auth:
+    post:
+      summary: auth
+      tags: [Auth service]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chainId
+                - signature
+                - wallet
+              properties:
+                chainId:
+                  type: number
+                  description: chain id
+                signature:
+                  type: string
+                wallet:
+                  type: string
+                  description: address
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - accessToken
+                      - refreshToken
+                    properties:
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
+
+  /wallet/refresh:
+    post:
+      summary: refresh
+      tags: [Auth service]
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    required:
+                      - accessToken
+                      - refreshToken
+                    properties:
+                      accessToken:
+                        type: string
+                      refreshToken:
+                        type: string
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
   #end users
 
   #proxy
@@ -1459,7 +1758,7 @@ paths:
                 type: object
                 properties:
                   offer:
-                    $ref: '#/components/schemas/SearchResults'
+                    $ref: '#/components/schemas/Deal'
         400:
           description: Handled Error
           content:
