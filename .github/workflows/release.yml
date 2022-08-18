@@ -20,12 +20,8 @@ jobs:
       run: npx ci
     - name: Install semantic-release extra plugins
       run: npm install --save-dev @semantic-release/changelog
-    - name: Lint
-      run: npm run lint --if-present
-    - name: Test
-      run: cp .env.example .env && npm run test --if-present
     - name: Build
-      run: npm run build      
+      run: npm run build
     - name: Release
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
