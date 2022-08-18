@@ -12,7 +12,7 @@ import {
   RoomTypes,
   SearchResponse
 } from '@windingtree/glider-types/types/derbysoft';
-import { NetworkInfo } from './config';
+import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export interface User {
   login: string;

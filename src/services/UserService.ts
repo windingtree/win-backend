@@ -9,7 +9,7 @@ import {
   buildSignatureDomain,
   validateAuthSignature
 } from '@windingtree/win-commons/dist/auth';
-import { getNetworkInfo } from '@windingtree/win-commons/dist/config';
+import { getNetworkInfo } from '../config';
 
 export class UserService {
   private tokenService: TokenService;
