@@ -5,13 +5,14 @@ import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferDBValue, State } from '../types';
 import {
-  allowedNetworks,
   assetsCurrencies,
   NetworkInfo,
+  networkMode,
   testWallet
 } from '../config';
 import { PassengerSearch } from '@windingtree/glider-types/types/derbysoft';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
+import { getNetworksByMode } from '@windingtree/win-commons/dist/config';
 
 export class ContractService {
   protected offer: OfferDBValue;
@@ -35,6 +36,7 @@ export class ContractService {
     offer: OfferDBValue,
     passengers: { [key: string]: PassengerSearch }
   ) => {
+    const allowedNetworks = getNetworksByMode(networkMode);
     allowedNetworks.forEach((contract) => {
       this.checkPaidBooking(contract)
         .then((dealStorage) => {

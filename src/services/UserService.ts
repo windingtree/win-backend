@@ -9,7 +9,7 @@ import {
   buildSignatureDomain,
   validateAuthSignature
 } from '@windingtree/win-commons/dist/auth';
-import { allowedNetworks } from '../config';
+import { getNetworkInfo } from '@windingtree/win-commons/dist/config';
 
 export class UserService {
   private tokenService: TokenService;
@@ -174,9 +174,7 @@ export class UserService {
     secret: string,
     wallet: string
   ): Promise<Tokens> {
-    const network = allowedNetworks.find(
-      (network) => network.chainId === chainId
-    );
+    const network = getNetworkInfo(chainId);
 
     if (!network) {
       throw ApiError.NotFound('Network not found');
