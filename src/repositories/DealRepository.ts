@@ -1,7 +1,8 @@
 import MongoDBService from '../services/MongoDBService';
-import { DBName, NetworkInfo } from '../config';
+import { DBName } from '../config';
 import { Collection } from 'mongodb';
 import { DealDBValue, DealStatus, DealStorage, OfferDBValue } from '../types';
+import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export class DealRepository {
   private dbService: MongoDBService;

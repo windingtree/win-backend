@@ -4,14 +4,13 @@ import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferDBValue, State } from '../types';
-import {
-  allowedNetworks,
-  assetsCurrencies,
-  NetworkInfo,
-  testWallet
-} from '../config';
+import { allowedNetworks, testWallet } from '../config';
 import { PassengerSearch } from '@windingtree/glider-types/types/derbysoft';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
+import {
+  assetsCurrencies,
+  NetworkInfo
+} from '@windingtree/win-commons/dist/types';
 
 export class ContractService {
   protected offer: OfferDBValue;
