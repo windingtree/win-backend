@@ -4,17 +4,18 @@ author: Winding Tree Developers
 
 # Readme
 
-run server for dev - `yarn dev`
+Run server for dev - `yarn dev`.
 
-run swagger - `npx ts-node ./swagger/server.ts`
+Run swagger - `npx ts-node ./swagger/server.ts`.
 
-Prometheus implementation:
-Set .env variables
+Prometheus implementation - you need to set `.env` variables:
 
 ```dotenv
 APP_PROMETHEUS_PORT=9100
 PROMETHEUS_ENABLED=true
 ```
+
+Now, you should be able to use:
 
 ```
 http://localhost:9100/metrics - metrics api
