@@ -156,21 +156,17 @@ components:
       properties:
         currency:
           $ref: '#/components/schemas/Currency'
-
         private:
-          # The private price in currency decimals for this service that the distributor owes to the supplier.
+          description: The private price in currency decimals for this service that the distributor owes to the supplier.
           $ref: '#/components/schemas/Amount'
-
         public:
-          # The public price for this service. The distributor should sell the product at this price.
+          description: The public price for this service. The distributor should sell the product at this price.
           $ref: '#/components/schemas/Amount'
-
         commission:
-          # The distributor commission for selling this service
+          description: The distributor commission for selling this service
           $ref: '#/components/schemas/Amount'
-
         taxes:
-          # The taxes to be collected when selling this service.
+          description: The taxes to be collected when selling this service.
           $ref: '#/components/schemas/Amount'
 
     PricePlansReferences:
@@ -180,11 +176,11 @@ components:
         type: object
         properties:
           accommodation:
-            description: reference of the accomodation
+            description: reference of the accommodation
             type: string
             example: 'prov.1234'
           roomType:
-            description: reference of the room type in the accomodation
+            description: reference of the room type in the accommodation
             type: string
             example: 'ND'
       example: { 'BAR': { 'accommodation': 'prov.1234', 'roomType': 'ND' } }
@@ -193,17 +189,13 @@ components:
       description: An offer object
       type: object
       properties:
-        # An offer expiration time
         expiration:
           description: The offer expiration time. Once this time is reached, the booking of the offer is not possible anymore.
           type: string
           format: date-time
           example: '2021-04-12T23:20:50.52Z'
-
-        # The price of the offer
         price:
           $ref: '#/components/schemas/Price'
-
         pricePlansReferences:
           $ref: '#/components/schemas/PricePlansReferences'
 
@@ -452,6 +444,7 @@ components:
     SearchResults:
       description: An object to return search results
       type: object
+      nullable: true
       required:
         - offers
         - accommodations
@@ -464,7 +457,7 @@ components:
             $ref: '#/components/schemas/Offer'
 
         accommodations:
-          description: The acomodations matching an search request
+          description: The accommodations matching an search request
           type: object
           additionalProperties:
             $ref: '#/components/schemas/Accommodation'
@@ -483,6 +476,18 @@ components:
             $ref: '#/components/schemas/Guest'
           example:
             PAX1: { 'type': 'ADT' }
+
+    OffersSearchProviderResponse:
+      description: Response object obtained from the provider (DerbySoft or Rooms)
+      type: object
+      required:
+        - data
+        - status
+      properties:
+        data:
+          $ref: '#/components/schemas/SearchResults'
+        status:
+          type: string
 
     UUID:
       description: Unique identifier for Offers and Orders
@@ -740,27 +745,14 @@ components:
       properties:
         data:
           type: object
+          required:
+            - rooms
+            - derbySoft
           properties:
             rooms:
-              type: object
-              required:
-                - data
-                - status
-              properties:
-                data:
-                  type: object
-                status:
-                  type: string
+              $ref: '#/components/schemas/OffersSearchProviderResponse'
             derbySoft:
-              type: object
-              required:
-                - data
-                - status
-              properties:
-                data:
-                  $ref: '#/components/schemas/SearchResults'
-                status:
-                  type: string
+              $ref: '#/components/schemas/OffersSearchProviderResponse'
 servers:
   - url: http://localhost:5000/api
     description: local server
