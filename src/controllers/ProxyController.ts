@@ -9,13 +9,22 @@ export class ProxyController {
     next: NextFunction
   ) {
     try {
-      const derbySoft = await proxyService.getDerbySoftOffers(req.body);
+      const derbySoft = await proxyService.getDerbySoftOffers(
+        req.body,
+        'derbySoft'
+      );
+
+      // const amadeus = await proxyService.getDerbySoftOffers(
+      //   req.body,
+      //   'amadeus'
+      // );
 
       res.json({
         data: {
           derbySoft,
+          // amadeus,
           rooms: {
-            data: {},
+            data: null,
             status: 'success'
           }
         }

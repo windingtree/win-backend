@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { ethers } from 'ethers';
 import config from '@windingtree/win-commons/dist/config';
+import { HotelProviders } from './types';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ checkEnvVariables([
   'MONGODB_URL',
   'DB_NAME',
   'DERBYSOFT_PROXY_URL',
+  'AMADEUS_PROXY_URL',
   'CLIENT_JWT',
   'SIMARD_JWT',
   'SIMARD_ORG_ID',
@@ -49,6 +51,7 @@ export const secretTokenMaxAge = 5 * 60 * 1000; //5m
 export const mongoDBUrl = String(process.env.MONGODB_URL);
 export const DBName = String(process.env.DB_NAME);
 export const derbySoftProxyUrl = String(process.env.DERBYSOFT_PROXY_URL);
+export const amadeusProxyUrl = String(process.env.AMADEUS_PROXY_URL);
 export const clientJwt = String(process.env.CLIENT_JWT);
 export const clientUrl = String(process.env.CLIENT_URL);
 export const simardJwt = String(process.env.SIMARD_JWT);
@@ -92,3 +95,12 @@ switch (process.env.NODE_ENV) {
 export const allowedNetworks = config.getNetworksByMode(mode);
 
 export const getNetworkInfo = config.getNetworkInfo;
+
+export const providersUrls = {
+  derbySoft: derbySoftProxyUrl,
+  amadeus: amadeusProxyUrl
+};
+
+export const getUrlByKey = (key: HotelProviders): string => {
+  return providersUrls[key];
+};

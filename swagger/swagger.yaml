@@ -47,7 +47,7 @@ components:
     PhoneNumber:
       description: A phone number
       type: string
-      pattern: '(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]‌​)\s*)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)([2-9]1[02-9]‌​|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})\s*(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+)\s*)?$'
+      pattern: '^([+]{0,1})([0-9- ()/]+)$'
       example: '+32123456789'
 
     Name:
@@ -161,20 +161,15 @@ components:
         currency:
           $ref: '#/components/schemas/Currency'
         private:
-          description: The private price in currency decimals for this service that the distributor owes to the supplier.
           $ref: '#/components/schemas/Amount'
         public:
-          description: The public price for this service. The distributor should sell the product at this price.
           $ref: '#/components/schemas/Amount'
         commission:
-          description: The distributor commission for selling this service
           $ref: '#/components/schemas/Amount'
         taxes:
-          description: The taxes to be collected when selling this service.
           $ref: '#/components/schemas/Amount'
         isAmountBeforeTax:
           type: boolean
-
         decimalPlaces:
           type: number
 
