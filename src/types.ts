@@ -6,6 +6,7 @@ import {
   ContactInformation,
   Media,
   Offer,
+  PassengerSearch,
   Price,
   PriceItem,
   PricePlanReferences,
@@ -72,6 +73,22 @@ export interface DealStorage {
   state: State;
 }
 
+export interface Location {
+  lon: number;
+  lat: number;
+  radius: number;
+}
+
+export interface SearchBody {
+  accommodation: {
+    location: Location;
+    arrival: string;
+    departure: string;
+    roomCount?: number;
+  };
+  passengers: [PassengerSearch, ...PassengerSearch[]];
+}
+
 export interface MongoLocation {
   type: string;
   coordinates: number[];
@@ -108,6 +125,7 @@ export interface OfferDBValue {
   expiration: Date;
   arrival: Date;
   departure: Date;
+  provider: HotelProviders;
 }
 
 export interface PricedOfferData extends Offer {
@@ -115,7 +133,7 @@ export interface PricedOfferData extends Offer {
 }
 
 export interface DerbySoftData {
-  data: SearchResponse | PricedOfferData | Record<string, string>;
+  data: SearchResponse | PricedOfferData | null;
   status: string;
   message?: string;
 }
@@ -145,3 +163,5 @@ export interface DealDTO {
 }
 
 export type RouterInitializer = (router: Router) => void;
+
+export type HotelProviders = 'derbySoft' | 'amadeus';

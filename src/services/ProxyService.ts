@@ -1,26 +1,46 @@
 import axios from 'axios';
-import { clientJwt, derbySoftProxyUrl } from '../config';
+import { clientJwt, getUrlByKey } from '../config';
 import hotelRepository from '../repositories/HotelRepository';
 import { makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
 import {
   Accommodation,
+  SearchCriteria,
   SearchResponse
 } from '@windingtree/glider-types/types/derbysoft';
-import { DerbySoftData, Hotel, MongoLocation, OfferDBValue } from '../types';
+import {
+  DerbySoftData,
+  Hotel,
+  HotelProviders,
+  MongoLocation,
+  OfferDBValue,
+  SearchBody
+} from '../types';
 import ApiError from '../exceptions/ApiError';
 import { utils } from 'ethers';
 
 export class ProxyService {
-  public async getDerbySoftOffers(body): Promise<DerbySoftData> {
+  public async getDerbySoftOffers(
+    body: SearchBody,
+    provider: HotelProviders
+  ): Promise<DerbySoftData> {
     const { lon, lat, radius } = body.accommodation.location;
     const { arrival, departure } = body.accommodation;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
-    body.accommodation.location = { rectangle };
+
+    const resBody: SearchCriteria = {
+      ...body,
+      accommodation: {
+        ...body.accommodation,
+        location: { rectangle }
+      }
+    };
+    const url = getUrlByKey(provider);
+
     let res;
     try {
-      res = await axios.post(`${derbySoftProxyUrl}/offers/search`, body, {
+      res = await axios.post(`${url}/offers/search`, resBody, {
         headers: { Authorization: `Bearer ${clientJwt}` }
       });
     } catch (e) {
@@ -28,13 +48,14 @@ export class ProxyService {
         LogService.red(e);
       }
       return {
-        data: {},
-        status: e.response.status,
+        data: null,
+        status: String(e.response.status),
         message: e.response.data.error
       };
     }
 
     const data: SearchResponse = res.data;
+
     const accommodations = data.accommodations as {
       [key: string]: Accommodation;
     };
@@ -52,7 +73,7 @@ export class ProxyService {
       const hotel = {
         ...value,
         id: key,
-        provider: 'derbySoft',
+        provider: provider,
         createdAt: new Date(),
         location
       } as Hotel;
@@ -94,12 +115,26 @@ export class ProxyService {
         };
       }
 
+      offer.price = {
+        currency: offer.price.currency,
+        private: offer.price.private ? String(offer.price.priva) : undefined,
+        public: String(offer.price.public),
+        commission: offer.price.commission
+          ? String(offer.price.commission)
+          : undefined,
+        taxes: offer.price.taxes ? String(offer.price.taxes) : undefined,
+        isAmountBeforeTax: offer.price.isAmountBeforeTax,
+        decimalPlaces: offer.price.decimalPlaces
+      };
+
       const offerDBValue: OfferDBValue = {
         id: k,
         accommodation,
-        arrival,
-        departure,
-        expiration: new Date(offer.expiration)
+        arrival: new Date(arrival),
+        departure: new Date(departure),
+        expiration: new Date(offer.expiration),
+        price: offer.price,
+        provider
       };
 
       offersSet.add(offerDBValue);
@@ -124,10 +159,18 @@ export class ProxyService {
   }
 
   public async getDerbySoftOfferPrice(offerId: string): Promise<DerbySoftData> {
+    const offer = await offerRepository.getOne(offerId);
+
+    if (!offer) {
+      throw ApiError.NotFound('offer not found');
+    }
+
+    const url = getUrlByKey(offer.provider);
+
     let res;
     try {
       res = await axios.post(
-        `${derbySoftProxyUrl}/offers/${offerId}/price`,
+        `${url}/offers/${offerId}/price`,
         {},
         {
           headers: { Authorization: `Bearer ${clientJwt}` }
@@ -138,20 +181,42 @@ export class ProxyService {
         LogService.red(e);
       }
       return {
-        data: {},
+        data: null,
         status: e.response.status,
         message: e.response.data.error
       };
     }
 
-    const offer = await offerRepository.getOne(offerId);
-
-    if (!offer) {
-      throw ApiError.NotFound('offer not found');
-    }
-
     const { data } = res;
     const expiration = new Date(data.offer.expiration);
+
+    data.offer.price = {
+      currency: data.offer.price.currency,
+      private: data.offer.price.private
+        ? String(data.offer.price.priva)
+        : undefined,
+      public: String(data.offer.price.public),
+      commission: data.offer.price.commission
+        ? String(data.offer.price.commission)
+        : undefined,
+      taxes: data.offer.price.taxes
+        ? String(data.offer.price.taxes)
+        : undefined,
+      isAmountBeforeTax: data.offer.price.isAmountBeforeTax,
+      decimalPlaces: data.offer.price.decimalPlaces
+    };
+
+    for (const item of data.offer.pricedItems) {
+      item.fare.forEach((fare) => {
+        fare.amount = String(fare.amount);
+      });
+
+      item.taxes.forEach((tax) => {
+        tax.amount = String(tax.amount);
+      });
+    }
+
+    //todo remove after derby and amadeus proxy fix types
 
     const offerDBValue: OfferDBValue = {
       arrival: offer.arrival,
@@ -161,7 +226,8 @@ export class ProxyService {
       expiration: expiration,
       pricedItems: data.offer.pricedItems,
       disclosures: data.offer.disclosures,
-      price: data.offer.price
+      price: data.offer.price,
+      provider: offer.provider
     };
 
     await offerRepository.create(offerDBValue);

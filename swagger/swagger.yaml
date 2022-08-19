@@ -47,7 +47,7 @@ components:
     PhoneNumber:
       description: A phone number
       type: string
-      pattern: '(?:(?:\+?1\s*(?:[.-]\s*)?)?(?:(\s*([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]‌​)\s*)|([2-9]1[02-9]|[2-9][02-8]1|[2-9][02-8][02-9]))\s*(?:[.-]\s*)?)([2-9]1[02-9]‌​|[2-9][02-9]1|[2-9][02-9]{2})\s*(?:[.-]\s*)?([0-9]{4})\s*(?:\s*(?:#|x\.?|ext\.?|extension)\s*(\d+)\s*)?$'
+      pattern: '^([+]{0,1})([0-9- ()/]+)$'
       example: '+32123456789'
 
     Name:
@@ -137,10 +137,11 @@ components:
 
     Amount:
       description: An amount
-      type: number
+      type: string
+      pattern: '^[0-9]+(\.[0-9]+){0,1}$'
       minLength: 1
       maxLength: 99
-      example: '40.00'
+      example: "40.00"
 
     Currency:
       description: The ISO4217 currency code
@@ -153,21 +154,24 @@ components:
     Price:
       description: Price of the service
       type: object
+      required:
+        - currency
+        - public
       properties:
         currency:
           $ref: '#/components/schemas/Currency'
         private:
-          description: The private price in currency decimals for this service that the distributor owes to the supplier.
           $ref: '#/components/schemas/Amount'
         public:
-          description: The public price for this service. The distributor should sell the product at this price.
           $ref: '#/components/schemas/Amount'
         commission:
-          description: The distributor commission for selling this service
           $ref: '#/components/schemas/Amount'
         taxes:
-          description: The taxes to be collected when selling this service.
           $ref: '#/components/schemas/Amount'
+        isAmountBeforeTax:
+          type: boolean
+        decimalPlaces:
+          type: number
 
     PricePlansReferences:
       description: Maps a price plan with the associated elements
@@ -190,36 +194,37 @@ components:
       type: object
       properties:
         expiration:
-          description: The offer expiration time. Once this time is reached, the booking of the offer is not possible anymore.
-          type: string
-          format: date-time
-          example: '2021-04-12T23:20:50.52Z'
+          $ref: '#/components/schemas/Expiration'
         price:
           $ref: '#/components/schemas/Price'
         pricePlansReferences:
           $ref: '#/components/schemas/PricePlansReferences'
 
+    MediaItem:
+      description: Photo or Image
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - photo
+            - video
+        width:
+          type: integer
+        height:
+          type: integer
+        url:
+          type: string
+          format: url
+
     Media:
       type: array
       nullable: true
       items:
-        type: object
-        properties:
-          type:
-            type: string
-            enum:
-              - photo
-              - video
-          width:
-            type: integer
-          height:
-            type: integer
-          url:
-            type: string
-            format: url
+        $ref: '#/components/schemas/MediaItem'
 
     Location:
-      description: An accommodation object
+      description: An accommodation location object
       type: object
       properties:
         type:
@@ -237,6 +242,31 @@ components:
         - hotel
       example: 'hotel'
 
+    ContactAddress:
+      description: Address of a hotel
+      type: object
+      required: ["country", "streetAddress", "locality"]
+      properties:
+        streetAddress:
+          description: address line
+          type: string
+          example: Maskingatan 11
+        premise:
+          type: string
+          example: Gota Alv River
+        locality:
+          description: city name
+          type: string
+          example: Gothenburg
+        postalCode:
+          description: postal code
+          type: string
+          example: 417 64
+        country:
+          description: country
+          type: string
+          example: "China"
+
     ContactInformation:
       type: object
       properties:
@@ -249,27 +279,7 @@ components:
           items:
             $ref: '#/components/schemas/Email'
         address:
-          type: object
-          properties:
-            streetAddress:
-              description: address line
-              type: string
-              example: Maskingatan 11
-            premise:
-              type: string
-              example: Gota Alv River
-            locality:
-              description: city name
-              type: string
-              example: Gothenburg
-            postalCode:
-              description: postal code
-              type: string
-              example: 417 64
-            country:
-              description: country
-              type: string
-              example: 'China'
+          $ref: '#/components/schemas/ContactAddress'
 
     CheckInOutPolicy:
       description: The check-in and check-out time policy, format HH:MM
@@ -284,7 +294,57 @@ components:
           pattern: '^[0-9]{2}:[0-9]{2}$'
           example: '11:00'
 
-    Roomtypes:
+    RoomAmenities:
+      description: The list of amenities available with this room type
+      type: object
+      required: ["name", "description", "otaCode"]
+      properties:
+        name:
+          description: The name of this amenity
+          type: string
+          nullable: true
+        description:
+          description: Description of the amenity
+          type: string
+          nullable: true
+        otaCode:
+          description: The OTA code for this amenity
+          type: string
+
+    RoomSize:
+      description: the size of the room
+      type: object
+      nullable: true
+      properties:
+        value:
+          description: The size value of this room
+          type: number
+          example: 15
+        unit:
+          description: The unit for this room size
+          type: string
+          enum:
+            - metric
+            - imperial
+          example: metric
+          default: metric
+
+    RoomOccupancy:
+      description: Maximum occupancy for this room type
+      type: object
+      required: ["adults", "children"]
+      properties:
+        adults:
+          type: integer
+        children:
+          type: integer
+
+    RoomPolicies:
+      type: object
+      additionalProperties:
+        type: string
+
+    RoomTypes:
       description: A room type object
       type: object
       required:
@@ -305,53 +365,17 @@ components:
           type: string
           example: Standard twin rooms with two single beds
         amenities:
-          description: The list of amenities available with this room type
           type: array
           items:
-            type: object
-            properties:
-              otaCode:
-                description: The OTA code for this amenity
-                type: string
-              name:
-                description: The name of this amenity
-                nullable: true
-                type: string
-              description:
-                description: Description of the amenity
-                nullable: true
-                type: string
+            $ref: '#/components/schemas/RoomAmenities'
         size:
-          description: the size of the room
-          nullable: true
-          type: object
-          properties:
-            value:
-              description: The size value of this room
-              type: number
-              example: 15
-            unit:
-              description: The unit for this room size
-              type: string
-              enum:
-                - metric
-                - imperial
-              example: metric
-              default: metric
+          $ref: '#/components/schemas/RoomSize'
         maximumOccupancy:
-          description: Maximum occupancy for this room type
-          type: object
-          properties:
-            adults:
-              type: integer
-            children:
-              type: integer
+          $ref: '#/components/schemas/RoomOccupancy'
         media:
           $ref: '#/components/schemas/Media'
         policies:
-          type: object
-          additionalProperties:
-            type: string
+          $ref: '#/components/schemas/RoomPolicies'
 
     Accommodation:
       description: An accommodation object
@@ -408,8 +432,9 @@ components:
           description: Type of rooms available for this accommodation
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Roomtypes'
+            $ref: '#/components/schemas/RoomTypes'
 
+    # @todo Review this definition is it still required
     PricePlan:
       description: Describes the attributes of the price plan
       type: object
@@ -418,20 +443,13 @@ components:
           description: The marketing name of this price plan
           type: string
           maxLength: 24
-          example: 'Premium Economy'
+          example: "Premium Economy"
         amenities:
           description: The amenities for this price plan
           type: array
           maxItems: 99
           items:
             type: string
-            enum:
-              - meal
-              - wifi
-              - lounge
-              - fasttrack
-              - priorityBoarding
-              - seatSelection
             example: meal
         checkedBaggages:
           description: the list of checked checkedBaggages
@@ -449,27 +467,21 @@ components:
         - offers
         - accommodations
       properties:
-        # The proposed offers
         offers:
           description: The indexed list of offers
           type: object
           additionalProperties:
             $ref: '#/components/schemas/Offer'
-
         accommodations:
           description: The accommodations matching an search request
           type: object
           additionalProperties:
             $ref: '#/components/schemas/Accommodation'
-
-        # The price plans involved in the offer
         pricePlans:
           description: The indexed list of price plans
           type: object
           additionalProperties:
             $ref: '#/components/schemas/PricePlan'
-
-        # The mapping of the passenger references
         passengers:
           type: object
           additionalProperties:
@@ -497,6 +509,14 @@ components:
       maxLength: 36
       pattern: '^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$'
       example: '11111111-2222-3333-4444-000000000001'
+
+    Address:
+      description: address
+      type: string
+      minLength: 42
+      maxLength: 42
+      pattern: '^0x[a-fA-F0-9]{40}$'
+      example: '0x0000000000000000000000000000000000000000'
 
     TaxItem:
       description: A tax item
@@ -587,6 +607,12 @@ components:
           nullable: true
           example: 'The seat charge is applicable to each one-way flight...'
 
+    Expiration:
+      description: The offer expiration time.
+      type: string
+      format: date-time
+      example: '2021-04-12T23:20:50.52Z'
+
     PricedOfferContent:
       type: object
       required:
@@ -596,10 +622,7 @@ components:
         - disclosures
       properties:
         expiration:
-          description: The offer expiration time.
-          type: string
-          format: date-time
-          example: '2021-04-12T23:20:50.52Z'
+          $ref: '#/components/schemas/Expiration'
         price:
           $ref: '#/components/schemas/Price'
         pricedItems:
@@ -663,8 +686,7 @@ components:
         pricePlansReferences:
           $ref: '#/components/schemas/PricePlansReferences'
         expiration:
-          type: string
-          format: date-time
+          $ref: '#/components/schemas/Expiration'
         arrival:
           type: string
           format: date-time
@@ -752,6 +774,8 @@ components:
             rooms:
               $ref: '#/components/schemas/OffersSearchProviderResponse'
             derbySoft:
+              $ref: '#/components/schemas/OffersSearchProviderResponse'
+            amadeus:
               $ref: '#/components/schemas/OffersSearchProviderResponse'
 servers:
   - url: http://localhost:5000/api
@@ -1679,9 +1703,9 @@ paths:
       parameters:
         - in: path
           name: offerId
-          schema:
-            type: string
           required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
       responses:
         200:
           description: It's ok
@@ -1747,6 +1771,12 @@ paths:
   #booking
   /booking/{address}:
     get:
+      parameters:
+        - in: path
+          name: address
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
       responses:
         200:
           description: It's ok
@@ -1809,6 +1839,12 @@ paths:
                     default: Something went wrong
 
   /booking/{offerId}/guests:
+    parameters:
+      - in: path
+        name: offerId
+        required: true
+        schema:
+          $ref: '#/components/schemas/UUID'
     post:
       requestBody:
         required: true

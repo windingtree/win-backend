@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
   clientJwt,
   derbySoftProxyUrl,
+  getUrlByKey,
   simardJwt,
   simardOrgId,
   simardUrl
@@ -50,10 +51,12 @@ export class BookingService {
       passengers
     };
 
+    const url = getUrlByKey(offer.provider);
+
     let order;
     try {
       const orderReq = await axios.post(
-        `${derbySoftProxyUrl}/orders/createWithOffer`,
+        `${url}/orders/createWithOffer`,
         orderData,
         {
           headers: { Authorization: `Bearer ${clientJwt}` }
