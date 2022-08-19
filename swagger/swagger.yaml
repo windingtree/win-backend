@@ -137,10 +137,11 @@ components:
 
     Amount:
       description: An amount
-      type: number
+      type: string
+      pattern: '^[0-9]+(\.[0-9]+){0,1}$'
       minLength: 1
       maxLength: 99
-      example: '40.00'
+      example: "40.00"
 
     Currency:
       description: The ISO4217 currency code
@@ -153,6 +154,9 @@ components:
     Price:
       description: Price of the service
       type: object
+      required:
+        - currency
+        - public
       properties:
         currency:
           $ref: '#/components/schemas/Currency'
@@ -172,6 +176,12 @@ components:
         taxes:
           # The taxes to be collected when selling this service.
           $ref: '#/components/schemas/Amount'
+
+        isAmountBeforeTax:
+          type: boolean
+
+        decimalPlaces:
+          type: number
 
     PricePlansReferences:
       description: Maps a price plan with the associated elements
@@ -493,6 +503,14 @@ components:
       pattern: '^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$'
       example: '11111111-2222-3333-4444-000000000001'
 
+    Address:
+      description: address
+      type: string
+      minLength: 42
+      maxLength: 42
+      pattern: '^0x[a-fA-F0-9]{40}$'
+      example: '0x0000000000000000000000000000000000000000'
+
     TaxItem:
       description: A tax item
       type: object
@@ -751,6 +769,8 @@ components:
                   type: object
                 status:
                   type: string
+                message:
+                  type: string
             derbySoft:
               type: object
               required:
@@ -761,6 +781,19 @@ components:
                   $ref: '#/components/schemas/SearchResults'
                 status:
                   type: string
+                message:
+                  type: string
+            amadeus:
+              type: object
+              required:
+                - data
+                - status
+              properties:
+                data:
+                  $ref: '#/components/schemas/SearchResults'
+                status:
+                  type: string
+
 servers:
   - url: http://localhost:5000/api
     description: local server
@@ -1687,9 +1720,9 @@ paths:
       parameters:
         - in: path
           name: offerId
-          schema:
-            type: string
           required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
       responses:
         200:
           description: It's ok
@@ -1755,6 +1788,12 @@ paths:
   #booking
   /booking/{address}:
     get:
+      parameters:
+        - in: path
+          name: address
+          required: true
+          schema:
+            $ref: '#/components/schemas/Address'
       responses:
         200:
           description: It's ok
@@ -1817,6 +1856,12 @@ paths:
                     default: Something went wrong
 
   /booking/{offerId}/guests:
+    parameters:
+      - in: path
+        name: offerId
+        required: true
+        schema:
+          $ref: '#/components/schemas/UUID'
     post:
       requestBody:
         required: true
