@@ -14,15 +14,15 @@ export class ProxyController {
         'derbySoft'
       );
 
-      // const amadeus = await proxyService.getDerbySoftOffers(
-      //   req.body,
-      //   'amadeus'
-      // );
+      const amadeus = await proxyService.getDerbySoftOffers(
+        req.body,
+        'amadeus'
+      );
 
       res.json({
         data: {
           derbySoft,
-          // amadeus,
+          amadeus,
           rooms: {
             data: null,
             status: 'success'
