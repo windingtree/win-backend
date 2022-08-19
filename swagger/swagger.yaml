@@ -781,6 +781,13 @@ components:
               $ref: '#/components/schemas/OffersSearchProviderResponse'
             amadeus:
               $ref: '#/components/schemas/OffersSearchProviderResponse'
+
+    PricedOfferResponse:
+      type: object
+      properties:
+        data:
+          $ref: '#/components/schemas/PricedOffer'
+
 servers:
   - url: http://localhost:5000/api
     description: local server
@@ -1716,10 +1723,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    $ref: '#/components/schemas/PricedOffer'
+                $ref: '#/components/schemas/PricedOfferResponse'
         400:
           description: Handled Error
           content:
