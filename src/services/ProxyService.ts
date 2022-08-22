@@ -209,9 +209,7 @@ export class ProxyService {
     for (const provider in providersData) {
       const data: SearchResponse = providersData[provider];
 
-      const accommodations = data.accommodations as {
-        [key: string]: Accommodation;
-      };
+      const accommodations = data.accommodations;
 
       const hotels = new Set<Hotel>();
 
@@ -291,9 +289,12 @@ export class ProxyService {
 
       await offerRepository.bulkCreate(Array.from(offersSet));
 
+      // @todo Fix the typing issue
       commonData.accommodations = {
         ...commonData.accommodations,
-        ...data.accommodations
+        ...(data.accommodations as unknown as {
+          [k: string]: Accommodation;
+        })
       };
       commonData.offers = {
         ...commonData.offers,
