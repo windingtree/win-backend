@@ -284,13 +284,13 @@ describe('test', async () => {
       .expect(401);
   });
 
-  it('check booked with simard api', async () => {
+  it('get user bookings', async () => {
     await requestWithSupertest
       .get(`/api/booking/${(await testWallet).address}`)
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${walletAccessToken}`)
       .expect(200);
-  });
+  }).timeout(5000);
 
   it('delete users', async () => {
     const manager = await userRepository.getUserByLogin(managerLogin);
@@ -369,37 +369,38 @@ describe('test', async () => {
       };
 
       const res = await requestWithSupertest
-        .post('/api/derby-soft/offers/search')
+        .post('/api/hotels/offers/search')
         .send(body)
         .set('Accept', 'application/json')
         .expect(200);
-      expect(res.body.data).to.be.a('object');
-      expect(res.body.data.derbySoft.status).to.be.equal('success');
+      expect(res.body.offers).to.be.a('object');
 
-      offerId = Object.keys(res.body.data.derbySoft.data.offers)[0];
-      amadeusOfferId = Object.keys(res.body.data.amadeus.data.offers)[0];
+      offerId = Object.keys(res.body.offers)[0];
+      amadeusOfferId = Object.keys(res.body.offers)[
+        Object.keys(res.body.offers).length - 1
+      ];
     }).timeout(15000);
 
     it('get offer price', async () => {
       const res = await requestWithSupertest
-        .post(`/api/derby-soft/offers/${offerId}/price`)
+        .post(`/api/hotels/offers/${offerId}/price`)
         .send({})
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(res.body.data).to.be.a('object');
-      pricedOfferId = res.body.data.offerId;
+      expect(res.body).to.be.a('object');
+      pricedOfferId = res.body.offerId;
     }).timeout(10000);
 
     it('get amadeus offer price', async () => {
       const res = await requestWithSupertest
-        .post(`/api/derby-soft/offers/${amadeusOfferId}/price`)
+        .post(`/api/hotels/offers/${amadeusOfferId}/price`)
         .send({})
         .set('Accept', 'application/json')
         .expect(200);
 
-      expect(res.body.data).to.be.a('object');
-      amadeusPricedOfferId = res.body.data.offerId;
+      expect(res.body).to.be.a('object');
+      amadeusPricedOfferId = res.body.offerId;
     }).timeout(10000);
 
     it('set users and get error with wrong data', async () => {
@@ -471,9 +472,9 @@ describe('test', async () => {
 
       const deals = res.body.data;
       const deal = deals.find((v) => v.offerId === pricedOfferId);
-      const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
       expect(deal.status).to.be.equal('booked');
-      //expect(amadeusDeal.status).to.be.equal('booked'); //todo check price changed
+      const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
+      expect(amadeusDeal.status).to.be.equal('booked');
     }).timeout(20000);
   });
 

@@ -141,7 +141,7 @@ components:
       pattern: '^[0-9]+(\.[0-9]+){0,1}$'
       minLength: 1
       maxLength: 99
-      example: "40.00"
+      example: '40.00'
 
     Currency:
       description: The ISO4217 currency code
@@ -230,6 +230,9 @@ components:
     Location:
       description: An accommodation location object
       type: object
+      required:
+        - type
+        - coordinates
       properties:
         type:
           type: string
@@ -249,7 +252,7 @@ components:
     ContactAddress:
       description: Address of a hotel
       type: object
-      required: ["country", "streetAddress", "locality"]
+      required: ['country', 'streetAddress', 'locality']
       properties:
         streetAddress:
           description: address line
@@ -269,7 +272,7 @@ components:
         country:
           description: country
           type: string
-          example: "China"
+          example: 'China'
 
     ContactInformation:
       type: object
@@ -301,7 +304,7 @@ components:
     RoomAmenities:
       description: The list of amenities available with this room type
       type: object
-      required: ["name", "description", "otaCode"]
+      required: ['name', 'description', 'otaCode']
       properties:
         name:
           description: The name of this amenity
@@ -336,7 +339,7 @@ components:
     RoomOccupancy:
       description: Maximum occupancy for this room type
       type: object
-      required: ["adults", "children"]
+      required: ['adults', 'children']
       properties:
         adults:
           type: integer
@@ -447,7 +450,7 @@ components:
           description: The marketing name of this price plan
           type: string
           maxLength: 24
-          example: "Premium Economy"
+          example: 'Premium Economy'
         amenities:
           description: The amenities for this price plan
           type: array
@@ -1724,6 +1727,138 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PricedOfferResponse'
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
+
+  /hotels/offers/search:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OffersSearchRequest'
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
+
+  /hotels/offers/{offerId}/price:
+    post:
+      parameters:
+        - in: path
+          name: offerId
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PricedOffer'
         400:
           description: Handled Error
           content:

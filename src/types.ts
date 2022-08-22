@@ -13,6 +13,7 @@ import {
   RoomTypes,
   SearchResponse
 } from '@windingtree/glider-types/types/derbysoft';
+import { Location as WinLocation } from '@windingtree/glider-types/types/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export interface User {
@@ -89,11 +90,17 @@ export interface SearchBody {
   passengers: [PassengerSearch, ...PassengerSearch[]];
 }
 
+/**
+ * @deprecated
+ */
 export interface MongoLocation {
   type: string;
   coordinates: number[];
 }
 
+/**
+ * @deprecated
+ */
 export interface Hotel {
   _id?: ObjectId;
   id: string;
@@ -103,7 +110,7 @@ export interface Hotel {
   name: string;
   type: AccommodationType;
   description: string;
-  location: MongoLocation;
+  location: WinLocation;
   rating: number;
   contactInformation: ContactInformation;
   checkinoutPolicy: CheckInOutPolicy;

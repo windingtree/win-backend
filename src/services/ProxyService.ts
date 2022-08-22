@@ -1,11 +1,11 @@
-import axios from 'axios';
-import { clientJwt, getUrlByKey } from '../config';
+import axios, { AxiosResponse } from 'axios';
+import { clientJwt, getUrlByKey, providersUrls } from '../config';
 import hotelRepository from '../repositories/HotelRepository';
 import { makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
 import {
-  Accommodation,
+  Accommodation as AccommodationOld,
   SearchCriteria,
   SearchResponse
 } from '@windingtree/glider-types/types/derbysoft';
@@ -15,13 +15,22 @@ import {
   HotelProviders,
   MongoLocation,
   OfferDBValue,
+  PricedOfferData,
   SearchBody
 } from '../types';
 import ApiError from '../exceptions/ApiError';
 import { utils } from 'ethers';
+import {
+  Accommodation,
+  Location,
+  SearchResults
+} from '@windingtree/glider-types/types/win';
 
 export class ProxyService {
-  public async getDerbySoftOffers(
+  /**
+   * @deprecated
+   */
+  public async getDerbySoftOffersOld(
     body: SearchBody,
     provider: HotelProviders
   ): Promise<DerbySoftData> {
@@ -57,7 +66,7 @@ export class ProxyService {
     const data: SearchResponse = res.data;
 
     const accommodations = data.accommodations as {
-      [key: string]: Accommodation;
+      [key: string]: AccommodationOld;
     };
 
     const hotels = new Set<Hotel>();
@@ -143,7 +152,7 @@ export class ProxyService {
     await offerRepository.bulkCreate(Array.from(offersSet));
 
     const sortedAccommodations: {
-      [key: string]: Accommodation;
+      [key: string]: AccommodationOld;
     } = {};
 
     sortedHotels.forEach((hotel: Hotel) => {
@@ -158,7 +167,179 @@ export class ProxyService {
     };
   }
 
-  public async getDerbySoftOfferPrice(offerId: string): Promise<DerbySoftData> {
+  public async getDerbySoftOffers(body: SearchBody): Promise<SearchResults> {
+    const { lon, lat, radius } = body.accommodation.location;
+    const { arrival, departure } = body.accommodation;
+    const rectangle = makeCircumscribedSquare(lon, lat, radius);
+
+    const resBody: SearchCriteria = {
+      ...body,
+      accommodation: {
+        ...body.accommodation,
+        location: { rectangle }
+      }
+    };
+
+    const promises: Promise<AxiosResponse>[] = [];
+    const providersNameArray: string[] = [];
+
+    for (const providerName in providersUrls) {
+      promises.push(
+        this.getProviderPromise(providersUrls[providerName], resBody)
+      );
+
+      providersNameArray.push(providerName);
+    }
+
+    const providersDataResponses = await Promise.allSettled(promises);
+    const providersData = {};
+    providersDataResponses.forEach((item, key) => {
+      //fulfilled is Promise.allSettled success status
+      if (item.status === 'fulfilled') {
+        providersData[providersNameArray[key]] = item.value.data;
+      }
+    });
+
+    const commonData: SearchResults = {
+      accommodations: {},
+      offers: {},
+      pricePlans: {}
+    };
+
+    for (const provider in providersData) {
+      const data: SearchResponse = providersData[provider];
+
+      const accommodations = data.accommodations as {
+        [key: string]: Accommodation;
+      };
+
+      const hotels = new Set<Hotel>();
+
+      for (const [key, value] of Object.entries(accommodations)) {
+        const location: MongoLocation = {
+          coordinates: [
+            Number(value.location?.long),
+            Number(value.location?.lat)
+          ],
+          type: 'Point'
+        };
+
+        const hotel = {
+          ...value,
+          id: key,
+          provider: provider,
+          createdAt: new Date(),
+          location
+        } as Hotel;
+
+        hotels.add(hotel);
+      }
+
+      await hotelRepository.bulkCreate(Array.from(hotels));
+
+      const sortedHotels = Array.from(hotels);
+
+      const { offers } = data;
+
+      const offersSet = new Set<OfferDBValue>();
+
+      Object.keys(offers).map((k) => {
+        const offer = offers[k];
+        const { pricePlansReferences } = offer;
+        const { roomType } =
+          pricePlansReferences[Object.keys(pricePlansReferences)[0]];
+
+        const accommodation = {
+          ...sortedHotels.find(
+            (v) =>
+              v.id ===
+              pricePlansReferences[Object.keys(pricePlansReferences)[0]]
+                .accommodation
+          )
+        } as Hotel;
+
+        if (accommodation.roomTypes && accommodation.roomTypes[roomType]) {
+          accommodation.roomTypes = {
+            [roomType]: accommodation.roomTypes[roomType]
+          };
+        }
+
+        offer.price = {
+          currency: offer.price.currency,
+          private: offer.price.private ? String(offer.price.priva) : undefined,
+          public: String(offer.price.public),
+          commission: offer.price.commission
+            ? String(offer.price.commission)
+            : undefined,
+          taxes: offer.price.taxes ? String(offer.price.taxes) : undefined,
+          isAmountBeforeTax: offer.price.isAmountBeforeTax,
+          decimalPlaces: offer.price.decimalPlaces
+        };
+
+        const offerDBValue: OfferDBValue = {
+          id: k,
+          accommodation,
+          arrival: new Date(arrival),
+          departure: new Date(departure),
+          expiration: new Date(offer.expiration),
+          price: offer.price,
+          provider: provider as HotelProviders
+        };
+
+        offersSet.add(offerDBValue);
+      });
+
+      await offerRepository.bulkCreate(Array.from(offersSet));
+
+      commonData.accommodations = {
+        ...commonData.accommodations,
+        ...data.accommodations
+      };
+      commonData.offers = {
+        ...commonData.offers,
+        ...data.offers
+      };
+      commonData.pricePlans = {
+        ...commonData.pricePlans,
+        ...data.pricePlans
+      };
+    }
+
+    const sortedHotels = await hotelRepository.searchByRadius(
+      lon,
+      lat,
+      radius,
+      Object.keys(commonData.accommodations)
+    );
+
+    const sortedAccommodations: {
+      [key: string]: Accommodation;
+    } = {};
+
+    sortedHotels.forEach((hotel: Hotel) => {
+      sortedAccommodations[hotel.id] = {
+        ...commonData.accommodations[hotel.id],
+        location: hotel.location as Location
+      };
+    });
+
+    commonData.accommodations = sortedAccommodations;
+
+    return commonData;
+  }
+
+  private getProviderPromise(
+    providerUrl: string,
+    resBody: SearchCriteria
+  ): Promise<AxiosResponse> {
+    return axios.post(`${providerUrl}/offers/search`, resBody, {
+      headers: { Authorization: `Bearer ${clientJwt}` }
+    });
+  }
+
+  public async getDerbySoftOfferPrice(
+    offerId: string
+  ): Promise<PricedOfferData> {
     const offer = await offerRepository.getOne(offerId);
 
     if (!offer) {
@@ -180,11 +361,7 @@ export class ProxyService {
       if (e.status !== 404) {
         LogService.red(e);
       }
-      return {
-        data: null,
-        status: e.response.status,
-        message: e.response.data.error
-      };
+      throw e;
     }
 
     const { data } = res;
@@ -230,7 +407,7 @@ export class ProxyService {
       provider: offer.provider
     };
 
-    await offerRepository.create(offerDBValue);
+    await offerRepository.upsertOffer(offerDBValue);
 
     data.accommodation = {
       ...offer.accommodation,
@@ -242,10 +419,7 @@ export class ProxyService {
       utils.formatBytes32String('win_win_provider')
     );
 
-    return {
-      data,
-      status: 'success'
-    };
+    return data;
   }
 }
 
