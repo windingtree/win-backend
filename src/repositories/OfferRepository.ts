@@ -35,6 +35,16 @@ export class OfferRepository {
 
     return await collection.findOne({ id: offerId });
   }
+
+  public async upsertOffer(offer: OfferDBValue): Promise<void> {
+    const collection = await this.getCollection();
+
+    await collection.updateOne(
+      { id: offer.id },
+      { $set: { ...offer } },
+      { upsert: true }
+    );
+  }
 }
 
 export default new OfferRepository();

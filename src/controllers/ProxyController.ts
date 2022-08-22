@@ -3,18 +3,21 @@ import { NextFunction, Response } from 'express';
 import proxyService from '../services/ProxyService';
 
 export class ProxyController {
-  public async searchOffers(
+  /**
+   * @deprecated
+   */
+  public async searchOffersOld(
     req: AuthRequest,
     res: Response,
     next: NextFunction
   ) {
     try {
-      const derbySoft = await proxyService.getDerbySoftOffers(
+      const derbySoft = await proxyService.getDerbySoftOffersOld(
         req.body,
         'derbySoft'
       );
 
-      const amadeus = await proxyService.getDerbySoftOffers(
+      const amadeus = await proxyService.getDerbySoftOffersOld(
         req.body,
         'amadeus'
       );
@@ -29,6 +32,38 @@ export class ProxyController {
           }
         }
       });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async searchOffers(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const offers = await proxyService.getDerbySoftOffers(req.body);
+
+      res.json(offers);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
+   * @deprecated
+   */
+  public async offerPriceOld(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { offerId } = req.params;
+      const data = await proxyService.getDerbySoftOfferPrice(offerId);
+
+      res.json({ data, status: 'success' });
     } catch (e) {
       next(e);
     }
