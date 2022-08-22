@@ -791,6 +791,35 @@ components:
         data:
           $ref: '#/components/schemas/PricedOffer'
 
+    WalletAuthRequest:
+      description: Wallet authentication request
+      type: object
+      required:
+        - chainId
+        - signature
+        - wallet
+      properties:
+        chainId:
+          type: number
+          description: chain id
+        signature:
+          type: string
+        wallet:
+          type: string
+          description: address
+
+    WalletAuthResponse:
+      description: Wallet authentication response
+      type: object
+      required:
+        - accessToken
+        - refreshToken
+      properties:
+        accessToken:
+          type: string
+        refreshToken:
+          type: string
+
 servers:
   - url: http://localhost:5000/api
     description: local server
@@ -1488,38 +1517,14 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - chainId
-                - signature
-                - wallet
-              properties:
-                chainId:
-                  type: number
-                  description: chain id
-                signature:
-                  type: string
-                wallet:
-                  type: string
-                  description: address
+              $ref: '#/components/schemas/WalletAuthRequest'
       responses:
         200:
           description: It's ok
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    required:
-                      - accessToken
-                      - refreshToken
-                    properties:
-                      accessToken:
-                        type: string
-                      refreshToken:
-                        type: string
+                $ref: '#/components/schemas/WalletAuthResponse'
         400:
           description: Handled Error
           content:

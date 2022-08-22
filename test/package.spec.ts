@@ -248,11 +248,11 @@ describe('test', async () => {
       .set('Cookie', [`secretToken=${secretToken}`])
       .expect(200);
 
-    walletAccessToken = res.body.data.accessToken;
-    walletRefreshToken = res.body.data.refreshToken;
+    walletAccessToken = res.body.accessToken;
+    walletRefreshToken = res.body.refreshToken;
 
-    expect(res.body.data.accessToken).to.be.a('string');
-    expect(res.body.data.refreshToken).to.be.a('string');
+    expect(res.body.accessToken).to.be.a('string');
+    expect(res.body.refreshToken).to.be.a('string');
   });
 
   it('refresh with wallet', async () => {
@@ -262,11 +262,11 @@ describe('test', async () => {
       .set('Cookie', [`refreshToken=${walletRefreshToken}`])
       .expect(200);
 
-    walletAccessToken = res.body.data.accessToken;
-    walletRefreshToken = res.body.data.refreshToken;
+    walletAccessToken = res.body.accessToken;
+    walletRefreshToken = res.body.refreshToken;
 
-    expect(res.body.data.accessToken).to.be.a('string');
-    expect(res.body.data.refreshToken).to.be.a('string');
+    expect(res.body.accessToken).to.be.a('string');
+    expect(res.body.refreshToken).to.be.a('string');
   });
 
   it('should throw err when get data with another address', async () => {

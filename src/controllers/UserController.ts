@@ -173,7 +173,7 @@ export class UserController {
         httpOnly: true
       });
 
-      return res.json({ data: { ...tokens } });
+      return res.json({ ...tokens });
     } catch (e) {
       next(e);
     }
@@ -193,7 +193,7 @@ export class UserController {
         httpOnly: true
       });
 
-      return res.json({ data: { ...tokens } });
+      return res.json({ ...tokens });
     } catch (e) {
       next(e);
     }
