@@ -473,8 +473,8 @@ describe('test', async () => {
       const deals = res.body.data;
       const deal = deals.find((v) => v.offerId === pricedOfferId);
       expect(deal.status).to.be.equal('booked');
-      //const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
-      //expect(amadeusDeal.status).to.be.equal('booked');
+      const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
+      expect(amadeusDeal.status).to.be.equal('booked');
     }).timeout(20000);
   });
 
