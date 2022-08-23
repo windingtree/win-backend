@@ -219,7 +219,7 @@ describe('test', async () => {
 
   it('generate secret token', async () => {
     const res = await requestWithSupertest
-      .get('/api/secret')
+      .get('/api/bookings/auth/secret')
       .set('Accept', 'application/json')
       .expect(200);
 
@@ -238,14 +238,14 @@ describe('test', async () => {
     const signature = await wallet._signTypedData(domain, types, value);
 
     const res = await requestWithSupertest
-      .post('/api/wallet/auth')
+      .post('/api/bookings/auth')
       .send({
         chainId,
         signature,
+        secret: secretToken,
         wallet: wallet.address
       })
       .set('Accept', 'application/json')
-      .set('Cookie', [`secretToken=${secretToken}`])
       .expect(200);
 
     walletAccessToken = res.body.accessToken;
@@ -257,7 +257,7 @@ describe('test', async () => {
 
   it('refresh with wallet', async () => {
     const res = await requestWithSupertest
-      .post('/api/wallet/refresh')
+      .post('/api/bookings/auth/refresh')
       .set('Accept', 'application/json')
       .set('Cookie', [`refreshToken=${walletRefreshToken}`])
       .expect(200);

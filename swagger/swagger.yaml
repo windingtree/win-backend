@@ -795,12 +795,13 @@ components:
         data:
           $ref: '#/components/schemas/PricedOffer'
 
-    WalletAuthRequest:
+    BookingsAuthRequest:
       description: Wallet authentication request
       type: object
       required:
         - chainId
         - signature
+        - secret
         - wallet
       properties:
         chainId:
@@ -808,12 +809,23 @@ components:
           description: chain id
         signature:
           type: string
+        secret:
+          type: string
         wallet:
           type: string
           description: address
 
-    WalletAuthResponse:
-      description: Wallet authentication response
+    BookingsAuthSecretResponse:
+      description: Bookings authentication secret response
+      type: object
+      required:
+        - secret
+      properties:
+        secret:
+          type: string
+
+    BookingsAuthResponse:
+      description: Bookings authentication response
       type: object
       required:
         - accessToken
@@ -1442,7 +1454,7 @@ paths:
                     type: string
                     default: Something went wrong
 
-  /secret:
+  /bookings/auth/secret:
     get:
       summary: get secret
       tags: [Auth service]
@@ -1452,15 +1464,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    required:
-                      - secret
-                    properties:
-                      secret:
-                        type: string
+                $ref: '#/components/schemas/BookingsAuthSecretResponse'
         400:
           description: Handled Error
           content:
@@ -1512,7 +1516,7 @@ paths:
                     type: string
                     default: Something went wrong
 
-  /wallet/auth:
+  /bookings/auth:
     post:
       summary: auth
       tags: [Auth service]
@@ -1521,14 +1525,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/WalletAuthRequest'
+              $ref: '#/components/schemas/BookingsAuthRequest'
       responses:
         200:
           description: It's ok
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WalletAuthResponse'
+                $ref: '#/components/schemas/BookingsAuthResponse'
         400:
           description: Handled Error
           content:
@@ -1580,7 +1584,7 @@ paths:
                     type: string
                     default: Something went wrong
 
-  /wallet/refresh:
+  /bookings/auth/refresh:
     post:
       summary: refresh
       tags: [Auth service]
@@ -1590,18 +1594,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  data:
-                    type: object
-                    required:
-                      - accessToken
-                      - refreshToken
-                    properties:
-                      accessToken:
-                        type: string
-                      refreshToken:
-                        type: string
+                $ref: '#/components/schemas/BookingsAuthResponse'
         400:
           description: Handled Error
           content:

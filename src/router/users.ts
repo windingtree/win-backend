@@ -40,7 +40,7 @@ export default (router: Router): void => {
 
   router.post('/user/logout', authMiddleware, userController.logout);
 
-  router.get('/secret', userController.getSecret);
-  router.post('/wallet/auth', userController.walletAuth);
-  router.post('/wallet/refresh', userController.walletRefresh);
+  router.get('/bookings/auth/secret', userController.getSecret);
+  router.post('/bookings/auth', userController.walletAuth);
+  router.post('/bookings/auth/refresh', userController.walletRefresh);
 };

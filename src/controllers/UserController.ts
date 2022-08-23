@@ -158,13 +158,12 @@ export class UserController {
 
   public async walletAuth(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { secretToken } = req.cookies;
-      const { chainId, signature, wallet } = req.body;
+      const { chainId, signature, secret, wallet } = req.body;
 
       const tokens = await userService.walletAuth(
         chainId,
         signature,
-        secretToken,
+        secret,
         wallet
       );
 
