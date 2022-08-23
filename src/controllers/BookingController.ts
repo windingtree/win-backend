@@ -18,7 +18,7 @@ export class BookingController {
 
       const bookings = await bookingService.myBookings(address);
 
-      res.json({ data: bookings });
+      res.json(bookings);
     } catch (e) {
       next(e);
     }
