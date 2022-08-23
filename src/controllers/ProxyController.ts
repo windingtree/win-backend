@@ -1,6 +1,7 @@
 import { AuthRequest } from '../types';
 import { NextFunction, Response } from 'express';
 import proxyService from '../services/ProxyService';
+import ApiError from '../exceptions/ApiError';
 
 export class ProxyController {
   /**
@@ -43,6 +44,12 @@ export class ProxyController {
     next: NextFunction
   ) {
     try {
+      const { arrival, departure } = req.body.accommodation;
+
+      if (new Date() > new Date(arrival) || new Date() > new Date(departure)) {
+        throw ApiError.BadRequest('Dates must be in future');
+      }
+
       const offers = await proxyService.getDerbySoftOffers(req.body);
 
       res.json(offers);

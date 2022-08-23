@@ -458,11 +458,11 @@ describe('test', async () => {
         .send(guests)
         .set('Accept', 'application/json')
         .expect(200);
-      await sleep(15000);
-    }).timeout(20000);
+      await sleep(20000);
+    }).timeout(25000);
 
     it('check booked with simard api', async () => {
-      await sleep(15000);
+      await sleep(20000);
 
       const res = await requestWithSupertest
         .get(`/api/booking/${(await testWallet).address}`)
@@ -475,7 +475,7 @@ describe('test', async () => {
       expect(deal.status).to.be.equal('booked');
       const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
       expect(amadeusDeal.status).to.be.equal('booked');
-    }).timeout(20000);
+    }).timeout(25000);
   });
 
   after(async () => {
