@@ -2,6 +2,7 @@ import { AuthRequest } from '../types';
 import { NextFunction, Response } from 'express';
 import proxyService from '../services/ProxyService';
 import ApiError from '../exceptions/ApiError';
+import { DateTime } from 'luxon';
 
 export class ProxyController {
   /**
@@ -45,8 +46,11 @@ export class ProxyController {
   ) {
     try {
       const { arrival, departure } = req.body.accommodation;
-
-      if (new Date() > new Date(arrival) || new Date() > new Date(departure)) {
+      const today = DateTime.now().startOf('day');
+      if (
+        today > DateTime.fromISO(arrival).startOf('day') ||
+        today > DateTime.fromISO(departure).startOf('day')
+      ) {
         throw ApiError.BadRequest('Dates must be in future');
       }
 
