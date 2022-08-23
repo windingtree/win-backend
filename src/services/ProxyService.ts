@@ -306,6 +306,13 @@ export class ProxyService {
       };
     }
 
+    if (
+      !Object.keys(commonData.accommodations).length ||
+      !Object.keys(commonData.offers).length
+    ) {
+      throw ApiError.NotFound('Offers not found');
+    }
+
     const sortedHotels = await hotelRepository.searchByRadius(
       lon,
       lat,

@@ -21,22 +21,25 @@ components:
           enum: ['ADT']
         count:
           type: number
+          minimum: 1
     ChildGuest:
       type: object
       required:
         - type
         - count
-        - childrenAges
       properties:
         type:
           type: string
           enum: ['CHD']
         count:
           type: number
+          minimum: 0
         childrenAges:
           type: array
           items:
             type: number
+            minimum: 2
+            maximum: 12
 
     Email:
       description: An email
@@ -761,6 +764,7 @@ components:
               format: date-time
             roomCount:
               type: number
+              minimum: 1
         passengers:
           type: array
           items:
