@@ -150,7 +150,7 @@ export class UserController {
         httpOnly: true
       });
 
-      return res.json({ data: { secret } });
+      return res.json({ secret });
     } catch (e) {
       next(e);
     }
