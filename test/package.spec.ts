@@ -225,7 +225,7 @@ describe('test', async () => {
 
     secretToken = res.headers['set-cookie'][0];
     secretToken = secretToken.split('=')[1].split(';')[0];
-    const dataSecretToken = res.body.data.secret;
+    const dataSecretToken = res.body.secret;
     expect(secretToken).to.be.a('string');
     expect(secretToken).to.be.eq(dataSecretToken);
   });
