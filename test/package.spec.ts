@@ -363,7 +363,7 @@ describe('test', async () => {
           {
             type: 'CHD',
             count: 1,
-            childrenAges: [13]
+            childrenAges: [12]
           }
         ]
       };
