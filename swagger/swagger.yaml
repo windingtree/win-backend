@@ -728,6 +728,23 @@ components:
         orderId:
           type: string
 
+    BookingRecord:
+      description: Complete booking information object
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/Deal'
+      properties:
+        message:
+          type: string
+        orderId:
+          type: string
+
+    BookingResponse:
+      description: Bookings of address
+      type: array
+      items:
+        $ref: '#/components/schemas/BookingRecord'
+
     OffersSearchRequest:
       description: Offers search request
       type: object
@@ -1928,10 +1945,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  offer:
-                    $ref: '#/components/schemas/Deal'
+                $ref: '#/components/schemas/BookingResponse'
         400:
           description: Handled Error
           content:
