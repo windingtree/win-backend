@@ -412,7 +412,7 @@ describe('test', async () => {
           firstnames: ['Bob'],
           gender: 'Male',
           birthdate: '1980-03-21T00:00:00Z',
-          contactInformation: [32123456789, 'contact@org.co.uk']
+          contactInformation: ['contact@org.co.uk', 32123456789]
         }
       ];
       await requestWithSupertest
@@ -431,7 +431,7 @@ describe('test', async () => {
           firstnames: ['Bob'],
           gender: 'Male',
           birthdate: '1980-03-21T00:00:00Z',
-          contactInformation: ['+32123456789', 'contact@org.co.uk']
+          contactInformation: ['contact@org.co.uk', '+32123456789']
         }
       ];
       await requestWithSupertest
@@ -450,7 +450,7 @@ describe('test', async () => {
           firstnames: ['Bob'],
           gender: 'Male',
           birthdate: '1980-03-21T00:00:00Z',
-          contactInformation: ['+32123456789', 'contact@org.co.uk']
+          contactInformation: ['contact@org.co.uk', '+32123456789']
         }
       ];
       await requestWithSupertest
