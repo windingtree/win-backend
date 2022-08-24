@@ -110,6 +110,7 @@ export interface DealDBValue {
   createdAt: Date;
   orderId?: string;
   message?: string;
+  rewardOption: RewardTypes;
 }
 
 export interface DealDTO {
@@ -124,3 +125,12 @@ export interface DealDTO {
 export type RouterInitializer = (router: Router) => void;
 
 export type HotelProviders = 'derbySoft' | 'amadeus';
+
+export type RewardTypes = undefined | 'CO2_OFFSET' | 'TOKEN';
+
+// TODO: use type from glider-types when swagger is re-generated
+export interface RewardOption {
+  rewardType: RewardTypes;
+  quantity: string;
+  tokenName: string;
+}

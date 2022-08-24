@@ -6,9 +6,9 @@ info:
 components:
   securitySchemes:
     bearerAuth:
-      type: 'http'
-      scheme: 'bearer'
-      bearerFormat: 'JWT'
+      type: "http"
+      scheme: "bearer"
+      bearerFormat: "JWT"
   schemas:
     AdultGuest:
       type: object
@@ -18,7 +18,7 @@ components:
       properties:
         type:
           type: string
-          enum: ['ADT']
+          enum: ["ADT"]
         count:
           type: number
           minimum: 1
@@ -30,7 +30,7 @@ components:
       properties:
         type:
           type: string
-          enum: ['CHD']
+          enum: ["CHD"]
         count:
           type: number
           minimum: 0
@@ -50,20 +50,20 @@ components:
     PhoneNumber:
       description: A phone number
       type: string
-      pattern: '^([+]{0,1})([0-9- ()/]+)$'
-      example: '+32123456789'
+      pattern: "^([+]{0,1})([0-9- ()/]+)$"
+      example: "+32123456789"
 
     Name:
       description: First, middle or last name
       type: string
       minLength: 1
       maxLength: 42
-      example: 'Bob'
+      example: "Bob"
 
     Guest:
       description: A representation of a Guest
       type: object
-      required: ['type']
+      required: ["type"]
       properties:
         type:
           description: The Guest type code as per IATA definitions
@@ -86,28 +86,28 @@ components:
           enum:
             - MR
             - MRS
-          example: 'MR'
+          example: "MR"
         lastnames:
           description: The list of last names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
-            $ref: '#/components/schemas/Name'
+            $ref: "#/components/schemas/Name"
         firstnames:
           description: The list of first names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
-            $ref: '#/components/schemas/Name'
+            $ref: "#/components/schemas/Name"
         middlenames:
           description: The list of middle names of this Guest
           type: array
           minItems: 1
           maxItems: 5
           items:
-            $ref: '#/components/schemas/Name'
+            $ref: "#/components/schemas/Name"
         gender:
           description: The gender of the Guest
           type: string
@@ -119,23 +119,23 @@ components:
           description: The birthdate of the Guest
           type: string
           format: date-time
-          example: '1980-03-21'
+          example: "1980-03-21"
         contactInformation:
           description: The contact informations of the Guest
           type: array
           minItems: 1
           items:
             oneOf:
-              - $ref: '#/components/schemas/PhoneNumber'
-              - $ref: '#/components/schemas/Email'
+              - $ref: "#/components/schemas/PhoneNumber"
+              - $ref: "#/components/schemas/Email"
       example:
         {
-          'type': 'ADT',
-          'lastnames': ['Marley'],
-          'firstnames': ['Bob'],
-          'gender': 'Male',
-          'birthdate': '1980-03-21',
-          'contactInformation': ['+32123456789', 'contact@org.co.uk']
+          "type": "ADT",
+          "lastnames": ["Marley"],
+          "firstnames": ["Bob"],
+          "gender": "Male",
+          "birthdate": "1980-03-21",
+          "contactInformation": ["+32123456789", "contact@org.co.uk"],
         }
 
     Amount:
@@ -144,15 +144,15 @@ components:
       pattern: '^[0-9]+(\.[0-9]+){0,1}$'
       minLength: 1
       maxLength: 99
-      example: '40.00'
+      example: "40.00"
 
     Currency:
       description: The ISO4217 currency code
       type: string
-      pattern: '^[A-Z]{3}$'
+      pattern: "^[A-Z]{3}$"
       minLength: 3
       maxLength: 3
-      example: 'EUR'
+      example: "EUR"
 
     Price:
       description: Price of the service
@@ -162,15 +162,15 @@ components:
         - public
       properties:
         currency:
-          $ref: '#/components/schemas/Currency'
+          $ref: "#/components/schemas/Currency"
         private:
-          $ref: '#/components/schemas/Amount'
+          $ref: "#/components/schemas/Amount"
         public:
-          $ref: '#/components/schemas/Amount'
+          $ref: "#/components/schemas/Amount"
         commission:
-          $ref: '#/components/schemas/Amount'
+          $ref: "#/components/schemas/Amount"
         taxes:
-          $ref: '#/components/schemas/Amount'
+          $ref: "#/components/schemas/Amount"
         isAmountBeforeTax:
           type: boolean
         decimalPlaces:
@@ -185,12 +185,12 @@ components:
           accommodation:
             description: reference of the accommodation
             type: string
-            example: 'prov.1234'
+            example: "prov.1234"
           roomType:
             description: reference of the room type in the accommodation
             type: string
-            example: 'ND'
-      example: { 'BAR': { 'accommodation': 'prov.1234', 'roomType': 'ND' } }
+            example: "ND"
+      example: { "BAR": { "accommodation": "prov.1234", "roomType": "ND" } }
 
     Offer:
       description: An offer object
@@ -201,11 +201,11 @@ components:
         - pricePlansReferences
       properties:
         expiration:
-          $ref: '#/components/schemas/Expiration'
+          $ref: "#/components/schemas/Expiration"
         price:
-          $ref: '#/components/schemas/Price'
+          $ref: "#/components/schemas/Price"
         pricePlansReferences:
-          $ref: '#/components/schemas/PricePlansReferences'
+          $ref: "#/components/schemas/PricePlansReferences"
 
     MediaItem:
       description: Photo or Image
@@ -228,7 +228,7 @@ components:
       type: array
       nullable: true
       items:
-        $ref: '#/components/schemas/MediaItem'
+        $ref: "#/components/schemas/MediaItem"
 
     Location:
       description: An accommodation location object
@@ -250,12 +250,12 @@ components:
       maxLength: 24
       enum:
         - hotel
-      example: 'hotel'
+      example: "hotel"
 
     ContactAddress:
       description: Address of a hotel
       type: object
-      required: ['country', 'streetAddress', 'locality']
+      required: ["country", "streetAddress", "locality"]
       properties:
         streetAddress:
           description: address line
@@ -275,7 +275,7 @@ components:
         country:
           description: country
           type: string
-          example: 'China'
+          example: "China"
 
     ContactInformation:
       type: object
@@ -283,13 +283,13 @@ components:
         phoneNumbers:
           type: array
           items:
-            $ref: '#/components/schemas/PhoneNumber'
+            $ref: "#/components/schemas/PhoneNumber"
         emails:
           type: array
           items:
-            $ref: '#/components/schemas/Email'
+            $ref: "#/components/schemas/Email"
         address:
-          $ref: '#/components/schemas/ContactAddress'
+          $ref: "#/components/schemas/ContactAddress"
 
     CheckInOutPolicy:
       description: The check-in and check-out time policy, format HH:MM
@@ -297,17 +297,17 @@ components:
       properties:
         checkinTime:
           type: string
-          pattern: '^[0-9]{2}:[0-9]{2}$'
-          example: '15:00'
+          pattern: "^[0-9]{2}:[0-9]{2}$"
+          example: "15:00"
         checkoutTime:
           type: string
-          pattern: '^[0-9]{2}:[0-9]{2}$'
-          example: '11:00'
+          pattern: "^[0-9]{2}:[0-9]{2}$"
+          example: "11:00"
 
     RoomAmenities:
       description: The list of amenities available with this room type
       type: object
-      required: ['name', 'description', 'otaCode']
+      required: ["name", "description", "otaCode"]
       properties:
         name:
           description: The name of this amenity
@@ -342,7 +342,7 @@ components:
     RoomOccupancy:
       description: Maximum occupancy for this room type
       type: object
-      required: ['adults', 'children']
+      required: ["adults", "children"]
       properties:
         adults:
           type: integer
@@ -377,15 +377,15 @@ components:
         amenities:
           type: array
           items:
-            $ref: '#/components/schemas/RoomAmenities'
+            $ref: "#/components/schemas/RoomAmenities"
         size:
-          $ref: '#/components/schemas/RoomSize'
+          $ref: "#/components/schemas/RoomSize"
         maximumOccupancy:
-          $ref: '#/components/schemas/RoomOccupancy'
+          $ref: "#/components/schemas/RoomOccupancy"
         media:
-          $ref: '#/components/schemas/Media'
+          $ref: "#/components/schemas/Media"
         policies:
-          $ref: '#/components/schemas/RoomPolicies'
+          $ref: "#/components/schemas/RoomPolicies"
 
     Accommodation:
       description: An accommodation object
@@ -405,7 +405,7 @@ components:
         - roomTypes
       properties:
         location:
-          $ref: '#/components/schemas/Location'
+          $ref: "#/components/schemas/Location"
         _id:
           description: mongo id of the hotel
           type: string
@@ -415,13 +415,13 @@ components:
         hotelId:
           description: Id of the hotel
           type: string
-          example: 'GOH202'
+          example: "GOH202"
         name:
           description: The name of the property or accommodation
           type: string
           example: Comfort Hotel Xpress Stockholm Central
         type:
-          $ref: '#/components/schemas/AccommodationType'
+          $ref: "#/components/schemas/AccommodationType"
         description:
           description: The description of the property
           type: string
@@ -430,20 +430,20 @@ components:
           type: integer
           example: 3
         contactInformation:
-          $ref: '#/components/schemas/ContactInformation'
+          $ref: "#/components/schemas/ContactInformation"
         checkinoutPolicy:
-          $ref: '#/components/schemas/CheckInOutPolicy'
+          $ref: "#/components/schemas/CheckInOutPolicy"
         otherPolicies:
           type: array
           items:
             type: string
         media:
-          $ref: '#/components/schemas/Media'
+          $ref: "#/components/schemas/Media"
         roomTypes:
           description: Type of rooms available for this accommodation
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/RoomTypes'
+            $ref: "#/components/schemas/RoomTypes"
 
     # @todo Review this definition is it still required
     PricePlan:
@@ -454,7 +454,7 @@ components:
           description: The marketing name of this price plan
           type: string
           maxLength: 24
-          example: 'Premium Economy'
+          example: "Premium Economy"
         amenities:
           description: The amenities for this price plan
           type: array
@@ -482,23 +482,23 @@ components:
           description: The indexed list of offers
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Offer'
+            $ref: "#/components/schemas/Offer"
         accommodations:
           description: The accommodations matching an search request
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Accommodation'
+            $ref: "#/components/schemas/Accommodation"
         pricePlans:
           description: The indexed list of price plans
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/PricePlan'
+            $ref: "#/components/schemas/PricePlan"
         passengers:
           type: object
           additionalProperties:
-            $ref: '#/components/schemas/Guest'
+            $ref: "#/components/schemas/Guest"
           example:
-            PAX1: { 'type': 'ADT' }
+            PAX1: { "type": "ADT" }
 
     UUID:
       description: Unique identifier for Offers and Orders
@@ -506,26 +506,26 @@ components:
       format: uuid
       minLength: 36
       maxLength: 36
-      pattern: '^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$'
-      example: '11111111-2222-3333-4444-000000000001'
+      pattern: "^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$"
+      example: "11111111-2222-3333-4444-000000000001"
 
     Address:
       description: address
       type: string
       minLength: 42
       maxLength: 42
-      pattern: '^0x[a-fA-F0-9]{40}$'
-      example: '0x0000000000000000000000000000000000000000'
+      pattern: "^0x[a-fA-F0-9]{40}$"
+      example: "0x0000000000000000000000000000000000000000"
 
     TaxItem:
       description: A tax item
       type: object
       properties:
         amount:
-          $ref: '#/components/schemas/Amount'
+          $ref: "#/components/schemas/Amount"
         code:
           type: string
-          pattern: '^[A-Z0-9]{2}$'
+          pattern: "^[A-Z0-9]{2}$"
           example: CA
         description:
           type: string
@@ -541,24 +541,24 @@ components:
         basisCode:
           description: The Fare Basis code of the fare component
           type: string
-          pattern: '^[A-Z0-9]+$'
+          pattern: "^[A-Z0-9]+$"
           example: A30ZABA
         designator:
           description: The Reservation Booking Designator (RBD)
           type: string
-          pattern: '^[A-Z]{1}$'
+          pattern: "^[A-Z]{1}$"
           example: A
         conditions:
           description: The fare conditions associated with the fare component
           type: string
-          example: 'No flight changes are permitted.'
+          example: "No flight changes are permitted."
 
     FareItem:
       description: A fare item
       type: object
       properties:
         amount:
-          $ref: '#/components/schemas/Amount'
+          $ref: "#/components/schemas/Amount"
         description:
           type: string
           example: Navigation Surcharge
@@ -572,13 +572,13 @@ components:
         code:
           description: The optional code of the fare item
           type: string
-          pattern: '^[A-Z0-9]{2}$'
+          pattern: "^[A-Z0-9]{2}$"
           example: S1
         components:
           description: A fare component
           type: array
           items:
-            $ref: '#/components/schemas/FareComponentItem'
+            $ref: "#/components/schemas/FareComponentItem"
 
     PriceItem:
       description: Detail of a priced item
@@ -588,12 +588,12 @@ components:
           description: Taxes included in the price
           type: array
           items:
-            $ref: '#/components/schemas/TaxItem'
+            $ref: "#/components/schemas/TaxItem"
         fare:
           description: Breakdown of the fare
           type: array
           items:
-            $ref: '#/components/schemas/FareItem'
+            $ref: "#/components/schemas/FareItem"
 
     Disclosures:
       description: List of disclosures
@@ -604,13 +604,13 @@ components:
         items:
           type: string
           nullable: true
-          example: 'The seat charge is applicable to each one-way flight...'
+          example: "The seat charge is applicable to each one-way flight..."
 
     Expiration:
       description: The offer expiration time.
       type: string
       format: date-time
-      example: '2021-04-12T23:20:50.52Z'
+      example: "2021-04-12T23:20:50.52Z"
 
     PricedOfferContent:
       type: object
@@ -621,16 +621,16 @@ components:
         - disclosures
       properties:
         expiration:
-          $ref: '#/components/schemas/Expiration'
+          $ref: "#/components/schemas/Expiration"
         price:
-          $ref: '#/components/schemas/Price'
+          $ref: "#/components/schemas/Price"
         pricedItems:
           description: Breakdown of items priced
           type: array
           items:
-            $ref: '#/components/schemas/PriceItem'
+            $ref: "#/components/schemas/PriceItem"
         disclosures:
-          $ref: '#/components/schemas/Disclosures'
+          $ref: "#/components/schemas/Disclosures"
 
     PricedOffer:
       description: An offer with confirmed price
@@ -643,11 +643,11 @@ components:
         - serviceId
       properties:
         offerId:
-          $ref: '#/components/schemas/UUID'
+          $ref: "#/components/schemas/UUID"
         offer:
-          $ref: '#/components/schemas/PricedOfferContent'
+          $ref: "#/components/schemas/PricedOfferContent"
         accommodation:
-          $ref: '#/components/schemas/Accommodation'
+          $ref: "#/components/schemas/Accommodation"
         provider:
           type: string
         serviceId:
@@ -673,19 +673,19 @@ components:
         id:
           type: string
         accommodation:
-          $ref: '#/components/schemas/Accommodation'
+          $ref: "#/components/schemas/Accommodation"
         pricedItems:
           type: array
           items:
-            $ref: '#/components/schemas/PriceItem'
+            $ref: "#/components/schemas/PriceItem"
         disclosures:
-          $ref: '#/components/schemas/Disclosures'
+          $ref: "#/components/schemas/Disclosures"
         price:
-          $ref: '#/components/schemas/Price'
+          $ref: "#/components/schemas/Price"
         pricePlansReferences:
-          $ref: '#/components/schemas/PricePlansReferences'
+          $ref: "#/components/schemas/PricePlansReferences"
         expiration:
-          $ref: '#/components/schemas/Expiration'
+          $ref: "#/components/schemas/Expiration"
         arrival:
           type: string
           format: date-time
@@ -703,7 +703,7 @@ components:
         - status
       properties:
         offer:
-          $ref: '#/components/schemas/OfferDbValue'
+          $ref: "#/components/schemas/OfferDbValue"
         offerId:
           type: string
         createdAt:
@@ -711,7 +711,7 @@ components:
           format: date-time
         status:
           type: string
-          enum: ['paid', 'pending', 'booked', 'paymentError']
+          enum: ["paid", "pending", "booked", "paymentError"]
         message:
           type: string
         orderId:
@@ -721,7 +721,7 @@ components:
       description: Complete booking information object
       type: object
       allOf:
-        - $ref: '#/components/schemas/Deal'
+        - $ref: "#/components/schemas/Deal"
       properties:
         message:
           type: string
@@ -732,7 +732,7 @@ components:
       description: Bookings of address
       type: array
       items:
-        $ref: '#/components/schemas/BookingRecord'
+        $ref: "#/components/schemas/BookingRecord"
 
     OffersSearchRequest:
       description: Offers search request
@@ -775,8 +775,8 @@ components:
           type: array
           items:
             oneOf:
-              - $ref: '#/components/schemas/AdultGuest'
-              - $ref: '#/components/schemas/ChildGuest'
+              - $ref: "#/components/schemas/AdultGuest"
+              - $ref: "#/components/schemas/ChildGuest"
 
     BookingsAuthRequest:
       description: Wallet authentication request
@@ -1447,7 +1447,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookingsAuthSecretResponse'
+                $ref: "#/components/schemas/BookingsAuthSecretResponse"
         400:
           description: Handled Error
           content:
@@ -1508,14 +1508,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BookingsAuthRequest'
+              $ref: "#/components/schemas/BookingsAuthRequest"
       responses:
         200:
           description: It's ok
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookingsAuthResponse'
+                $ref: "#/components/schemas/BookingsAuthResponse"
         400:
           description: Handled Error
           content:
@@ -1577,7 +1577,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookingsAuthResponse'
+                $ref: "#/components/schemas/BookingsAuthResponse"
         400:
           description: Handled Error
           content:
@@ -1638,14 +1638,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OffersSearchRequest'
+              $ref: "#/components/schemas/OffersSearchRequest"
       responses:
         200:
           description: It's ok
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SearchResults'
+                $ref: "#/components/schemas/SearchResults"
         400:
           description: Handled Error
           content:
@@ -1704,14 +1704,14 @@ paths:
           name: offerId
           required: true
           schema:
-            $ref: '#/components/schemas/UUID'
+            $ref: "#/components/schemas/UUID"
       responses:
         200:
           description: It's ok
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PricedOffer'
+                $ref: "#/components/schemas/PricedOffer"
         400:
           description: Handled Error
           content:
@@ -1772,14 +1772,14 @@ paths:
           name: address
           required: true
           schema:
-            $ref: '#/components/schemas/Address'
+            $ref: "#/components/schemas/Address"
       responses:
         200:
           description: It's ok
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BookingResponse'
+                $ref: "#/components/schemas/BookingResponse"
         400:
           description: Handled Error
           content:
@@ -1837,7 +1837,7 @@ paths:
         name: offerId
         required: true
         schema:
-          $ref: '#/components/schemas/UUID'
+          $ref: "#/components/schemas/UUID"
     post:
       requestBody:
         required: true
@@ -1846,7 +1846,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/Guest'
+                $ref: "#/components/schemas/Guest"
               minItems: 1
       responses:
         200:
@@ -1861,7 +1861,7 @@ paths:
                     enum: [true]
                   data:
                     type: string
-                    format: 'date-time'
+                    format: "date-time"
         400:
           description: Handled Error
           content:
@@ -1912,6 +1912,161 @@ paths:
                   message:
                     type: string
                     default: Something went wrong
+
+  /booking/{offerId}/rewardOptions:
+    parameters:
+      - in: path
+        name: offerId
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+    get:
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                type: array
+                properties:
+                  rewardType:
+                    type: string
+                    enum: ["CO2_OFFSET", "TOKEN"]
+                  quantity:
+                    type: string
+                  tokenName:
+                    type: string
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
+
+  /booking/{offerId}/reward:
+    parameters:
+      - in: path
+        name: offerId
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rewardType:
+                  type: string
+                  enum: ["CO2_OFFSET", "TOKEN"]
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [true]
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
+
   #end booking
 
   #health

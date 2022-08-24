@@ -9,4 +9,9 @@ export default (router: Router): void => {
     bookingController.myBookings
   );
   router.post('/booking/:offerId/guests', bookingController.setPassengers);
+  router.get(
+    '/booking/:offerId/rewardOptions',
+    bookingController.getRewardOptions
+  );
+  router.post('/booking/:offerId/reward', bookingController.setRewardOption);
 };
