@@ -17,6 +17,7 @@ import {
   PricedOffer,
   SearchResults
 } from '@windingtree/glider-types/types/win';
+import { assetsCurrencies } from '@windingtree/win-commons/dist/types';
 
 export class ProxyService {
   public async getDerbySoftOffers(body: SearchBody): Promise<SearchResults> {
@@ -60,12 +61,33 @@ export class ProxyService {
 
     for (const provider in providersData) {
       const data: SearchResponse = providersData[provider];
+      const filteredAccommodations: string[] = [];
+      for (const [key, value] of Object.entries(data.offers)) {
+        if (assetsCurrencies.includes(value.price.currency)) {
+          filteredAccommodations.push(
+            Object.values(value.pricePlansReferences)[0].accommodation
+          );
+        } else {
+          delete data.offers[key];
+        }
+      }
+
+      if (!Object.keys(data.offers).length) {
+        continue;
+      }
 
       const accommodations = data.accommodations;
 
       const hotels = new Set<Accommodation>();
+      const hotelsMap: {
+        [k: string]: Accommodation;
+      } = {};
 
       for (const [key, value] of Object.entries(accommodations)) {
+        if (!filteredAccommodations.includes(key)) {
+          continue;
+        }
+
         const location: Location = {
           coordinates: [
             Number(value.location?.long),
@@ -83,6 +105,11 @@ export class ProxyService {
         } as Accommodation;
 
         hotels.add(hotel);
+        hotelsMap[key] = hotel;
+      }
+
+      if (!hotels.size) {
+        continue;
       }
 
       await hotelRepository.bulkCreate(Array.from(hotels));
@@ -141,12 +168,9 @@ export class ProxyService {
 
       await offerRepository.bulkCreate(Array.from(offersSet));
 
-      // @todo Fix the typing issue
       commonData.accommodations = {
         ...commonData.accommodations,
-        ...(data.accommodations as unknown as {
-          [k: string]: Accommodation;
-        })
+        ...hotelsMap
       };
       commonData.offers = {
         ...commonData.offers,
@@ -177,13 +201,11 @@ export class ProxyService {
     } = {};
 
     sortedHotels.forEach((hotel: Accommodation) => {
-      //todo remove if after types will be regenerated
-      if (hotel.id) {
-        sortedAccommodations[hotel.id] = {
-          ...commonData.accommodations[hotel.id],
-          location: hotel.location as Location
-        };
-      }
+      sortedAccommodations[hotel.id] = {
+        ...commonData.accommodations[hotel.id],
+        location: hotel.location as Location,
+        id: hotel.id
+      };
     });
 
     commonData.accommodations = sortedAccommodations;
