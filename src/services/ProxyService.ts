@@ -5,168 +5,20 @@ import { makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
 import {
-  Accommodation as AccommodationOld,
   SearchCriteria,
   SearchResponse
 } from '@windingtree/glider-types/types/derbysoft';
-import {
-  DerbySoftData,
-  Hotel,
-  HotelProviders,
-  MongoLocation,
-  OfferDBValue,
-  PricedOfferData,
-  SearchBody
-} from '../types';
+import { HotelProviders, OfferDBValue, SearchBody } from '../types';
 import ApiError from '../exceptions/ApiError';
 import { utils } from 'ethers';
 import {
   Accommodation,
   Location,
+  PricedOffer,
   SearchResults
 } from '@windingtree/glider-types/types/win';
 
 export class ProxyService {
-  /**
-   * @deprecated
-   */
-  public async getDerbySoftOffersOld(
-    body: SearchBody,
-    provider: HotelProviders
-  ): Promise<DerbySoftData> {
-    const { lon, lat, radius } = body.accommodation.location;
-    const { arrival, departure } = body.accommodation;
-    const rectangle = makeCircumscribedSquare(lon, lat, radius);
-
-    const resBody: SearchCriteria = {
-      ...body,
-      accommodation: {
-        ...body.accommodation,
-        location: { rectangle }
-      }
-    };
-    const url = getUrlByKey(provider);
-
-    let res;
-    try {
-      res = await axios.post(`${url}/offers/search`, resBody, {
-        headers: { Authorization: `Bearer ${clientJwt}` }
-      });
-    } catch (e) {
-      if (e.status !== 404) {
-        LogService.red(e);
-      }
-      return {
-        data: null,
-        status: String(e.response.status),
-        message: e.response.data.error
-      };
-    }
-
-    const data: SearchResponse = res.data;
-
-    const accommodations = data.accommodations as {
-      [key: string]: AccommodationOld;
-    };
-
-    const hotels = new Set<Hotel>();
-
-    for (const [key, value] of Object.entries(accommodations)) {
-      const location: MongoLocation = {
-        coordinates: [
-          Number(value.location?.long),
-          Number(value.location?.lat)
-        ],
-        type: 'Point'
-      };
-      const hotel = {
-        ...value,
-        id: key,
-        provider: provider,
-        createdAt: new Date(),
-        location
-      } as Hotel;
-
-      hotels.add(hotel);
-    }
-
-    await hotelRepository.bulkCreate(Array.from(hotels));
-
-    const sortedHotels = await hotelRepository.searchByRadius(
-      lon,
-      lat,
-      radius,
-      Object.keys(accommodations)
-    );
-
-    const { offers } = data;
-
-    const offersSet = new Set<OfferDBValue>();
-
-    Object.keys(offers).map((k) => {
-      const offer = offers[k];
-      const { pricePlansReferences } = offer;
-      const { roomType } =
-        pricePlansReferences[Object.keys(pricePlansReferences)[0]];
-
-      const accommodation = {
-        ...sortedHotels.find(
-          (v) =>
-            v.id ===
-            pricePlansReferences[Object.keys(pricePlansReferences)[0]]
-              .accommodation
-        )
-      } as Hotel;
-
-      if (accommodation.roomTypes && accommodation.roomTypes[roomType]) {
-        accommodation.roomTypes = {
-          [roomType]: accommodation.roomTypes[roomType]
-        };
-      }
-
-      offer.price = {
-        currency: offer.price.currency,
-        private: offer.price.private ? String(offer.price.priva) : undefined,
-        public: String(offer.price.public),
-        commission: offer.price.commission
-          ? String(offer.price.commission)
-          : undefined,
-        taxes: offer.price.taxes ? String(offer.price.taxes) : undefined,
-        isAmountBeforeTax: offer.price.isAmountBeforeTax,
-        decimalPlaces: offer.price.decimalPlaces
-      };
-
-      const offerDBValue: OfferDBValue = {
-        id: k,
-        accommodation,
-        arrival: new Date(arrival),
-        departure: new Date(departure),
-        expiration: new Date(offer.expiration),
-        price: offer.price,
-        provider
-      };
-
-      offersSet.add(offerDBValue);
-    });
-
-    await offerRepository.bulkCreate(Array.from(offersSet));
-
-    const sortedAccommodations: {
-      [key: string]: AccommodationOld;
-    } = {};
-
-    sortedHotels.forEach((hotel: Hotel) => {
-      sortedAccommodations[hotel.id] = accommodations[hotel.id];
-    });
-
-    data.accommodations = sortedAccommodations;
-
-    return {
-      data,
-      status: 'success'
-    };
-  }
-
   public async getDerbySoftOffers(body: SearchBody): Promise<SearchResults> {
     const { lon, lat, radius } = body.accommodation.location;
     const { arrival, departure } = body.accommodation;
@@ -211,10 +63,10 @@ export class ProxyService {
 
       const accommodations = data.accommodations;
 
-      const hotels = new Set<Hotel>();
+      const hotels = new Set<Accommodation>();
 
       for (const [key, value] of Object.entries(accommodations)) {
-        const location: MongoLocation = {
+        const location: Location = {
           coordinates: [
             Number(value.location?.long),
             Number(value.location?.lat)
@@ -228,7 +80,7 @@ export class ProxyService {
           provider: provider,
           createdAt: new Date(),
           location
-        } as Hotel;
+        } as Accommodation;
 
         hotels.add(hotel);
       }
@@ -254,7 +106,7 @@ export class ProxyService {
               pricePlansReferences[Object.keys(pricePlansReferences)[0]]
                 .accommodation
           )
-        } as Hotel;
+        } as Accommodation;
 
         if (accommodation.roomTypes && accommodation.roomTypes[roomType]) {
           accommodation.roomTypes = {
@@ -324,11 +176,14 @@ export class ProxyService {
       [key: string]: Accommodation;
     } = {};
 
-    sortedHotels.forEach((hotel: Hotel) => {
-      sortedAccommodations[hotel.id] = {
-        ...commonData.accommodations[hotel.id],
-        location: hotel.location as Location
-      };
+    sortedHotels.forEach((hotel: Accommodation) => {
+      //todo remove if after types will be regenerated
+      if (hotel.id) {
+        sortedAccommodations[hotel.id] = {
+          ...commonData.accommodations[hotel.id],
+          location: hotel.location as Location
+        };
+      }
     });
 
     commonData.accommodations = sortedAccommodations;
@@ -345,9 +200,7 @@ export class ProxyService {
     });
   }
 
-  public async getDerbySoftOfferPrice(
-    offerId: string
-  ): Promise<PricedOfferData> {
+  public async getDerbySoftOfferPrice(offerId: string): Promise<PricedOffer> {
     const offer = await offerRepository.getOne(offerId);
 
     if (!offer) {

@@ -331,7 +331,7 @@ describe('test', async () => {
       };
 
       await requestWithSupertest
-        .post('/api/derby-soft/offers/search')
+        .post('/api/hotels/offers/search')
         .send(body)
         .set('Accept', 'application/json')
         .expect(400);
@@ -470,7 +470,7 @@ describe('test', async () => {
         .set('Authorization', `Bearer ${walletAccessToken}`)
         .expect(200);
 
-      const deals = res.body.data;
+      const deals = res.body;
       const deal = deals.find((v) => v.offerId === pricedOfferId);
       expect(deal.status).to.be.equal('booked');
       const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);

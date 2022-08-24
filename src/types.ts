@@ -1,19 +1,12 @@
 import { Request, Router } from 'express';
 import { ObjectId } from 'mongodb';
 import {
-  AccommodationType,
-  CheckInOutPolicy,
-  ContactInformation,
-  Media,
-  Offer,
   PassengerSearch,
   Price,
   PriceItem,
-  PricePlanReferences,
-  RoomTypes,
-  SearchResponse
+  PricePlanReferences
 } from '@windingtree/glider-types/types/derbysoft';
-import { Location as WinLocation } from '@windingtree/glider-types/types/win';
+import { Accommodation } from '@windingtree/glider-types/types/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export interface User {
@@ -90,41 +83,10 @@ export interface SearchBody {
   passengers: [PassengerSearch, ...PassengerSearch[]];
 }
 
-/**
- * @deprecated
- */
-export interface MongoLocation {
-  type: string;
-  coordinates: number[];
-}
-
-/**
- * @deprecated
- */
-export interface Hotel {
-  _id?: ObjectId;
-  id: string;
-  hotelId: string;
-  provider: string;
-  createdAt: Date;
-  name: string;
-  type: AccommodationType;
-  description: string;
-  location: WinLocation;
-  rating: number;
-  contactInformation: ContactInformation;
-  checkinoutPolicy: CheckInOutPolicy;
-  otherPolicies: string[];
-  media: Media;
-  roomTypes: {
-    [k: string]: RoomTypes;
-  };
-}
-
 export interface OfferDBValue {
   _id?: ObjectId;
   id: string;
-  accommodation: Hotel;
+  accommodation: Accommodation;
   pricedItems?: PriceItem[];
   disclosures?: string[];
   price?: Price;
@@ -133,16 +95,6 @@ export interface OfferDBValue {
   arrival: Date;
   departure: Date;
   provider: HotelProviders;
-}
-
-export interface PricedOfferData extends Offer {
-  accommodation: Hotel;
-}
-
-export interface DerbySoftData {
-  data: SearchResponse | PricedOfferData | null;
-  status: string;
-  message?: string;
 }
 
 export type DealStatus = 'paid' | 'pending' | 'booked' | 'paymentError';
