@@ -391,6 +391,8 @@ components:
       description: An accommodation object
       type: object
       required:
+        - _id
+        - id
         - hotelId
         - name
         - type
@@ -498,18 +500,6 @@ components:
             $ref: '#/components/schemas/Guest'
           example:
             PAX1: { 'type': 'ADT' }
-
-    OffersSearchProviderResponse:
-      description: Response object obtained from the provider (DerbySoft or Rooms)
-      type: object
-      required:
-        - data
-        - status
-      properties:
-        data:
-          $ref: '#/components/schemas/SearchResults'
-        status:
-          type: string
 
     UUID:
       description: Unique identifier for Offers and Orders
@@ -788,29 +778,6 @@ components:
             oneOf:
               - $ref: '#/components/schemas/AdultGuest'
               - $ref: '#/components/schemas/ChildGuest'
-
-    OffersSearchResponse:
-      description: Offers search response
-      type: object
-      properties:
-        data:
-          type: object
-          required:
-            - rooms
-            - derbySoft
-          properties:
-            rooms:
-              $ref: '#/components/schemas/OffersSearchProviderResponse'
-            derbySoft:
-              $ref: '#/components/schemas/OffersSearchProviderResponse'
-            amadeus:
-              $ref: '#/components/schemas/OffersSearchProviderResponse'
-
-    PricedOfferResponse:
-      type: object
-      properties:
-        data:
-          $ref: '#/components/schemas/PricedOffer'
 
     BookingsAuthRequest:
       description: Wallet authentication request
@@ -1665,138 +1632,6 @@ paths:
   #end users
 
   #proxy
-  /derby-soft/offers/search:
-    post:
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/OffersSearchRequest'
-      responses:
-        200:
-          description: It's ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/OffersSearchResponse'
-        400:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        401:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        500:
-          description: Some server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
-
-  /derby-soft/offers/{offerId}/price:
-    post:
-      parameters:
-        - in: path
-          name: offerId
-          required: true
-          schema:
-            $ref: '#/components/schemas/UUID'
-      responses:
-        200:
-          description: It's ok
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PricedOfferResponse'
-        400:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        401:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        500:
-          description: Some server error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
-
   /hotels/offers/search:
     post:
       requestBody:

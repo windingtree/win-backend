@@ -1,7 +1,7 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
 import { Collection } from 'mongodb';
-import { Hotel } from '../types';
+import { Accommodation } from '@windingtree/glider-types/types/win';
 
 export class HotelRepository {
   private dbService: MongoDBService;
@@ -11,7 +11,7 @@ export class HotelRepository {
     this.dbService = MongoDBService.getInstance();
   }
 
-  protected async getCollection(): Promise<Collection<Hotel>> {
+  protected async getCollection(): Promise<Collection<Accommodation>> {
     const dbClient = await this.dbService.getDbClient();
     const database = dbClient.db(DBName);
 
@@ -23,7 +23,7 @@ export class HotelRepository {
     lat: number,
     radius: number,
     ids: string[]
-  ): Promise<Hotel[]> {
+  ): Promise<Accommodation[]> {
     const collection = await this.getCollection();
 
     const cursor = await collection.find({
@@ -39,7 +39,7 @@ export class HotelRepository {
       }
     });
 
-    const hotels = new Set<Hotel>();
+    const hotels = new Set<Accommodation>();
 
     await cursor.forEach((item) => {
       hotels.add(item);
@@ -48,7 +48,7 @@ export class HotelRepository {
     return Array.from(hotels);
   }
 
-  public async bulkCreate(hotels: Hotel[]): Promise<void> {
+  public async bulkCreate(hotels: Accommodation[]): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.insertMany(hotels);
