@@ -25,7 +25,7 @@ export default class EmailSenderService {
         {
           to: [
             {
-              email: sendgridEmailTo || passengers.PAX1.contactInformation[1], //todo validate
+              email: sendgridEmailTo || passengers.PAX1.contactInformation[0], //todo validate
               name: `${passengers.PAX1.firstnames[0]} ${passengers.PAX1.lastnames[0]}`
             }
           ],
