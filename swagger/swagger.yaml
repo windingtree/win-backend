@@ -391,7 +391,6 @@ components:
       description: An accommodation object
       type: object
       required:
-        - _id
         - id
         - hotelId
         - name
