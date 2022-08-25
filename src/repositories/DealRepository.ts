@@ -72,12 +72,20 @@ export class DealRepository {
     );
   }
 
+  public async getDeal(offerId: string): Promise<DealDBValue> {
+    const collection = await this.getCollection();
+    const deal = await collection.findOne({ offerId });
+    if (!deal) {
+      throw new Error('Deal not found');
+    }
+    return deal;
+  }
+
   public async updateRewardOption(
     offerId: string,
     rewardOption: RewardTypes
   ): Promise<void> {
     const collection = await this.getCollection();
-
     await collection.updateOne({ offerId }, { $set: { rewardOption } });
   }
 }

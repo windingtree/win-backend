@@ -819,6 +819,34 @@ components:
         refreshToken:
           type: string
 
+    RewardOption:
+      description: option regarding the form of the reward
+      type: object
+      required:
+        - rewardType
+        - quantity
+        - tokenName
+      properties:
+        rewardType:
+          $ref: "#/components/schemas/RewardType"
+        quantity:
+          pattern: "^[0-9]+(.[0-9]+)?$"
+          type: string
+        tokenName:
+          type: string
+
+    RewardChoice:
+      description: choice regarding the form of the reward
+      type: object
+      properties:
+        rewardType:
+          $ref: "#/components/schemas/RewardType"
+
+    RewardType:
+      description: form of the reward
+      type: string
+      enum: ["CO2_OFFSET", "TOKEN"]
+
 servers:
   - url: http://localhost:5000/api
     description: local server
@@ -1928,14 +1956,8 @@ paths:
             application/json:
               schema:
                 type: array
-                properties:
-                  rewardType:
-                    type: string
-                    enum: ["CO2_OFFSET", "TOKEN"]
-                  quantity:
-                    type: string
-                  tokenName:
-                    type: string
+                items:
+                  $ref: "#/components/schemas/RewardOption"
         400:
           description: Handled Error
           content:
@@ -2000,11 +2022,8 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                rewardType:
-                  type: string
-                  enum: ["CO2_OFFSET", "TOKEN"]
+              $ref: "#/components/schemas/RewardChoice"
+
       responses:
         200:
           description: It's ok

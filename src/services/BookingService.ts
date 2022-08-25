@@ -135,7 +135,8 @@ export class BookingService {
         offer: value.offer,
         offerId: value.offerId,
         orderId: value.orderId,
-        status: value.status
+        status: value.status,
+        rewardOption: value.rewardOption
       });
     });
 

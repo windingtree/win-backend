@@ -11,7 +11,12 @@ export default (router: Router): void => {
   router.post('/booking/:offerId/guests', bookingController.setPassengers);
   router.get(
     '/booking/:offerId/rewardOptions',
+    walletAuthMiddleware,
     bookingController.getRewardOptions
   );
-  router.post('/booking/:offerId/reward', bookingController.setRewardOption);
+  router.post(
+    '/booking/:offerId/reward',
+    walletAuthMiddleware,
+    bookingController.setRewardOption
+  );
 };

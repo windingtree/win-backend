@@ -43,23 +43,23 @@ export class BookingController {
   }
 
   public async getRewardOptions(
-    req: AuthRequest,
+    req: WalletRequest,
     res: Response,
     next: NextFunction
   ) {
     try {
       const { offerId } = req.params;
 
-      const data = await rewardService.getOptions(offerId);
+      const data = await rewardService.getOptions(offerId, req.walletAddress);
 
-      res.json({ data, success: true });
+      res.json(data);
     } catch (e) {
       next(e);
     }
   }
 
   public async setRewardOption(
-    req: AuthRequest,
+    req: WalletRequest,
     res: Response,
     next: NextFunction
   ) {
@@ -67,7 +67,11 @@ export class BookingController {
       const { offerId } = req.params;
       const rewardOption = req.body.rewardType;
 
-      await rewardService.updateOptions(offerId, rewardOption);
+      await rewardService.updateOption(
+        offerId,
+        req.walletAddress,
+        rewardOption
+      );
 
       res.json({ success: true });
     } catch (e) {

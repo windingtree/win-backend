@@ -104,3 +104,9 @@ export const providersUrls = {
 export const getUrlByKey = (key: HotelProviders): string => {
   return providersUrls[key];
 };
+
+// Rewards
+export const rewardPercentage = 6;
+export const coinGeckoURL = 'https://api.coingecko.com/api/v3/'; // Note: Free API is limited to 50 calls/minute.
+export const tco2Precision = 1;
+export const tokenPrecision = 0;

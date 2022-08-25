@@ -1,6 +1,11 @@
 import axios from 'axios';
-import { RewardOption, RewardTypes } from 'src/types';
-import offerRepository from '../repositories/OfferRepository';
+import {
+  rewardPercentage,
+  coinGeckoURL,
+  tokenPrecision,
+  tco2Precision
+} from '../config';
+import { DealDBValue, RewardOption, RewardTypes } from '../types';
 import ApiError from '../exceptions/ApiError';
 import dealRepository from '../repositories/DealRepository';
 
@@ -17,94 +22,36 @@ const options = {
   }
 };
 
-const rewardPercentage = 6;
-
-// Note: Free API is limited to 50 calls/minute.
-const apiURL = 'https://api.coingecko.com/api/v3/';
-const coinGeckoQuoteCurrencies = [
-  'btc',
-  'eth',
-  'ltc',
-  'bits',
-  'bch',
-  'bnb',
-  'eos',
-  'xrp',
-  'xlm',
-  'link',
-  'dot',
-  'yfi',
-  'usd',
-  'aed',
-  'ars',
-  'aud',
-  'bdt',
-  'bhd',
-  'bmd',
-  'brl',
-  'cad',
-  'chf',
-  'clp',
-  'cny',
-  'czk',
-  'dkk',
-  'eur',
-  'gbp',
-  'hkd',
-  'huf',
-  'idr',
-  'ils',
-  'inr',
-  'jpy',
-  'krw',
-  'kwd',
-  'lkr',
-  'mmk',
-  'mxn',
-  'myr',
-  'ngn',
-  'nok',
-  'nzd',
-  'php',
-  'pkr',
-  'pln',
-  'rub',
-  'sar',
-  'sek',
-  'sgd',
-  'thb',
-  'try',
-  'twd',
-  'uah',
-  'vef',
-  'vnd',
-  'zar',
-  'xdr',
-  'xag',
-  'xau',
-  'sats'
-];
-
 export class RewardService {
-  public async getOptions(offerId: string): Promise<RewardOption[]> {
-    const offer = await offerRepository.getOne(offerId);
-    const priceOffer = offer?.price?.public;
-    const currencyOffer = offer?.price?.currency;
+  public async getOptions(
+    offerId: string,
+    walletAddress: string
+  ): Promise<RewardOption[]> {
+    let deal: DealDBValue;
+    try {
+      deal = await dealRepository.getDeal(offerId);
+    } catch (e) {
+      throw ApiError.NotFound('deal not found');
+    }
 
-    if (!currencyOffer || !priceOffer) {
+    if (!deal.userAddress.includes(walletAddress)) {
+      throw ApiError.AccessDenied();
+    }
+
+    const offer = deal.offer;
+    if (!offer?.price?.public || !offer?.price?.currency) {
       throw ApiError.NotFound('offer not found');
     }
 
-    if (!coinGeckoQuoteCurrencies.includes(currencyOffer.toLowerCase())) {
-      throw ApiError.NotFound('currency not supported in price API');
-    }
+    const priceOffer = offer?.price?.public;
+    const currencyOffer = offer?.price?.currency;
 
     const rewardValue = (Number(priceOffer) * rewardPercentage) / 100;
 
-    let priceNCT, priceLIF;
+    let priceNCT: number, priceLIF: number;
     try {
       const res = await axios.get(
-        `${apiURL}/simple/price?ids=${options.LIF.id},${
+        `${coinGeckoURL}/simple/price?ids=${options.LIF.id},${
           options.NCT.id
         }&vs_currencies=${currencyOffer.toLowerCase()}`
       );
@@ -117,8 +64,8 @@ export class RewardService {
       //     }
       // }
 
-      priceNCT = Number(res.data[options.NCT.id][currencyOffer.toLowerCase()]);
-      priceLIF = Number(res.data[options.LIF.id][currencyOffer.toLowerCase()]);
+      priceNCT = res.data[options.NCT.id][currencyOffer.toLowerCase()];
+      priceLIF = res.data[options.LIF.id][currencyOffer.toLowerCase()];
     } catch (e) {
       throw ApiError.NotFound(`Price of the reward not found`);
     }
@@ -135,22 +82,30 @@ export class RewardService {
       {
         rewardType: 'CO2_OFFSET',
         tokenName: 'NCT',
-        quantity: qtyNCT.toFixed(1)
+        quantity: qtyNCT.toFixed(tco2Precision)
       },
       {
         rewardType: 'TOKEN',
         tokenName: 'LIF',
-        quantity: qtyLIF.toFixed(0)
+        quantity: qtyLIF.toFixed(tokenPrecision)
       }
     ];
   }
 
-  public async updateOptions(
+  public async updateOption(
     offerId: string,
+    walletAddress: string,
     rewardOption: RewardTypes
   ): Promise<boolean> {
-    if (!rewardOption) {
-      throw ApiError.BadRequest('rewardOption is undefined');
+    let deal: DealDBValue;
+    try {
+      deal = await dealRepository.getDeal(offerId);
+    } catch (e) {
+      throw ApiError.NotFound('deal not found');
+    }
+
+    if (!deal.userAddress.includes(walletAddress)) {
+      throw ApiError.AccessDenied();
     }
 
     await dealRepository.updateRewardOption(offerId, rewardOption);
@@ -160,23 +115,3 @@ export class RewardService {
 }
 
 export default new RewardService();
-
-// curl -X 'GET' \
-//   'https://api.coingecko.com/api/v3/simple/price?ids=winding-tree&vs_currencies=usd' \
-//   -H 'accept: application/json'
-
-// {
-//     "winding-tree": {
-//       "usd": 0.02052527
-//     }
-// }
-
-// curl -X 'GET' \
-//   'https://api.coingecko.com/api/v3/simple/price?ids=toucan-protocol-nature-carbon-tonne&vs_currencies=usd' \
-//   -H 'accept: application/json'
-
-// {
-//     "toucan-protocol-nature-carbon-tonne": {
-//       "usd": 2.14
-//     }
-// }
