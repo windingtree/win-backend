@@ -106,7 +106,7 @@ export const getUrlByKey = (key: HotelProviders): string => {
 };
 
 // Rewards
-export const rewardPercentage = 6;
-export const coinGeckoURL = 'https://api.coingecko.com/api/v3/'; // Note: Free API is limited to 50 calls/minute.
+export const rewardPercentage = Number(process.env.REWARD_PERCENTAGE);
+export const coinGeckoURL = String(process.env.COINGECKO_URL); // Note: Free API is limited to 50 calls/minute.
 export const tco2Precision = 1;
 export const tokenPrecision = 0;
