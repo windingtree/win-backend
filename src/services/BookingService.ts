@@ -68,7 +68,13 @@ export class BookingService {
       if (order.status === 'CONFIRMED') {
         orderId = orderReq.data.orderId;
         supplierReservationId = orderReq.data.supplierReservationId;
-        await dealRepository.updateDeal(offer.id, 'booked', undefined, orderId);
+        await dealRepository.updateDeal(
+          offer.id,
+          'booked',
+          undefined,
+          orderId,
+          supplierReservationId
+        );
       } else {
         await dealRepository.updateDeal(
           offer.id,
