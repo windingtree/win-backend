@@ -54,6 +54,7 @@ export class BookingService {
     const url = getUrlByKey(offer.provider);
 
     let order;
+    let orderId;
     try {
       const orderReq = await axios.post(
         `${url}/orders/createWithOffer`,
@@ -64,12 +65,8 @@ export class BookingService {
       );
       order = orderReq.data.order;
       if (order.status === 'CONFIRMED') {
-        await dealRepository.updateDeal(
-          offer.id,
-          'booked',
-          undefined,
-          orderReq.data.orderId
-        );
+        orderId = orderReq.data.orderId;
+        await dealRepository.updateDeal(offer.id, 'booked', undefined, orderId);
       } else {
         await dealRepository.updateDeal(
           offer.id,
@@ -88,7 +85,7 @@ export class BookingService {
 
     if (order.status === 'CONFIRMED') {
       const emailService = new EmailSenderService();
-      emailService.setMessage(offer, passengers);
+      emailService.setMessage(offer, passengers, orderId);
       await emailService.sendEmail();
     }
 
