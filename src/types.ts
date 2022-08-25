@@ -109,6 +109,7 @@ export interface DealDBValue {
   status: DealStatus;
   createdAt: Date;
   orderId?: string;
+  supplierReservationId?: string;
   message?: string;
 }
 
@@ -119,6 +120,7 @@ export interface DealDTO {
   status: DealStatus;
   message?: string;
   orderId?: string;
+  supplierReservationId?: string;
 }
 
 export type RouterInitializer = (router: Router) => void;
