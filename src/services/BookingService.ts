@@ -141,7 +141,8 @@ export class BookingService {
         offerId: value.offerId,
         orderId: value.orderId,
         status: value.status,
-        supplierReservationId: value.supplierReservationId
+        supplierReservationId: value.supplierReservationId,
+        rewardOption: value.rewardOption
       });
     });
 

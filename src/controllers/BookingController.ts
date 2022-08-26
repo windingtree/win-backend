@@ -1,6 +1,7 @@
 import { AuthRequest, WalletRequest } from '../types';
 import { NextFunction, Response } from 'express';
 import bookingService from '../services/BookingService';
+import rewardService from '../services/RewardService';
 import ApiError from '../exceptions/ApiError';
 
 export class BookingController {
@@ -36,6 +37,43 @@ export class BookingController {
       const data = await bookingService.setPassengers(offerId, passengers);
 
       res.json({ data, success: true });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async getRewardOptions(
+    req: WalletRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { offerId } = req.params;
+
+      const data = await rewardService.getOptions(offerId, req.walletAddress);
+
+      res.json(data);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async setRewardOption(
+    req: WalletRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { offerId } = req.params;
+      const rewardOption = req.body.rewardType;
+
+      await rewardService.updateOption(
+        offerId,
+        req.walletAddress,
+        rewardOption
+      );
+
+      res.json({ success: true });
     } catch (e) {
       next(e);
     }

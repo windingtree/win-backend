@@ -111,6 +111,7 @@ export interface DealDBValue {
   orderId?: string;
   supplierReservationId?: string;
   message?: string;
+  rewardOption?: RewardTypes;
 }
 
 export interface DealDTO {
@@ -121,8 +122,17 @@ export interface DealDTO {
   message?: string;
   orderId?: string;
   supplierReservationId?: string;
+  rewardOption?: RewardTypes;
 }
 
 export type RouterInitializer = (router: Router) => void;
 
 export type HotelProviders = 'derbySoft' | 'amadeus';
+
+export type RewardTypes = 'CO2_OFFSET' | 'TOKEN';
+
+export interface RewardOption {
+  rewardType: RewardTypes;
+  quantity: string;
+  tokenName: string;
+}

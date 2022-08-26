@@ -1,7 +1,13 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
 import { Collection } from 'mongodb';
-import { DealDBValue, DealStatus, DealStorage, OfferDBValue } from '../types';
+import {
+  DealDBValue,
+  DealStatus,
+  DealStorage,
+  OfferDBValue,
+  RewardTypes
+} from '../types';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export class DealRepository {
@@ -47,7 +53,8 @@ export class DealRepository {
       userAddress: addresses,
       status: 'paid',
       message: undefined,
-      createdAt: new Date()
+      createdAt: new Date(),
+      rewardOption: undefined
     });
   }
 
@@ -64,6 +71,23 @@ export class DealRepository {
       { offerId },
       { $set: { status, message, orderId, supplierReservationId } }
     );
+  }
+
+  public async getDeal(offerId: string): Promise<DealDBValue> {
+    const collection = await this.getCollection();
+    const deal = await collection.findOne({ offerId });
+    if (!deal) {
+      throw new Error('Deal not found');
+    }
+    return deal;
+  }
+
+  public async updateRewardOption(
+    offerId: string,
+    rewardOption: RewardTypes
+  ): Promise<void> {
+    const collection = await this.getCollection();
+    await collection.updateOne({ offerId }, { $set: { rewardOption } });
   }
 }
 

@@ -476,6 +476,51 @@ describe('test', async () => {
       const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
       expect(amadeusDeal.status).to.be.equal('booked');
     }).timeout(25000);
+
+    it('return the reward options', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/booking/${pricedOfferId}/rewardOptions`)
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${walletAccessToken}`)
+        .expect(200);
+
+      const options = res.body;
+      expect(options).to.have.lengthOf(2);
+      {
+        const { rewardType, quantity, tokenName } = options[0];
+        expect(rewardType).to.be.equal('CO2_OFFSET');
+        expect(Number(quantity)).to.be.greaterThan(0);
+        expect(tokenName).to.be.equal('NCT');
+      }
+      {
+        const { rewardType, quantity, tokenName } = options[1];
+        expect(rewardType).to.be.equal('TOKEN');
+        expect(Number(quantity)).to.be.greaterThan(0);
+        expect(tokenName).to.be.equal('LIF');
+      }
+    }).timeout(25000);
+
+    it('set the reward option', async () => {
+      const rewardChoice = 'TOKEN';
+      const res1 = await requestWithSupertest
+        .post(`/api/booking/${pricedOfferId}/reward`)
+        .send({ rewardType: rewardChoice })
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${walletAccessToken}`)
+        .expect(200);
+
+      expect(res1.body.success).to.be.true;
+
+      const res2 = await requestWithSupertest
+        .get(`/api/booking/${(await testWallet).address}`)
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${walletAccessToken}`)
+        .expect(200);
+
+      const deals = res2.body;
+      const deal = deals.find((v) => v.offerId === pricedOfferId);
+      expect(deal.rewardOption).to.be.equal(rewardChoice);
+    }).timeout(25000);
   });
 
   after(async () => {
