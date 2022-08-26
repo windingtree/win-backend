@@ -109,6 +109,7 @@ export interface DealDBValue {
   status: DealStatus;
   createdAt: Date;
   orderId?: string;
+  supplierReservationId?: string;
   message?: string;
   rewardOption?: RewardTypes;
 }
@@ -120,6 +121,7 @@ export interface DealDTO {
   status: DealStatus;
   message?: string;
   orderId?: string;
+  supplierReservationId?: string;
   rewardOption?: RewardTypes;
 }
 

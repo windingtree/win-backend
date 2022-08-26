@@ -20,7 +20,7 @@
   "scripts": {
     "commit": "git-cz -S",
     "changelog": "conventional-changelog -p angular -r 2 -i CHANGELOG.md -s",
-    "dev": "cross-env NODE_ENV=development nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
+    "dev": "cross-env nodemon --watch 'src/**/*.ts' --ignore 'src/**/*.spec.ts' --exec 'node --experimental-specifier-resolution=node --loader ts-node/esm' src/index.ts",
     "lint": "npx eslint . --ext .ts",
     "lint:fix": "npx eslint . --ext .ts --fix && npx prettier --write .",
     "test": "NODE_IS_TEST=true npx mocha --maxWorkers=15 -r ts-node/register test/**/*.spec.ts",

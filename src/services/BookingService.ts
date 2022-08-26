@@ -54,6 +54,8 @@ export class BookingService {
     const url = getUrlByKey(offer.provider);
 
     let order;
+    let orderId;
+    let supplierReservationId;
     try {
       const orderReq = await axios.post(
         `${url}/orders/createWithOffer`,
@@ -64,11 +66,14 @@ export class BookingService {
       );
       order = orderReq.data.order;
       if (order.status === 'CONFIRMED') {
+        orderId = orderReq.data.orderId;
+        supplierReservationId = orderReq.data.supplierReservationId;
         await dealRepository.updateDeal(
           offer.id,
           'booked',
           undefined,
-          orderReq.data.orderId
+          orderId,
+          supplierReservationId
         );
       } else {
         await dealRepository.updateDeal(
@@ -88,7 +93,7 @@ export class BookingService {
 
     if (order.status === 'CONFIRMED') {
       const emailService = new EmailSenderService();
-      emailService.setMessage(offer, passengers);
+      emailService.setMessage(offer, passengers, supplierReservationId);
       await emailService.sendEmail();
     }
 
@@ -136,6 +141,7 @@ export class BookingService {
         offerId: value.offerId,
         orderId: value.orderId,
         status: value.status,
+        supplierReservationId: value.supplierReservationId,
         rewardOption: value.rewardOption
       });
     });

@@ -6,6 +6,7 @@ import {
   sendgridEmailTemplateId,
   sendgridEmailTo
 } from '../config';
+import { OfferDBValue } from '../types';
 
 export default class EmailSenderService {
   private readonly fromEmail: string;
@@ -16,7 +17,7 @@ export default class EmailSenderService {
     this.fromEmail = sendgridEmailFrom;
   }
 
-  public setMessage(offer, passengers) {
+  public setMessage(offer: OfferDBValue, passengers, tokenId: string) {
     const start_date = new Date(offer.arrival).toDateString();
     const end_date = new Date(offer.departure).toDateString();
     this.message = {
@@ -31,16 +32,17 @@ export default class EmailSenderService {
           ],
           dynamic_template_data: {
             name: offer.accommodation.name,
-            price: `${offer.price.public} ${offer.price.currency}`,
+            price: `${offer.price?.public} ${offer.price?.currency}`,
             start_date,
             end_date,
             policy: '-',
             address: offer.accommodation.contactInformation.address,
             contact: {
-              email: offer.accommodation.contactInformation.emails.join(', '),
+              email: offer.accommodation.contactInformation.emails?.join(', '),
               phone:
-                offer.accommodation.contactInformation.phoneNumbers.join(', ')
-            }
+                offer.accommodation.contactInformation.phoneNumbers?.join(', ')
+            },
+            token_id: tokenId
           }
         }
       ],
