@@ -422,24 +422,24 @@ describe('test', async () => {
         .expect(400);
     });
 
-    it('set users', async () => {
-      const guests = [
-        {
-          type: 'ADT',
-          civility: 'MR',
-          lastnames: ['Marley'],
-          firstnames: ['Bob'],
-          gender: 'Male',
-          birthdate: '1980-03-21T00:00:00Z',
-          contactInformation: ['contact@org.co.uk', '+32123456789']
-        }
-      ];
-      await requestWithSupertest
-        .post(`/api/booking/${pricedOfferId}/guests`)
-        .send(guests)
-        .set('Accept', 'application/json')
-        .expect(200);
-    }).timeout(20000);
+    // it('set users', async () => {
+    //   const guests = [
+    //     {
+    //       type: 'ADT',
+    //       civility: 'MR',
+    //       lastnames: ['Marley'],
+    //       firstnames: ['Bob'],
+    //       gender: 'Male',
+    //       birthdate: '1980-03-21T00:00:00Z',
+    //       contactInformation: ['contact@org.co.uk', '+32123456789']
+    //     }
+    //   ];
+    //   await requestWithSupertest
+    //     .post(`/api/booking/${pricedOfferId}/guests`)
+    //     .send(guests)
+    //     .set('Accept', 'application/json')
+    //     .expect(200);
+    // }).timeout(20000);
 
     it('set users amadeus', async () => {
       const guests = [
@@ -471,8 +471,8 @@ describe('test', async () => {
         .expect(200);
 
       const deals = res.body;
-      const deal = deals.find((v) => v.offerId === pricedOfferId);
-      expect(deal.status).to.be.equal('booked');
+      // const deal = deals.find((v) => v.offerId === pricedOfferId);
+      // expect(deal.status).to.be.equal('booked');
       const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
       expect(amadeusDeal.status).to.be.equal('booked');
     }).timeout(25000);
