@@ -253,7 +253,7 @@ describe('test', async () => {
 
     expect(res.body.accessToken).to.be.a('string');
     expect(res.body.refreshToken).to.be.a('string');
-  });
+  }).timeout(5000);
 
   it('refresh with wallet', async () => {
     const res = await requestWithSupertest
@@ -267,7 +267,7 @@ describe('test', async () => {
 
     expect(res.body.accessToken).to.be.a('string');
     expect(res.body.refreshToken).to.be.a('string');
-  });
+  }).timeout(5000);
 
   it('should throw err when get data with another address', async () => {
     await requestWithSupertest
