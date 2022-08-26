@@ -61,6 +61,9 @@ export class ProxyService {
 
     for (const provider in providersData) {
       const data: SearchResponse = providersData[provider];
+      if (!data) {
+        continue;
+      }
       const filteredAccommodations: string[] = [];
       for (const [key, value] of Object.entries(data.offers)) {
         if (assetsCurrencies.includes(value.price.currency)) {
