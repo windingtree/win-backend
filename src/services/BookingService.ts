@@ -11,7 +11,6 @@ import dealRepository from '../repositories/DealRepository';
 import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
 import { ContractService } from './ContractService';
-import LogService from './LogService';
 import EmailSenderService from './EmailSenderService';
 import {
   PassengerBooking,
@@ -75,6 +74,10 @@ export class BookingService {
           orderId,
           supplierReservationId
         );
+
+        const emailService = new EmailSenderService();
+        emailService.setMessage(offer, passengers, supplierReservationId);
+        await emailService.sendEmail();
       } else {
         await dealRepository.updateDeal(
           offer.id,
@@ -83,18 +86,12 @@ export class BookingService {
         );
       }
     } catch (e) {
-      LogService.red(e);
+      console.log(e);
       await dealRepository.updateDeal(
         offer.id,
         'paymentError',
         'Booking failed' + e.message
       );
-    }
-
-    if (order.status === 'CONFIRMED') {
-      const emailService = new EmailSenderService();
-      emailService.setMessage(offer, passengers, supplierReservationId);
-      await emailService.sendEmail();
     }
 
     return true;
