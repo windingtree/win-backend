@@ -42,7 +42,11 @@ export class ContractService {
             this.stop();
           }
         })
-        .catch((error) => console.log(error));
+        .catch((e) => {
+          if (process.env.NODE_IS_TEST !== 'true') {
+            console.log(e);
+          }
+        });
     });
   };
 

@@ -244,7 +244,7 @@ export class ProxyService {
         }
       );
     } catch (e) {
-      if (e.status !== 404) {
+      if (e.status !== 404 || process.env.NODE_IS_TEST !== 'true') {
         LogService.red(e);
       }
       throw e;
