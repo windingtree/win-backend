@@ -1435,10 +1435,10 @@
     "@windingtree/org.id-utils" "^1.0.0-beta.47"
     "@windingtree/org.json-schema" "1.0.2"
 
-"@windingtree/win-commons@^1.6.0":
-  version "1.6.0"
-  resolved "https://registry.yarnpkg.com/@windingtree/win-commons/-/win-commons-1.6.0.tgz#f1f93edcf1959da6a6e890ead59442fa7ed07ec8"
-  integrity sha512-2wGgjCZBHVhdJI96m0E7Mh3+iQNaNaXewgG6JmiAs4gTiUfa93Au9E2l686hb+7E18RMPsT95HEnKfiQdU6r6A==
+"@windingtree/win-commons@^1.6.2":
+  version "1.6.2"
+  resolved "https://registry.yarnpkg.com/@windingtree/win-commons/-/win-commons-1.6.2.tgz#c0a5468ed403c6f75c976fdedc16ae646e91a991"
+  integrity sha512-IjYkNZTbsqr19X1S4ZkhxodE963FeU+eypnjVvagWsxlNWV4KMB5D+Nvg4eOf0/7cM/k03Hq3gpn5lMLn6se9w==
   dependencies:
     ethers "^5.6.9"
 
