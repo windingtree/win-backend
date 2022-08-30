@@ -1,5 +1,10 @@
 import axios, { AxiosResponse } from 'axios';
-import { clientJwt, getUrlByKey, providersUrls } from '../config';
+import {
+  clientJwt,
+  getUrlByKey,
+  providersUrls,
+  serviceProviderId
+} from '../config';
 import hotelRepository from '../repositories/HotelRepository';
 import { makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
@@ -301,9 +306,7 @@ export class ProxyService {
     };
 
     data.serviceId = utils.id(data.offerId);
-    data.provider = utils.keccak256(
-      utils.formatBytes32String('win_win_provider')
-    );
+    data.provider = process.env.serviceProviderId;
 
     return data;
   }

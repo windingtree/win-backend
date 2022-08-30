@@ -31,7 +31,8 @@ checkEnvVariables([
   'SENDGRID_EMAIL_TEMPLATE_ID',
   'APP_ENVIRONMENT',
   'REWARD_PERCENTAGE',
-  'COINGECKO_URL'
+  'COINGECKO_URL',
+  'SERVICE_PROVIDER_ID'
 ]);
 
 export enum AppMode {
@@ -114,3 +115,6 @@ export const rewardPercentage = Number(process.env.REWARD_PERCENTAGE);
 export const coinGeckoURL = String(process.env.COINGECKO_URL); // Note: Free API is limited to 50 calls/minute.
 export const tco2Precision = 1;
 export const tokenPrecision = 0;
+
+// Service provider Id
+export const serviceProviderId = process.env.SERVICE_PROVIDER_ID;
