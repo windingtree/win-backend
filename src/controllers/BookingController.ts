@@ -43,14 +43,14 @@ export class BookingController {
   }
 
   public async getRewardOptions(
-    req: WalletRequest,
+    req: AuthRequest,
     res: Response,
     next: NextFunction
   ) {
     try {
       const { offerId } = req.params;
 
-      const data = await rewardService.getOptions(offerId, req.walletAddress);
+      const data = await rewardService.getOptions(offerId);
 
       res.json(data);
     } catch (e) {
