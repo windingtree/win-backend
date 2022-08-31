@@ -306,7 +306,7 @@ export class ProxyService {
     };
 
     data.serviceId = utils.id(data.offerId);
-    data.provider = process.env.serviceProviderId;
+    data.provider = serviceProviderId;
 
     return data;
   }
