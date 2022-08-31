@@ -275,14 +275,14 @@ describe('test', async () => {
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${walletAccessToken}`)
       .expect(403);
-  });
+  }).timeout(5000);
 
   it('should throw err when get data without token', async () => {
     await requestWithSupertest
       .get(`/api/booking/${constants.AddressZero}`)
       .set('Accept', 'application/json')
       .expect(401);
-  });
+  }).timeout(5000);
 
   it('get user bookings', async () => {
     await requestWithSupertest
