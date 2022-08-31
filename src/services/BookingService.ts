@@ -86,7 +86,9 @@ export class BookingService {
         );
       }
     } catch (e) {
-      console.log(e);
+      if (process.env.NODE_IS_TEST !== 'true') {
+        console.log(e);
+      }
       await dealRepository.updateDeal(
         offer.id,
         'paymentError',

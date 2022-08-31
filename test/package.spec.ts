@@ -275,14 +275,14 @@ describe('test', async () => {
       .set('Accept', 'application/json')
       .set('Authorization', `Bearer ${walletAccessToken}`)
       .expect(403);
-  });
+  }).timeout(5000);
 
   it('should throw err when get data without token', async () => {
     await requestWithSupertest
       .get(`/api/booking/${constants.AddressZero}`)
       .set('Accept', 'application/json')
       .expect(401);
-  });
+  }).timeout(5000);
 
   it('get user bookings', async () => {
     await requestWithSupertest
@@ -375,10 +375,32 @@ describe('test', async () => {
         .expect(200);
       expect(res.body.offers).to.be.a('object');
 
-      offerId = Object.keys(res.body.offers)[0];
-      amadeusOfferId = Object.keys(res.body.offers)[
-        Object.keys(res.body.offers).length - 1
-      ];
+      const offersKeys = Object.keys(res.body.offers);
+      for (const offerKey of offersKeys) {
+        const key = Object.keys(
+          res.body.offers[offerKey].pricePlansReferences
+        )[0];
+        const accommodationId =
+          res.body.offers[offerKey].pricePlansReferences[key].accommodation;
+        if (key === accommodationId) {
+          offerId = offerKey;
+          break;
+        }
+      }
+
+      for (const offerKey of offersKeys) {
+        const key = Object.keys(
+          res.body.offers[offerKey].pricePlansReferences
+        )[0];
+        const accommodationId =
+          res.body.offers[offerKey].pricePlansReferences[key].accommodation;
+        if (key !== accommodationId) {
+          amadeusOfferId = offerKey;
+          break;
+        }
+      }
+
+      console.log(offerId, amadeusOfferId);
     }).timeout(15000);
 
     it('get offer price', async () => {
@@ -479,7 +501,7 @@ describe('test', async () => {
 
     it('return the reward options', async () => {
       const res = await requestWithSupertest
-        .get(`/api/booking/${pricedOfferId}/rewardOptions`)
+        .get(`/api/booking/${amadeusPricedOfferId}/rewardOptions`)
         .set('Accept', 'application/json')
         .set('Authorization', `Bearer ${walletAccessToken}`)
         .expect(200);
@@ -503,7 +525,7 @@ describe('test', async () => {
     it('set the reward option', async () => {
       const rewardChoice = 'TOKEN';
       const res1 = await requestWithSupertest
-        .post(`/api/booking/${pricedOfferId}/reward`)
+        .post(`/api/booking/${amadeusPricedOfferId}/reward`)
         .send({ rewardType: rewardChoice })
         .set('Accept', 'application/json')
         .set('Authorization', `Bearer ${walletAccessToken}`)
@@ -518,7 +540,7 @@ describe('test', async () => {
         .expect(200);
 
       const deals = res2.body;
-      const deal = deals.find((v) => v.offerId === pricedOfferId);
+      const deal = deals.find((v) => v.offerId === amadeusPricedOfferId);
       expect(deal.rewardOption).to.be.equal(rewardChoice);
     }).timeout(25000);
   });
