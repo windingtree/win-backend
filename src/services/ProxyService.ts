@@ -306,9 +306,30 @@ export class ProxyService {
     };
 
     data.serviceId = utils.id(data.offerId);
-    data.provider = process.env.serviceProviderId;
+    data.provider = serviceProviderId;
 
     return data;
+  }
+
+  public async getPricedOffer(offerId: string): Promise<PricedOffer> {
+    const offer = await offerRepository.getOne(offerId);
+
+    if (!offer || !offer.price || !offer.pricedItems || !offer.disclosures) {
+      throw ApiError.NotFound('offer not found');
+    }
+
+    return {
+      accommodation: offer.accommodation,
+      offer: {
+        expiration: offer.expiration.toISOString(),
+        price: offer.price,
+        pricedItems: offer.pricedItems,
+        disclosures: offer.disclosures
+      },
+      offerId: offer.id,
+      provider: utils.id(offer.id),
+      serviceId: serviceProviderId
+    };
   }
 }
 

@@ -117,4 +117,4 @@ export const tco2Precision = 1;
 export const tokenPrecision = 0;
 
 // Service provider Id
-export const serviceProviderId = process.env.SERVICE_PROVIDER_ID;
+export const serviceProviderId = String(process.env.SERVICE_PROVIDER_ID);

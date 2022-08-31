@@ -38,6 +38,21 @@ export class ProxyController {
       next(e);
     }
   }
+
+  public async getPricedOffer(
+    req: AuthRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { offerId } = req.params;
+      const data = await proxyService.getPricedOffer(offerId);
+
+      res.json(data);
+    } catch (e) {
+      next(e);
+    }
+  }
 }
 
 export default new ProxyController();
