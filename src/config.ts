@@ -44,7 +44,7 @@ export enum AppMode {
 export const port = Number(process.env.PORT);
 export const accessTokenKey = String(process.env.APP_ACCESS_TOKEN_KEY);
 export const refreshTokenKey = String(process.env.APP_REFRESH_TOKEN_KEY);
-export const debugEnabled = Boolean(process.env.DEBUG_LPMS_SERVER === 'true');
+export const debugEnabled = Boolean(process.env.NODE_ENV === 'development');
 export const prometheusEnabled = Boolean(
   process.env.PROMETHEUS_ENABLED === 'true'
 );

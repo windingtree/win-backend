@@ -86,7 +86,31 @@ export default class ServerService {
     );
 
     if (debugEnabled) {
-      this.app.use(morgan('dev'));
+      const morganLogger = morgan(function (tokens, req, res) {
+        const method = tokens.method(req, res) || '';
+        const url = tokens.url(req, res) || '';
+        const status = tokens.status(req, res) || '';
+        const contentLength = tokens.res(req, res, 'content-length') || '';
+        const responseTime = tokens['response-time'](req, res) || '';
+
+        if (url.match(/api\/health/gi)) {
+          // we don't want to show route info for `api/health` end-point
+          // `api/health` end-point is constantly being checked on `test` and `prod` environments
+          // we want a nice short logs, so skip `api/health`
+          return;
+        }
+
+        return [
+          method,
+          url,
+          status,
+          contentLength,
+          '-',
+          responseTime,
+          'ms'
+        ].join(' ');
+      });
+      this.app.use(morganLogger);
     }
 
     const apiSpec = path.join(path.resolve(), 'swagger/swagger.yaml');
