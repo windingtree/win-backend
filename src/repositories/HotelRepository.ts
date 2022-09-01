@@ -53,6 +53,12 @@ export class HotelRepository {
 
     await collection.insertMany(hotels);
   }
+
+  public async getOne(accommodationId: string): Promise<Accommodation | null> {
+    const collection = await this.getCollection();
+
+    return await collection.findOne({ id: accommodationId });
+  }
 }
 
 export default new HotelRepository();

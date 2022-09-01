@@ -47,7 +47,7 @@ describe('test', async () => {
 
     const user = await userRepository.getUserByLogin(managerLogin);
     expect(user._id?.toString()).to.be.an('string');
-  });
+  }).timeout(5000);
 
   it('manager can login', async () => {
     const res = await requestWithSupertest
@@ -61,7 +61,7 @@ describe('test', async () => {
 
     expect(refreshToken).to.be.an('string');
     expect(accessToken).to.be.an('string');
-  });
+  }).timeout(5000);
 
   it('check auth', async () => {
     const res = await requestWithSupertest
@@ -70,11 +70,11 @@ describe('test', async () => {
 
     expect(res.status).to.equal(200);
     expect(res.body.users).to.be.an('array');
-  });
+  }).timeout(5000);
 
   it('refresh token', async () => {
     //without sleep script is very fast and refreshed access token is equal with old
-    await sleep(1000);
+    await sleep(1500);
 
     const res = await requestWithSupertest
       .post('/api/user/refresh')
@@ -84,18 +84,18 @@ describe('test', async () => {
     accessToken = res.body.accessToken;
     expect(accessToken).to.be.an('string');
     expect(accessToken).to.not.equal(oldAccessToken);
-  });
+  }).timeout(5000);
 
   it('should throw err when try refresh token with revoked token', async () => {
     //without sleep script is very fast and refreshed access token is equal with old
-    await sleep(1000);
+    await sleep(1500);
 
     await requestWithSupertest
       .post('/api/user/refresh')
       .set('Accept', 'application/json')
       .set('Cookie', [`refreshToken=${refreshToken}`])
       .expect(401);
-  });
+  }).timeout(5000);
 
   it('create new user with refreshed access token', async () => {
     const res = await requestWithSupertest
@@ -109,7 +109,7 @@ describe('test', async () => {
       .set('Accept', 'application/json');
 
     expect(res.status).to.equal(200);
-  });
+  }).timeout(5000);
 
   it('staff can login', async () => {
     const res = await requestWithSupertest
@@ -120,7 +120,7 @@ describe('test', async () => {
     staffAccessToken = res.body.accessToken;
     staffUserId = res.body.id;
     expect(staffAccessToken).to.be.an('string');
-  });
+  }).timeout(5000);
 
   it(`staff can't create user`, async () => {
     const res = await requestWithSupertest
@@ -134,7 +134,7 @@ describe('test', async () => {
       .set('Accept', 'application/json');
 
     expect(res.status).to.equal(403);
-  });
+  }).timeout(5000);
 
   it(`staff can't delete users`, async () => {
     await requestWithSupertest
@@ -145,7 +145,7 @@ describe('test', async () => {
       .set('Authorization', `Bearer ${staffAccessToken}`)
       .set('Accept', 'application/json')
       .expect(403);
-  });
+  }).timeout(5000);
 
   it(`staff can get auth APIs`, async () => {
     const res = await requestWithSupertest
@@ -154,7 +154,7 @@ describe('test', async () => {
 
     expect(res.status).to.equal(200);
     expect(res.body.users).to.be.an('array');
-  });
+  }).timeout(5000);
 
   it(`manager can update staff password`, async () => {
     const res = await requestWithSupertest
@@ -163,7 +163,7 @@ describe('test', async () => {
       .send({ userId: staffUserId, password: staffUpdatePass });
 
     expect(res.status).to.equal(200);
-  });
+  }).timeout(5000);
 
   it(`manager can update staff role to manager`, async () => {
     const res = await requestWithSupertest
@@ -172,7 +172,7 @@ describe('test', async () => {
       .send({ userId: staffUserId, roles: [AppRole.MANAGER] });
 
     expect(res.status).to.equal(200);
-  });
+  }).timeout(5000);
 
   it('staff can login with new pass', async () => {
     const res = await requestWithSupertest
@@ -182,7 +182,7 @@ describe('test', async () => {
 
     staffAccessToken = res.body.accessToken;
     expect(staffAccessToken).to.be.an('string');
-  });
+  }).timeout(5000);
 
   it(`staff can create user after change role to manager`, async () => {
     const res = await requestWithSupertest
@@ -196,7 +196,7 @@ describe('test', async () => {
       .set('Accept', 'application/json');
 
     expect(res.status).to.equal(200);
-  });
+  }).timeout(5000);
 
   it(`manager can delete users`, async () => {
     await requestWithSupertest
@@ -207,7 +207,7 @@ describe('test', async () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .set('Accept', 'application/json')
       .expect(200);
-  });
+  }).timeout(5000);
 
   it('should throw error when deleted user login', async () => {
     await requestWithSupertest
@@ -215,7 +215,7 @@ describe('test', async () => {
       .send({ login: staffLogin, password: staffPass })
       .set('Accept', 'application/json')
       .expect(404);
-  });
+  }).timeout(5000);
 
   it('generate secret token', async () => {
     const res = await requestWithSupertest
@@ -228,7 +228,7 @@ describe('test', async () => {
     const dataSecretToken = res.body.secret;
     expect(secretToken).to.be.a('string');
     expect(secretToken).to.be.eq(dataSecretToken);
-  });
+  }).timeout(5000);
 
   it('auth with wallet', async () => {
     const chainId = 77; //sokol chain id
@@ -304,6 +304,7 @@ describe('test', async () => {
     let amadeusOfferId;
     let pricedOfferId;
     let amadeusPricedOfferId;
+    let accommodationId;
 
     it('get all offers by rectangle with wrong data', async () => {
       const body = {
@@ -392,16 +393,24 @@ describe('test', async () => {
         const key = Object.keys(
           res.body.offers[offerKey].pricePlansReferences
         )[0];
-        const accommodationId =
+        accommodationId =
           res.body.offers[offerKey].pricePlansReferences[key].accommodation;
         if (key !== accommodationId) {
           amadeusOfferId = offerKey;
           break;
         }
       }
-
-      console.log(offerId, amadeusOfferId);
     }).timeout(15000);
+
+    it('get cashed hotel info', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/hotels/${accommodationId}`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body).to.be.a('object');
+      expect(res.body.accommodations[accommodationId]).to.be.a('object');
+    }).timeout(5000);
 
     it('get offer price', async () => {
       const res = await requestWithSupertest
@@ -424,6 +433,16 @@ describe('test', async () => {
       expect(res.body).to.be.a('object');
       amadeusPricedOfferId = res.body.offerId;
     }).timeout(10000);
+
+    it('get cached amadeus offer price', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/hotels/offers/${amadeusOfferId}/price`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body).to.be.a('object');
+      expect(res.body.offerId).to.be.eq(amadeusPricedOfferId);
+    }).timeout(5000);
 
     it('set users and get error with wrong data', async () => {
       const passengers = [

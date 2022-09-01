@@ -36,6 +36,25 @@ export class OfferRepository {
     return await collection.findOne({ id: offerId });
   }
 
+  public async getByAccommodation(
+    accommodationId: string
+  ): Promise<OfferDBValue[]> {
+    const result: OfferDBValue[] = [];
+    const collection = await this.getCollection();
+
+    if ((await collection.countDocuments()) === 0) {
+      return [];
+    }
+
+    const cursor = await collection.find({ accommodationId });
+
+    await cursor.forEach((item) => {
+      result.push(item);
+    });
+
+    return result;
+  }
+
   public async upsertOffer(offer: OfferDBValue): Promise<void> {
     const collection = await this.getCollection();
 

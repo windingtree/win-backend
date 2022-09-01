@@ -6,7 +6,10 @@ import {
   PriceItem,
   PricePlanReferences
 } from '@windingtree/glider-types/types/derbysoft';
-import { Accommodation } from '@windingtree/glider-types/types/win';
+import {
+  Accommodation,
+  Disclosures
+} from '@windingtree/glider-types/types/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export interface User {
@@ -87,10 +90,11 @@ export interface OfferDBValue {
   _id?: ObjectId;
   id: string;
   accommodation: Accommodation;
+  accommodationId: string;
   pricedItems?: PriceItem[];
-  disclosures?: string[];
-  price?: Price;
-  pricePlansReferences?: PricePlanReferences;
+  disclosures?: Disclosures;
+  price: Price;
+  pricePlansReferences: PricePlanReferences;
   expiration: Date;
   arrival: Date;
   departure: Date;
