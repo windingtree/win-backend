@@ -23,19 +23,12 @@ const options = {
 };
 
 export class RewardService {
-  public async getOptions(
-    offerId: string,
-    walletAddress: string
-  ): Promise<RewardOption[]> {
+  public async getOptions(offerId: string): Promise<RewardOption[]> {
     let deal: DealDBValue;
     try {
       deal = await dealRepository.getDeal(offerId);
     } catch (e) {
       throw ApiError.NotFound('deal not found');
-    }
-
-    if (!deal.userAddress.includes(walletAddress)) {
-      throw ApiError.AccessDenied();
     }
 
     const offer = deal.offer;
