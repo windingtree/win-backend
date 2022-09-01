@@ -503,7 +503,6 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/booking/${amadeusPricedOfferId}/rewardOptions`)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${walletAccessToken}`)
         .expect(200);
 
       const options = res.body;

@@ -9,7 +9,6 @@ export class HealthController {
     next: NextFunction
   ) {
     try {
-      console.log('we are here');
       res.json({ success: true, commit: gitCommit.hash });
     } catch (e) {
       next(e);

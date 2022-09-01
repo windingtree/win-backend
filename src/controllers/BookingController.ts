@@ -1,5 +1,5 @@
 import { AuthRequest, WalletRequest } from '../types';
-import { NextFunction, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import bookingService from '../services/BookingService';
 import rewardService from '../services/RewardService';
 import ApiError from '../exceptions/ApiError';
@@ -43,14 +43,14 @@ export class BookingController {
   }
 
   public async getRewardOptions(
-    req: WalletRequest,
+    req: Request,
     res: Response,
     next: NextFunction
   ) {
     try {
       const { offerId } = req.params;
 
-      const data = await rewardService.getOptions(offerId, req.walletAddress);
+      const data = await rewardService.getOptions(offerId);
 
       res.json(data);
     } catch (e) {

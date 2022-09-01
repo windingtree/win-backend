@@ -16,7 +16,7 @@ export default (
     }
     return res.status(err.status).json({
       success: false,
-      ...(process.env.NODE_ENV === 'development'
+      ...(debugEnabled
         ? {
             message: err.message,
             errors: err.errors
