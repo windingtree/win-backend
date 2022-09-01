@@ -1854,6 +1854,72 @@ paths:
                   message:
                     type: string
                     default: Something went wrong
+
+  /hotels/{accommodationId}:
+    get:
+      parameters:
+        - in: path
+          name: accommodationId
+          required: true
+          schema:
+            $ref: '#/components/schemas/UUID'
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResults'
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    enum: [false]
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    default: Something went wrong
   #end proxy
 
   #booking

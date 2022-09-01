@@ -90,10 +90,11 @@ export interface OfferDBValue {
   _id?: ObjectId;
   id: string;
   accommodation: Accommodation;
+  accommodationId: string;
   pricedItems?: PriceItem[];
   disclosures?: Disclosures;
-  price?: Price;
-  pricePlansReferences?: PricePlanReferences;
+  price: Price;
+  pricePlansReferences: PricePlanReferences;
   expiration: Date;
   arrival: Date;
   departure: Date;

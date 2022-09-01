@@ -74,7 +74,7 @@ describe('test', async () => {
 
   it('refresh token', async () => {
     //without sleep script is very fast and refreshed access token is equal with old
-    await sleep(1000);
+    await sleep(1500);
 
     const res = await requestWithSupertest
       .post('/api/user/refresh')
@@ -88,7 +88,7 @@ describe('test', async () => {
 
   it('should throw err when try refresh token with revoked token', async () => {
     //without sleep script is very fast and refreshed access token is equal with old
-    await sleep(1000);
+    await sleep(1500);
 
     await requestWithSupertest
       .post('/api/user/refresh')
@@ -304,6 +304,7 @@ describe('test', async () => {
     let amadeusOfferId;
     let pricedOfferId;
     let amadeusPricedOfferId;
+    let accommodationId;
 
     it('get all offers by rectangle with wrong data', async () => {
       const body = {
@@ -392,16 +393,24 @@ describe('test', async () => {
         const key = Object.keys(
           res.body.offers[offerKey].pricePlansReferences
         )[0];
-        const accommodationId =
+        accommodationId =
           res.body.offers[offerKey].pricePlansReferences[key].accommodation;
         if (key !== accommodationId) {
           amadeusOfferId = offerKey;
           break;
         }
       }
-
-      console.log(offerId, amadeusOfferId);
     }).timeout(15000);
+
+    it('get cashed hotel info', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/hotels/${accommodationId}`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body).to.be.a('object');
+      expect(res.body.accommodations[accommodationId]).to.be.a('object');
+    }).timeout(5000);
 
     it('get offer price', async () => {
       const res = await requestWithSupertest
@@ -424,6 +433,16 @@ describe('test', async () => {
       expect(res.body).to.be.a('object');
       amadeusPricedOfferId = res.body.offerId;
     }).timeout(10000);
+
+    it('get cached amadeus offer price', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/hotels/offers/${amadeusOfferId}/price`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body).to.be.a('object');
+      expect(res.body.offerId).to.be.eq(amadeusPricedOfferId);
+    }).timeout(5000);
 
     it('set users and get error with wrong data', async () => {
       const passengers = [

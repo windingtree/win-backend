@@ -19,6 +19,7 @@ import { utils } from 'ethers';
 import {
   Accommodation,
   Location,
+  Offer,
   PricedOffer,
   SearchResults
 } from '@windingtree/glider-types/types/win';
@@ -133,14 +134,11 @@ export class ProxyService {
         const { pricePlansReferences } = offer;
         const { roomType } =
           pricePlansReferences[Object.keys(pricePlansReferences)[0]];
-
+        const accommodationId =
+          pricePlansReferences[Object.keys(pricePlansReferences)[0]]
+            .accommodation;
         const accommodation = {
-          ...sortedHotels.find(
-            (v) =>
-              v.id ===
-              pricePlansReferences[Object.keys(pricePlansReferences)[0]]
-                .accommodation
-          )
+          ...sortedHotels.find((v) => v.id === accommodationId)
         } as Accommodation;
 
         if (accommodation.roomTypes && accommodation.roomTypes[roomType]) {
@@ -164,6 +162,8 @@ export class ProxyService {
         const offerDBValue: OfferDBValue = {
           id: k,
           accommodation,
+          accommodationId,
+          pricePlansReferences,
           arrival: new Date(arrival),
           departure: new Date(departure),
           expiration: new Date(offer.expiration),
@@ -291,6 +291,8 @@ export class ProxyService {
       departure: offer.departure,
       id: data.offerId,
       accommodation: offer.accommodation,
+      accommodationId: offer.accommodationId,
+      pricePlansReferences: offer.pricePlansReferences,
       expiration: expiration,
       pricedItems: data.offer.pricedItems,
       disclosures: data.offer.disclosures,
@@ -329,6 +331,34 @@ export class ProxyService {
       offerId: offer.id,
       provider: utils.id(offer.id),
       serviceId: serviceProviderId
+    };
+  }
+
+  public async getAccommodation(
+    accommodationId: string
+  ): Promise<SearchResults> {
+    const offers = await offerRepository.getByAccommodation(accommodationId);
+    const accommodation = await hotelRepository.getOne(accommodationId);
+
+    if (!offers.length || !accommodation) {
+      throw ApiError.NotFound('offer not found');
+    }
+
+    const offersMap: {
+      [k: string]: Offer;
+    } = {};
+
+    offers.forEach((v) => {
+      offersMap[v.id] = {
+        expiration: v.expiration.toISOString(),
+        price: v.price,
+        pricePlansReferences: v.pricePlansReferences
+      };
+    });
+
+    return {
+      accommodations: { [accommodationId]: accommodation },
+      offers: offersMap
     };
   }
 }
