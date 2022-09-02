@@ -116,6 +116,7 @@ export interface DealDBValue {
   supplierReservationId?: string;
   message?: string;
   rewardOption?: RewardTypes;
+  userEmailAddress?: string;
 }
 
 export interface DealDTO {
@@ -127,6 +128,7 @@ export interface DealDTO {
   orderId?: string;
   supplierReservationId?: string;
   rewardOption?: RewardTypes;
+  // userEmailAddress is voluntarily not in the DTO for now.
 }
 
 export type RouterInitializer = (router: Router) => void;

@@ -12,17 +12,15 @@ import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
 import { ContractService } from './ContractService';
 import EmailSenderService from './EmailSenderService';
-import {
-  PassengerBooking,
-  PassengerSearch
-} from '@windingtree/glider-types/types/derbysoft';
+import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
 import { DealDBValue, DealDTO, DealStorage, OfferDBValue } from '../types';
+import { parseEmailAddress } from '../utils';
 
 export class BookingService {
   public async booking(
     offer: OfferDBValue,
     dealStorage: DealStorage,
-    passengers: { [key: string]: PassengerSearch }
+    passengers: { [key: string]: PassengerBooking }
   ): Promise<boolean> {
     const data = {
       currency: offer.price?.currency,
@@ -67,12 +65,17 @@ export class BookingService {
       if (order.status === 'CONFIRMED') {
         orderId = orderReq.data.orderId;
         supplierReservationId = orderReq.data.supplierReservationId;
+
+        // TODO: passengers info should be checked before in the flow
+        const emailAddress = parseEmailAddress(passengers);
+
         await dealRepository.updateDeal(
           offer.id,
           'booked',
           undefined,
           orderId,
-          supplierReservationId
+          supplierReservationId,
+          emailAddress
         );
 
         const emailService = new EmailSenderService();

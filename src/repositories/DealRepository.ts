@@ -63,13 +63,22 @@ export class DealRepository {
     status: DealStatus,
     message: string | undefined = undefined,
     orderId: string | undefined = undefined,
-    supplierReservationId: string | undefined = undefined
+    supplierReservationId: string | undefined = undefined,
+    userEmailAddress: string | undefined = undefined
   ): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.updateOne(
       { offerId },
-      { $set: { status, message, orderId, supplierReservationId } }
+      {
+        $set: {
+          status,
+          message,
+          orderId,
+          supplierReservationId,
+          userEmailAddress
+        }
+      }
     );
   }
 

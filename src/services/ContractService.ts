@@ -5,7 +5,10 @@ import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferDBValue, State } from '../types';
 import { allowedNetworks, testWallet } from '../config';
-import { PassengerSearch } from '@windingtree/glider-types/types/derbysoft';
+import {
+  PassengerBooking,
+  PassengerSearch
+} from '@windingtree/glider-types/types/derbysoft';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
 import {
   assetsCurrencies,
@@ -14,10 +17,10 @@ import {
 
 export class ContractService {
   protected offer: OfferDBValue;
-  protected passengers: { [key: string]: PassengerSearch };
+  protected passengers: { [key: string]: PassengerBooking };
   private stopPoller: () => void;
 
-  constructor(offer, passengers: { [key: string]: PassengerSearch }) {
+  constructor(offer, passengers: { [key: string]: PassengerBooking }) {
     this.offer = offer;
     this.passengers = passengers;
   }
@@ -32,7 +35,7 @@ export class ContractService {
 
   public eventListener = async (
     offer: OfferDBValue,
-    passengers: { [key: string]: PassengerSearch }
+    passengers: { [key: string]: PassengerBooking }
   ) => {
     allowedNetworks.forEach((contract) => {
       this.checkPaidBooking(contract)

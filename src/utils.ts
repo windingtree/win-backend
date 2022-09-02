@@ -1,4 +1,6 @@
 import circleToPolygon from 'circle-to-polygon';
+import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
+import { regexp } from '@windingtree/org.id-utils';
 
 export const makeCircumscribedSquare: (
   lon: number,
@@ -25,4 +27,19 @@ export const makeCircumscribedSquare: (
     west: coords[5][0] - uncertainty,
     north: coords[5][1] - uncertainty
   };
+};
+
+export const parseEmailAddress = (passengers: {
+  [key: string]: PassengerBooking;
+}): string => {
+  if (!passengers.PAX1 || !passengers.PAX1.contactInformation) {
+    return '';
+  }
+  let emailAddress = '';
+  for (const contactInfo in passengers.PAX1.contactInformation) {
+    if (contactInfo != '' && contactInfo.match(regexp.email)) {
+      emailAddress = contactInfo;
+    }
+  }
+  return emailAddress;
 };
