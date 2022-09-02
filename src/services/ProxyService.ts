@@ -51,7 +51,9 @@ export class ProxyService {
     }
 
     const providersDataResponses = await Promise.allSettled(promises);
-    const providersData = {};
+    const providersData: {
+      [key: string]: SearchResponse;
+    } = {};
     providersDataResponses.forEach((item, key) => {
       //fulfilled is Promise.allSettled success status
       if (item.status === 'fulfilled') {
@@ -59,6 +61,50 @@ export class ProxyService {
       }
     });
 
+    const commonData: SearchResults = await this.processProvider(
+      providersData,
+      arrival,
+      departure
+    );
+
+    if (
+      !Object.keys(commonData.accommodations).length ||
+      !Object.keys(commonData.offers).length
+    ) {
+      throw ApiError.NotFound('Offers not found');
+    }
+
+    const sortedHotels = await hotelRepository.searchByRadius(
+      lon,
+      lat,
+      radius,
+      Object.keys(commonData.accommodations)
+    );
+
+    const sortedAccommodations: {
+      [key: string]: Accommodation;
+    } = {};
+
+    sortedHotels.forEach((hotel: Accommodation) => {
+      sortedAccommodations[hotel.id] = {
+        ...commonData.accommodations[hotel.id],
+        location: hotel.location as Location,
+        id: hotel.id
+      };
+    });
+
+    commonData.accommodations = sortedAccommodations;
+
+    return commonData;
+  }
+
+  private async processProvider(
+    providersData: {
+      [key: string]: SearchResponse;
+    },
+    arrival: string,
+    departure: string
+  ): Promise<SearchResults> {
     const commonData: SearchResults = {
       accommodations: {},
       offers: {},
@@ -189,34 +235,6 @@ export class ProxyService {
         ...data.pricePlans
       };
     }
-
-    if (
-      !Object.keys(commonData.accommodations).length ||
-      !Object.keys(commonData.offers).length
-    ) {
-      throw ApiError.NotFound('Offers not found');
-    }
-
-    const sortedHotels = await hotelRepository.searchByRadius(
-      lon,
-      lat,
-      radius,
-      Object.keys(commonData.accommodations)
-    );
-
-    const sortedAccommodations: {
-      [key: string]: Accommodation;
-    } = {};
-
-    sortedHotels.forEach((hotel: Accommodation) => {
-      sortedAccommodations[hotel.id] = {
-        ...commonData.accommodations[hotel.id],
-        location: hotel.location as Location,
-        id: hotel.id
-      };
-    });
-
-    commonData.accommodations = sortedAccommodations;
 
     return commonData;
   }
