@@ -14,7 +14,7 @@ import { ContractService } from './ContractService';
 import EmailSenderService from './EmailSenderService';
 import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
 import { DealDBValue, DealDTO, DealStorage, OfferDBValue } from '../types';
-import { regexp } from '@windingtree/org.id-utils';
+import { parseEmailAddress } from '../utils';
 
 export class BookingService {
   public async booking(
@@ -153,18 +153,3 @@ export class BookingService {
 }
 
 export default new BookingService();
-
-const parseEmailAddress = (passengers: {
-  [key: string]: PassengerBooking;
-}): string => {
-  if (!passengers.PAX1 || !passengers.PAX1.contactInformation) {
-    return '';
-  }
-  let emailAddress = '';
-  for (const contactInfo in passengers.PAX1.contactInformation) {
-    if (contactInfo != '' && contactInfo.match(regexp.email)) {
-      emailAddress = contactInfo;
-    }
-  }
-  return emailAddress;
-};
