@@ -5,9 +5,10 @@ import {
   tokenPrecision,
   tco2Precision
 } from '../config';
-import { DealDBValue, RewardOption, RewardTypes } from '../types';
+import { DealDBValue, OfferDBValue, RewardOption, RewardTypes } from '../types';
 import ApiError from '../exceptions/ApiError';
 import dealRepository from '../repositories/DealRepository';
+import offerRepository from '../repositories/OfferRepository';
 
 const options = {
   LIF: {
@@ -24,16 +25,22 @@ const options = {
 
 export class RewardService {
   public async getOptions(offerId: string): Promise<RewardOption[]> {
-    let deal: DealDBValue;
+    let offer: OfferDBValue | null;
     try {
-      deal = await dealRepository.getDeal(offerId);
-    } catch (e) {
-      throw ApiError.NotFound('deal not found');
-    }
+      offer = await offerRepository.getOne(offerId);
+      if (!offer) {
+        const deal = await dealRepository.getDeal(offerId);
+        if (!deal.offer) {
+          throw ApiError.NotFound('offer not found in deal');
+        }
+        offer = deal.offer;
+      }
 
-    const offer = deal.offer;
-    if (!offer?.price?.public || !offer?.price?.currency) {
-      throw ApiError.NotFound('offer not found');
+      if (!offer?.price?.public || !offer?.price?.currency) {
+        throw ApiError.NotFound('offer price not found');
+      }
+    } catch (e) {
+      throw ApiError.NotFound('Issue when retrieving offer: ' + e);
     }
 
     const priceOffer = offer?.price?.public;
