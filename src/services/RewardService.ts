@@ -5,7 +5,8 @@ import {
   tokenPrecision,
   tco2Precision
 } from '../config';
-import { DealDBValue, OfferDBValue, RewardOption, RewardTypes } from '../types';
+import { DealDBValue, OfferDBValue } from '../types';
+import { RewardOption, RewardType } from '@windingtree/glider-types/types/win';
 import ApiError from '../exceptions/ApiError';
 import dealRepository from '../repositories/DealRepository';
 import offerRepository from '../repositories/OfferRepository';
@@ -94,7 +95,7 @@ export class RewardService {
 
   public async updateOption(
     offerId: string,
-    rewardOption: RewardTypes
+    rewardOption: RewardType
   ): Promise<boolean> {
     let deal: DealDBValue;
     try {
