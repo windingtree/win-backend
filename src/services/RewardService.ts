@@ -87,7 +87,6 @@ export class RewardService {
 
   public async updateOption(
     offerId: string,
-    walletAddress: string,
     rewardOption: RewardTypes
   ): Promise<boolean> {
     let deal: DealDBValue;
@@ -95,10 +94,6 @@ export class RewardService {
       deal = await dealRepository.getDeal(offerId);
     } catch (e) {
       throw ApiError.NotFound('deal not found');
-    }
-
-    if (!deal.userAddress.includes(walletAddress)) {
-      throw ApiError.AccessDenied();
     }
 
     await dealRepository.updateRewardOption(offerId, rewardOption);
