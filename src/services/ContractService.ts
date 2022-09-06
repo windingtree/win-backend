@@ -131,7 +131,7 @@ export class ContractService {
     return null;
   }
 
-  private poller = (fn, interval = 20000) => {
+  private poller = (fn, interval = 5000) => {
     if (typeof fn !== 'function') {
       throw new TypeError("Can't poll without a callback function");
     }
