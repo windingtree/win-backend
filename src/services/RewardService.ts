@@ -5,7 +5,7 @@ import {
   tokenPrecision,
   tco2Precision
 } from '../config';
-import { DealDBValue, OfferDBValue } from '../types';
+import { OfferDBValue } from '../types';
 import { RewardOption, RewardType } from '@windingtree/glider-types/types/win';
 import ApiError from '../exceptions/ApiError';
 import dealRepository from '../repositories/DealRepository';
@@ -97,9 +97,8 @@ export class RewardService {
     offerId: string,
     rewardOption: RewardType
   ): Promise<boolean> {
-    let deal: DealDBValue;
     try {
-      deal = await dealRepository.getDeal(offerId);
+      await dealRepository.getDeal(offerId);
     } catch (e) {
       throw ApiError.NotFound('deal not found');
     }
