@@ -13,9 +13,5 @@ export default (router: Router): void => {
     '/booking/:offerId/rewardOptions',
     bookingController.getRewardOptions
   );
-  router.post(
-    '/booking/:offerId/reward',
-    walletAuthMiddleware,
-    bookingController.setRewardOption
-  );
+  router.post('/booking/:offerId/reward', bookingController.setRewardOption);
 };

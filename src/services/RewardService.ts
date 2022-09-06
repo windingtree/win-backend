@@ -5,9 +5,11 @@ import {
   tokenPrecision,
   tco2Precision
 } from '../config';
-import { DealDBValue, RewardOption, RewardTypes } from '../types';
+import { OfferDBValue } from '../types';
+import { RewardOption, RewardType } from '@windingtree/glider-types/types/win';
 import ApiError from '../exceptions/ApiError';
 import dealRepository from '../repositories/DealRepository';
+import offerRepository from '../repositories/OfferRepository';
 
 const options = {
   LIF: {
@@ -24,20 +26,26 @@ const options = {
 
 export class RewardService {
   public async getOptions(offerId: string): Promise<RewardOption[]> {
-    let deal: DealDBValue;
+    let offer: OfferDBValue | null;
     try {
-      deal = await dealRepository.getDeal(offerId);
+      offer = await offerRepository.getOne(offerId);
+      if (!offer) {
+        const deal = await dealRepository.getDeal(offerId);
+        if (!deal.offer) {
+          throw ApiError.NotFound('offer not found in deal');
+        }
+        offer = deal.offer;
+      }
+
+      if (!offer.price.public || !offer.price.currency) {
+        throw ApiError.NotFound('offer price not found');
+      }
     } catch (e) {
-      throw ApiError.NotFound('deal not found');
+      throw ApiError.NotFound('Issue when retrieving offer: ' + e);
     }
 
-    const offer = deal.offer;
-    if (!offer?.price?.public || !offer?.price?.currency) {
-      throw ApiError.NotFound('offer not found');
-    }
-
-    const priceOffer = offer?.price?.public;
-    const currencyOffer = offer?.price?.currency;
+    const priceOffer = offer.price.public;
+    const currencyOffer = offer.price.currency;
 
     const rewardValue = (Number(priceOffer) * rewardPercentage) / 100;
 
@@ -87,18 +95,12 @@ export class RewardService {
 
   public async updateOption(
     offerId: string,
-    walletAddress: string,
-    rewardOption: RewardTypes
+    rewardOption: RewardType
   ): Promise<boolean> {
-    let deal: DealDBValue;
     try {
-      deal = await dealRepository.getDeal(offerId);
+      await dealRepository.getDeal(offerId);
     } catch (e) {
       throw ApiError.NotFound('deal not found');
-    }
-
-    if (!deal.userAddress.includes(walletAddress)) {
-      throw ApiError.AccessDenied();
     }
 
     await dealRepository.updateRewardOption(offerId, rewardOption);

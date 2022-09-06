@@ -5,10 +5,7 @@ import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferDBValue, State } from '../types';
 import { allowedNetworks, testWallet } from '../config';
-import {
-  PassengerBooking,
-  PassengerSearch
-} from '@windingtree/glider-types/types/derbysoft';
+import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
 import {
   assetsCurrencies,

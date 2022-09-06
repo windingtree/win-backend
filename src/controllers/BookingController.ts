@@ -59,7 +59,7 @@ export class BookingController {
   }
 
   public async setRewardOption(
-    req: WalletRequest,
+    req: Request,
     res: Response,
     next: NextFunction
   ) {
@@ -67,11 +67,7 @@ export class BookingController {
       const { offerId } = req.params;
       const rewardOption = req.body.rewardType;
 
-      await rewardService.updateOption(
-        offerId,
-        req.walletAddress,
-        rewardOption
-      );
+      await rewardService.updateOption(offerId, rewardOption);
 
       res.json({ success: true });
     } catch (e) {
