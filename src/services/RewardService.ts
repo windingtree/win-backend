@@ -37,15 +37,15 @@ export class RewardService {
         offer = deal.offer;
       }
 
-      if (!offer?.price?.public || !offer?.price?.currency) {
+      if (!offer.price.public || !offer.price.currency) {
         throw ApiError.NotFound('offer price not found');
       }
     } catch (e) {
       throw ApiError.NotFound('Issue when retrieving offer: ' + e);
     }
 
-    const priceOffer = offer?.price?.public;
-    const currencyOffer = offer?.price?.currency;
+    const priceOffer = offer.price.public;
+    const currencyOffer = offer.price.currency;
 
     const rewardValue = (Number(priceOffer) * rewardPercentage) / 100;
 
