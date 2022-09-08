@@ -400,7 +400,7 @@ describe('test', async () => {
           break;
         }
       }
-    }).timeout(15000);
+    }).timeout(30000);
 
     it('get cashed hotel info', async () => {
       const res = await requestWithSupertest
