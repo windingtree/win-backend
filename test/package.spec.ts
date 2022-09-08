@@ -421,7 +421,7 @@ describe('test', async () => {
 
       expect(res.body).to.be.a('object');
       pricedOfferId = res.body.offerId;
-    }).timeout(10000);
+    }).timeout(20000);
 
     it('get amadeus offer price', async () => {
       const res = await requestWithSupertest
