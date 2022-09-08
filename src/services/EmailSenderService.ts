@@ -18,16 +18,14 @@ export default class EmailSenderService {
   }
 
   public setMessage(offer: OfferDBValue, passengers, tokenId: string) {
-    const start_date =
-      new Date(offer.arrival).toDateString() +
-      offer.accommodation.checkinoutPolicy.checkinTime
-        ? offer.accommodation.checkinoutPolicy.checkinTime
-        : '';
-    const end_date =
-      new Date(offer.departure).toDateString() +
-      offer.accommodation.checkinoutPolicy.checkoutTime
-        ? offer.accommodation.checkinoutPolicy.checkoutTime
-        : '';
+    const checkIn = offer.accommodation.checkinoutPolicy.checkinTime
+      ? offer.accommodation.checkinoutPolicy.checkinTime.slice(0, -3)
+      : '';
+    const checkOut = offer.accommodation.checkinoutPolicy.checkoutTime
+      ? offer.accommodation.checkinoutPolicy.checkoutTime.slice(0, -3)
+      : '';
+    const start_date = `${new Date(offer.arrival).toDateString()} ${checkIn}`;
+    const end_date = `${new Date(offer.departure).toDateString()} ${checkOut}`;
     this.message = {
       from: this.fromEmail,
       personalizations: [
