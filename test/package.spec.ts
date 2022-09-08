@@ -4,6 +4,7 @@ import ServerService from '../src/services/ServerService';
 import { AppRole } from '../src/types';
 import userService from '../src/services/UserService';
 import userRepository from '../src/repositories/UserRepository';
+import dealRepository from '../src/repositories/DealRepository';
 import MongoDBService from '../src/services/MongoDBService';
 import { constants } from 'ethers';
 import {
@@ -37,6 +38,8 @@ describe('test', async () => {
   let staffUserId;
 
   const anotherUserForTest = 'test_staff_for_tests';
+
+  const userEmailAddress = 'contact@org.co.uk';
 
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -491,7 +494,7 @@ describe('test', async () => {
           firstnames: ['Bob'],
           gender: 'Male',
           birthdate: '1980-03-21T00:00:00Z',
-          contactInformation: ['contact@org.co.uk', '+32123456789']
+          contactInformation: [userEmailAddress, '+32123456789']
         }
       ];
       await requestWithSupertest
@@ -560,6 +563,11 @@ describe('test', async () => {
       const deals = res2.body;
       const deal = deals.find((v) => v.offerId === amadeusPricedOfferId);
       expect(deal.rewardOption).to.be.equal(rewardChoice);
+    }).timeout(25000);
+
+    it('email is stored', async () => {
+      const deal = await dealRepository.getDeal(amadeusPricedOfferId);
+      expect(deal.userEmailAddress).to.be.equal(userEmailAddress);
     }).timeout(25000);
   });
 
