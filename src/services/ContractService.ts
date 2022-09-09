@@ -5,10 +5,7 @@ import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferDBValue, State } from '../types';
 import { allowedNetworks, testWallet } from '../config';
-import {
-  PassengerBooking,
-  PassengerSearch
-} from '@windingtree/glider-types/types/derbysoft';
+import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
 import {
   assetsCurrencies,
@@ -134,7 +131,7 @@ export class ContractService {
     return null;
   }
 
-  private poller = (fn, interval = 20000) => {
+  private poller = (fn, interval = 5000) => {
     if (typeof fn !== 'function') {
       throw new TypeError("Can't poll without a callback function");
     }

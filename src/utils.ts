@@ -36,7 +36,7 @@ export const parseEmailAddress = (passengers: {
     return '';
   }
   let emailAddress = '';
-  for (const contactInfo in passengers.PAX1.contactInformation) {
+  for (const contactInfo of passengers.PAX1.contactInformation) {
     if (contactInfo != '' && contactInfo.match(regexp.email)) {
       emailAddress = contactInfo;
     }

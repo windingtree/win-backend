@@ -8,7 +8,8 @@ import {
 } from '@windingtree/glider-types/types/derbysoft';
 import {
   Accommodation,
-  Disclosures
+  Disclosures,
+  RewardType
 } from '@windingtree/glider-types/types/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
@@ -115,7 +116,7 @@ export interface DealDBValue {
   orderId?: string;
   supplierReservationId?: string;
   message?: string;
-  rewardOption?: RewardTypes;
+  rewardOption?: RewardType;
   userEmailAddress?: string;
 }
 
@@ -127,18 +128,10 @@ export interface DealDTO {
   message?: string;
   orderId?: string;
   supplierReservationId?: string;
-  rewardOption?: RewardTypes;
+  rewardOption?: RewardType;
   // userEmailAddress is voluntarily not in the DTO for now.
 }
 
 export type RouterInitializer = (router: Router) => void;
 
 export type HotelProviders = 'derbySoft' | 'amadeus';
-
-export type RewardTypes = 'CO2_OFFSET' | 'TOKEN';
-
-export interface RewardOption {
-  rewardType: RewardTypes;
-  quantity: string;
-  tokenName: string;
-}

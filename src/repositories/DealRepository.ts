@@ -1,13 +1,8 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
 import { Collection } from 'mongodb';
-import {
-  DealDBValue,
-  DealStatus,
-  DealStorage,
-  OfferDBValue,
-  RewardTypes
-} from '../types';
+import { DealDBValue, DealStatus, DealStorage, OfferDBValue } from '../types';
+import { RewardType } from '@windingtree/glider-types/types/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export class DealRepository {
@@ -93,7 +88,7 @@ export class DealRepository {
 
   public async updateRewardOption(
     offerId: string,
-    rewardOption: RewardTypes
+    rewardOption: RewardType
   ): Promise<void> {
     const collection = await this.getCollection();
     await collection.updateOne({ offerId }, { $set: { rewardOption } });
