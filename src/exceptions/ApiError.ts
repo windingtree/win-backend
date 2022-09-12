@@ -19,7 +19,7 @@ export default class ApiError extends Error {
     return new ApiError(403, 'Access denied');
   }
 
-  static NotFound(message: string) {
+  static NotFound(message?: string) {
     return new ApiError(404, message || 'Not Found');
   }
 }

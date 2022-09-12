@@ -16,9 +16,9 @@ export default (
     }
     return res.status(err.status).json({
       success: false,
+      message: err.message,
       ...(debugEnabled
         ? {
-            message: err.message,
             errors: err.errors
           }
         : {})
@@ -32,5 +32,5 @@ export default (
 
   return res
     .status(500)
-    .json({ message: err.message || 'Something went wrong' });
+    .json({ success: false, message: err.message || 'Something went wrong' });
 };
