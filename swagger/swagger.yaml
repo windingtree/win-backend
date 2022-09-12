@@ -847,6 +847,39 @@ components:
       type: string
       enum: ['CO2_OFFSET', 'TOKEN']
 
+    ErrorResponse:
+      description: error response;
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: boolean
+          enum: [false]
+        message:
+          type: string
+
+    SuccessResponse:
+      description: error response;
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: boolean
+          enum: [true]
+
+    SetPassengersResponse:
+      description: error response;
+      type: object
+      required:
+        - expiration
+      properties:
+        expiration:
+          type: string
+          format: 'date-time'
+
 servers:
   - url: http://localhost:5000/api
     description: local server
@@ -907,51 +940,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user/refresh:
     post:
@@ -977,51 +990,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user/get-all:
     get:
@@ -1051,8 +1044,36 @@ paths:
                           items:
                             type: string
                           minItems: 1
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         401:
-          description: User is not Auth
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user/create:
     post:
@@ -1090,61 +1111,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [true]
+                $ref: '#/components/schemas/SuccessResponse'
         400:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user/update-password:
     put:
@@ -1174,61 +1171,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [true]
+                $ref: '#/components/schemas/SuccessResponse'
         400:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user/update-roles:
     put:
@@ -1262,61 +1235,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [true]
+                $ref: '#/components/schemas/SuccessResponse'
         400:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
   /user:
     delete:
       security:
@@ -1341,61 +1290,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [true]
+                $ref: '#/components/schemas/SuccessResponse'
         400:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /user/logout:
     post:
@@ -1409,61 +1334,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [true]
+                $ref: '#/components/schemas/SuccessResponse'
         400:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /bookings/auth/secret:
     get:
@@ -1481,51 +1382,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /bookings/auth:
     post:
@@ -1549,51 +1430,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /bookings/auth/refresh:
     post:
@@ -1611,51 +1472,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
   #end users
 
   #proxy
@@ -1679,51 +1520,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /hotels/offers/{offerId}/price:
     post:
@@ -1745,51 +1566,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
     get:
       parameters:
         - in: path
@@ -1809,51 +1610,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /hotels/{accommodationId}:
     get:
@@ -1875,51 +1656,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
   #end proxy
 
   #booking
@@ -1943,51 +1704,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /booking/{offerId}/guests:
     parameters:
@@ -2012,64 +1753,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [true]
-                  data:
-                    type: string
-                    format: 'date-time'
+                $ref: '#/components/schemas/SetPassengersResponse'
         400:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /booking/{offerId}/rewardOptions:
     parameters:
@@ -2093,51 +1807,31 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
+                $ref: '#/components/schemas/ErrorResponse'
 
   /booking/{offerId}/reward:
     parameters:
@@ -2160,62 +1854,37 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [true]
+                $ref: '#/components/schemas/SuccessResponse'
         400:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        403:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
-        404:
-          description: Handled Error
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
         401:
           description: Handled Error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  status:
-                    type: boolean
-                    enum: [false]
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         500:
           description: Some server error
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    default: Something went wrong
-
+                $ref: '#/components/schemas/ErrorResponse'
   #end booking
 
   #health

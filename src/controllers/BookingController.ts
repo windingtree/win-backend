@@ -34,9 +34,12 @@ export class BookingController {
       const { offerId } = req.params;
       const passengers = req.body;
 
-      const data = await bookingService.setPassengers(offerId, passengers);
+      const expiration = await bookingService.setPassengers(
+        offerId,
+        passengers
+      );
 
-      res.json({ data, success: true });
+      res.json({ expiration });
     } catch (e) {
       next(e);
     }
