@@ -32,7 +32,11 @@ checkEnvVariables([
   'APP_ENVIRONMENT',
   'REWARD_PERCENTAGE',
   'COINGECKO_URL',
-  'SERVICE_PROVIDER_ID'
+  'SERVICE_PROVIDER_ID',
+  'REDIS_HOST',
+  'REDIS_USERNAME',
+  'REDIS_PASSWORD',
+  'REDIS_PORT'
 ]);
 
 export enum AppMode {
@@ -118,3 +122,8 @@ export const tokenPrecision = 0;
 
 // Service provider Id
 export const serviceProviderId = String(process.env.SERVICE_PROVIDER_ID);
+
+export const redisHost = String(process.env.REDIS_HOST);
+export const redisUsername = String(process.env.REDIS_USERNAME);
+export const redisPassword = String(process.env.REDIS_PASSWORD);
+export const redisPort = Number(process.env.REDIS_PORT);

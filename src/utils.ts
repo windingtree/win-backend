@@ -43,3 +43,7 @@ export const parseEmailAddress = (passengers: {
   }
   return emailAddress;
 };
+
+export const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};

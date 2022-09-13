@@ -15,6 +15,7 @@ import EmailSenderService from './EmailSenderService';
 import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
 import { DealDBValue, DealDTO, DealStorage, OfferDBValue } from '../types';
 import { parseEmailAddress } from '../utils';
+import { QueueService } from './QueueService';
 
 export class BookingService {
   public async booking(
@@ -149,6 +150,82 @@ export class BookingService {
     });
 
     return Array.from(dealsDTO);
+  }
+
+  public async checkFailedDeal(
+    offerId: string,
+    passengers: { [key: string]: PassengerBooking }
+  ): Promise<void> {
+    const deal = await dealRepository.getDeal(offerId);
+
+    if (
+      ['booked', 'transactionError', 'creationFailed', 'cancelled'].includes(
+        deal.status
+      )
+    ) {
+      return;
+    }
+
+    //create similar job for check one more time
+    await QueueService.getInstance().addDealJob(offerId, {
+      id: offerId,
+      passengers
+    });
+
+    const url = getUrlByKey(deal.offer.provider);
+    let orderId;
+    let supplierReservationId;
+
+    try {
+      const orderReq = await axios.get(`${url}/orders`, {
+        params: {
+          offerId: offerId
+        },
+        headers: { Authorization: `Bearer ${clientJwt}` }
+      });
+      const emailAddress = parseEmailAddress(passengers);
+      if (orderReq.data.order.status === 'CONFIRMED') {
+        orderId = orderReq.data.orderId;
+        supplierReservationId = orderReq.data.supplierReservationId;
+
+        await dealRepository.updateDeal(
+          deal.offer.id,
+          'booked',
+          undefined,
+          orderId,
+          supplierReservationId,
+          emailAddress
+        );
+
+        const emailService = new EmailSenderService();
+        emailService.setMessage(deal.offer, passengers, supplierReservationId);
+        await emailService.sendEmail();
+      }
+
+      if (orderReq.data.order.status === 'CREATION_FAILED') {
+        await dealRepository.updateDeal(
+          deal.offer.id,
+          'creationFailed',
+          'Proxy side creation failed'
+        );
+      }
+
+      if (orderReq.data.order.status === 'CANCELLED') {
+        await dealRepository.updateDeal(
+          deal.offer.id,
+          'cancelled',
+          'Proxy side cancelled'
+        );
+      }
+
+      return;
+    } catch (e) {
+      if (e.response.data.code === 400) {
+        await this.booking(deal.offer, deal.dealStorage, passengers);
+      } else {
+        console.log(e);
+      }
+    }
   }
 }
 

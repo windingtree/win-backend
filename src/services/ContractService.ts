@@ -11,11 +11,14 @@ import {
   assetsCurrencies,
   NetworkInfo
 } from '@windingtree/win-commons/dist/types';
+import { QueueService } from './QueueService';
+import { Job } from 'bullmq';
 
 export class ContractService {
   protected offer: OfferDBValue;
   protected passengers: { [key: string]: PassengerBooking };
   private stopPoller: () => void;
+  protected job: Job;
 
   constructor(offer, passengers: { [key: string]: PassengerBooking }) {
     this.offer = offer;
@@ -103,10 +106,15 @@ export class ContractService {
           await getOwners(dealStorage.customer, provider)
         );
 
+        await QueueService.getInstance().addDealJob(serviceId, {
+          id: serviceId,
+          passengers: this.passengers
+        });
+
         if (!utils.parseEther(price).eq(dealStorage.value)) {
           await dealRepository.updateDeal(
             serviceId,
-            'paymentError',
+            'transactionError',
             'Invalid value of offer'
           );
           this.stop();
@@ -116,11 +124,11 @@ export class ContractService {
         if (!assetsCurrencies.includes(currency)) {
           await dealRepository.updateDeal(
             serviceId,
-            'paymentError',
+            'transactionError',
             'Invalid currency of offer'
           );
           this.stop();
-          return null; //todo how to rightly check value of transaction?
+          return null;
         }
         return dealStorage;
       }
@@ -142,6 +150,7 @@ export class ContractService {
       const expired =
         this.offer.expiration && new Date() > new Date(this.offer.expiration);
       if (disabled || expired) {
+        await this.job.remove();
         return;
       }
 
@@ -160,6 +169,17 @@ export class ContractService {
         );
       }
     };
+
+    QueueService.getInstance()
+      .addContractJob(this.offer.id, {
+        id: this.offer.id,
+        passengers: this.passengers
+      })
+      .then((job) => {
+        if (job) {
+          this.job = job;
+        }
+      });
 
     poll();
     LogService.green(`Poller for service: ${serviceId} started`);

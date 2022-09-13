@@ -1,6 +1,7 @@
 import { Request, Router } from 'express';
 import { ObjectId } from 'mongodb';
 import {
+  PassengerBooking,
   PassengerSearch,
   Price,
   PriceItem,
@@ -102,7 +103,14 @@ export interface OfferDBValue {
   provider: HotelProviders;
 }
 
-export type DealStatus = 'paid' | 'pending' | 'booked' | 'paymentError';
+export type DealStatus =
+  | 'paid'
+  | 'pending'
+  | 'booked'
+  | 'paymentError'
+  | 'transactionError'
+  | 'creationFailed'
+  | 'cancelled';
 
 export interface DealDBValue {
   _id?: ObjectId;
@@ -135,3 +143,8 @@ export interface DealDTO {
 export type RouterInitializer = (router: Router) => void;
 
 export type HotelProviders = 'derbySoft' | 'amadeus';
+
+export type DealWorkerData = {
+  id: string;
+  passengers: { [key: string]: PassengerBooking };
+};
