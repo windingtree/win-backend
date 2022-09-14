@@ -37,6 +37,7 @@ function create_collections {
     "04_hotels"
     "05_offers"
     "06_deals"
+    "07_sessions"
   )
 
   for script in ${COLLECTION_SCRIPTS[@]}; do
