@@ -50,6 +50,17 @@ export interface Tokens {
   refreshToken: string;
 }
 
+export interface SessionDbData extends Session {
+  _id: ObjectId | null;
+}
+
+export interface Session {
+  uuid: string;
+  ip: string;
+  userAgent: string;
+  expiredAt: Date;
+}
+
 export interface AuthRequest extends Request {
   user: UserDTO;
 }

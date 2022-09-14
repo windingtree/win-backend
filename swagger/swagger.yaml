@@ -819,6 +819,15 @@ components:
         refreshToken:
           type: string
 
+    SessionResponse:
+      description: Bookings authentication secret response
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+
     RewardOption:
       description: option regarding the form of the reward
       type: object
@@ -1467,6 +1476,48 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookingsAuthResponse'
+        400:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        401:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        403:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        404:
+          description: Handled Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        500:
+          description: Some server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /session:
+    get:
+      summary: get session token
+      tags: [Auth service]
+      responses:
+        200:
+          description: It's ok
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
         400:
           description: Handled Error
           content:

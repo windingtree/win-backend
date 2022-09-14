@@ -3,6 +3,8 @@ import userService from '../services/UserService';
 import { AppRole, AuthRequest } from '../types';
 import ApiError from '../exceptions/ApiError';
 import { refreshTokenMaxAge, secretTokenMaxAge } from '../config';
+import { getRequestIpAddress } from '../utils';
+import sessionService from '../services/SessionService';
 
 export class UserController {
   public async login(req: Request, res: Response, next: NextFunction) {
@@ -193,6 +195,22 @@ export class UserController {
       });
 
       return res.json({ ...tokens });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async makeSession(req: Request, res: Response, next: NextFunction) {
+    try {
+      const ip = getRequestIpAddress(req);
+      const userAgent = req.header('user-agent');
+
+      if (!userAgent || !ip) {
+        throw ApiError.BadRequest('ip or user agent not found');
+      }
+
+      const token = await sessionService.makeSession(ip, userAgent);
+      return res.json({ token });
     } catch (e) {
       next(e);
     }

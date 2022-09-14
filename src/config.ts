@@ -56,6 +56,7 @@ export const prometheusPort = Number(process.env.APP_PROMETHEUS_PORT);
 export const refreshTokenMaxAge = 30 * 24 * 60 * 60 * 1000; //30d
 export const accessTokenMaxAge = 30 * 60 * 1000; //30m
 export const secretTokenMaxAge = 5 * 60 * 1000; //5m
+export const sessionTokenMaxAge = 365 * 24 * 60 * 60 * 1000; //1y
 export const mongoDBUrl = String(process.env.MONGODB_URL);
 export const DBName = String(process.env.DB_NAME);
 export const derbySoftProxyUrl = String(process.env.DERBYSOFT_PROXY_URL);
