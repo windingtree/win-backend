@@ -13,6 +13,7 @@ import {
   types
 } from '@windingtree/win-commons/dist/auth';
 import { testWallet } from '../src/config';
+import { QueueService } from '../src/services/QueueService';
 
 let appService: ServerService;
 
@@ -573,5 +574,6 @@ describe('test', async () => {
 
   after(async () => {
     await MongoDBService.getInstance().cleanUp();
+    await QueueService.getInstance().close();
   });
 });

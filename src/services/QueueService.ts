@@ -23,6 +23,9 @@ export class QueueService {
   private dealQueue: Queue;
   private contractQueue: Queue;
   private contractJobs: string[] = [];
+  private contractScheduler: QueueScheduler;
+  private dealScheduler: QueueScheduler;
+  private dealWorker: Worker | undefined;
 
   constructor() {
     if (QueueService._instance) {
@@ -30,8 +33,11 @@ export class QueueService {
         'QueueService class instantiation failed. Use QueueService.getInstance() instead of new operator.'
       );
     }
-    new QueueScheduler('Deal', this.connectionConfig);
-    new QueueScheduler('Contract', this.connectionConfig);
+    this.dealScheduler = new QueueScheduler('Deal', this.connectionConfig);
+    this.contractScheduler = new QueueScheduler(
+      'Contract',
+      this.connectionConfig
+    );
     this.dealQueue = new Queue('Deal', this.connectionConfig);
     this.contractQueue = new Queue('Contract', this.connectionConfig);
 
@@ -47,7 +53,7 @@ export class QueueService {
   }
 
   public async runDealWorker(): Promise<void> {
-    new Worker(
+    this.dealWorker = new Worker(
       'Deal',
       async (job: Job) => {
         const data: DealWorkerData = job.data;
@@ -121,5 +127,14 @@ export class QueueService {
         this.contractWorker = undefined;
       }
     });
+  }
+
+  public async close(): Promise<void> {
+    await this.contractWorker?.close();
+    await this.dealWorker?.close();
+    await this.contractScheduler.close();
+    await this.dealScheduler.close();
+    await this.dealQueue.close();
+    await this.contractQueue.close();
   }
 }
