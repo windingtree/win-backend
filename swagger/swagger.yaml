@@ -819,7 +819,6 @@ components:
         refreshToken:
           type: string
 
-
     SessionResponse:
       description: Bookings authentication secret response
       type: object
@@ -1511,7 +1510,7 @@ paths:
   /session:
     get:
       summary: get session token
-      tags: [ Auth service ]
+      tags: [Auth service]
       responses:
         200:
           description: It's ok
