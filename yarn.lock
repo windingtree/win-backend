@@ -1470,17 +1470,17 @@
     "@windingtree/org.id-utils" "^1.0.0-beta.47"
     "@windingtree/org.json-schema" "1.0.2"
 
-"@windingtree/win-commons@^1.6.2":
-  version "1.6.2"
-  resolved "https://registry.yarnpkg.com/@windingtree/win-commons/-/win-commons-1.6.2.tgz#c0a5468ed403c6f75c976fdedc16ae646e91a991"
-  integrity sha512-IjYkNZTbsqr19X1S4ZkhxodE963FeU+eypnjVvagWsxlNWV4KMB5D+Nvg4eOf0/7cM/k03Hq3gpn5lMLn6se9w==
+"@windingtree/win-commons@^1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@windingtree/win-commons/-/win-commons-1.7.0.tgz#e11473f367cf1f6e22bb162f300d70ce72c1a953"
+  integrity sha512-+eEhPavVdElEhZVws79fkOzdo0S5Cy4h+m+GYVKTQWRugIhkzUOId5uS+MXpec/N0ugKoggVnCE0AMYgViLhiA==
   dependencies:
     ethers "^5.6.9"
 
-"@windingtree/win-pay@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@windingtree/win-pay/-/win-pay-1.1.0.tgz#742568dfd54c49539addc77ebd755190d0d7e5d9"
-  integrity sha512-ptE8BLlfSfosweCwTU+QYsp4OOd8it7umm/LLnuaHVCJBrN0xTxOmkVkZ1vCHMOJFJ1nVhb0f/U4Xiw2u9PjVA==
+"@windingtree/win-pay@^1.6.0":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@windingtree/win-pay/-/win-pay-1.6.0.tgz#1e22772d915946b28b47aac05e72f0afc2586310"
+  integrity sha512-dAdUnj1NH9M3DBdiCjHfPzHSAEqXOKkQFx8m5POpXSZDZSQO5jMIqMhYjratfo3eg+ScdstOP7wpqI66K+85VA==
   dependencies:
     "@openzeppelin/contracts" "^4.7.1"
     "@openzeppelin/contracts-upgradeable" "^4.7.1"
