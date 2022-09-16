@@ -6,7 +6,7 @@ import {
   sendgridEmailTemplateId,
   sendgridEmailTo
 } from '../config';
-import { OfferDBValue } from '../types';
+import { OfferDbValue } from '@windingtree/glider-types/dist/win';
 
 export default class EmailSenderService {
   private readonly fromEmail: string;
@@ -17,7 +17,7 @@ export default class EmailSenderService {
     this.fromEmail = sendgridEmailFrom;
   }
 
-  public setMessage(offer: OfferDBValue, passengers, tokenId: string) {
+  public setMessage(offer: OfferDbValue, passengers, tokenId: string) {
     const checkIn = offer.accommodation.checkinoutPolicy.checkinTime
       ? offer.accommodation.checkinoutPolicy.checkinTime.slice(0, -3)
       : '';

@@ -1,6 +1,6 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
-import { OfferDBValue } from '../types';
+import { OfferDbValue } from '@windingtree/glider-types/dist/win';
 import { Collection } from 'mongodb';
 
 export class OfferRepository {
@@ -11,26 +11,26 @@ export class OfferRepository {
     this.dbService = MongoDBService.getInstance();
   }
 
-  protected async getCollection(): Promise<Collection<OfferDBValue>> {
+  protected async getCollection(): Promise<Collection<OfferDbValue>> {
     const dbClient = await this.dbService.getDbClient();
     const database = dbClient.db(DBName);
 
     return database.collection(this.collectionName);
   }
 
-  public async bulkCreate(offers: Array<OfferDBValue>): Promise<void> {
+  public async bulkCreate(offers: Array<OfferDbValue>): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.insertMany(offers);
   }
 
-  public async create(offer: OfferDBValue): Promise<void> {
+  public async create(offer: OfferDbValue): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.insertOne(offer);
   }
 
-  public async getOne(offerId: string): Promise<OfferDBValue | null> {
+  public async getOne(offerId: string): Promise<OfferDbValue | null> {
     const collection = await this.getCollection();
 
     return await collection.findOne({ id: offerId });
@@ -38,8 +38,8 @@ export class OfferRepository {
 
   public async getByAccommodation(
     accommodationId: string
-  ): Promise<OfferDBValue[]> {
-    const result: OfferDBValue[] = [];
+  ): Promise<OfferDbValue[]> {
+    const result: OfferDbValue[] = [];
     const collection = await this.getCollection();
 
     if ((await collection.countDocuments()) === 0) {
@@ -55,7 +55,7 @@ export class OfferRepository {
     return result;
   }
 
-  public async upsertOffer(offer: OfferDBValue): Promise<void> {
+  public async upsertOffer(offer: OfferDbValue): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.updateOne(

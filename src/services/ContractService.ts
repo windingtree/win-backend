@@ -3,9 +3,10 @@ import { constants, providers, utils } from 'ethers';
 import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
-import { DealStorage, OfferDBValue, State } from '../types';
+import { DealStorage, State } from '../types';
 import { allowedNetworks, testWallet } from '../config';
-import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
+import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
+import { OfferDbValue } from '@windingtree/glider-types/dist/win';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
 import {
   assetsCurrencies,
@@ -15,7 +16,7 @@ import { QueueService } from './QueueService';
 import { Job } from 'bullmq';
 
 export class ContractService {
-  protected offer: OfferDBValue;
+  protected offer: OfferDbValue;
   protected passengers: { [key: string]: PassengerBooking };
   private stopPoller: () => void;
   protected job: Job;
@@ -34,7 +35,7 @@ export class ContractService {
   }
 
   public eventListener = async (
-    offer: OfferDBValue,
+    offer: OfferDbValue,
     passengers: { [key: string]: PassengerBooking }
   ) => {
     allowedNetworks.forEach((contract) => {

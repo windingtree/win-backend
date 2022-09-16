@@ -12,14 +12,15 @@ import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
 import { ContractService } from './ContractService';
 import EmailSenderService from './EmailSenderService';
-import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
-import { DealDBValue, DealDTO, DealStorage, OfferDBValue } from '../types';
+import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
+import { OfferDbValue } from '@windingtree/glider-types/dist/win';
+import { DealDBValue, DealDTO, DealStorage } from '../types';
 import { parseEmailAddress } from '../utils';
 import { QueueService } from './QueueService';
 
 export class BookingService {
   public async booking(
-    offer: OfferDBValue,
+    offer: OfferDbValue,
     dealStorage: DealStorage,
     passengers: { [key: string]: PassengerBooking }
   ): Promise<boolean> {
@@ -130,7 +131,7 @@ export class BookingService {
 
     new ContractService(offer, passengersMap).start();
 
-    return offer.expiration.toISOString();
+    return (offer.expiration as unknown as Date).toISOString();
   }
 
   getDealsDTO(deals: DealDBValue[]): DealDTO[] {

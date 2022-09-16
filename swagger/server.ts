@@ -3,7 +3,9 @@ import morgan from 'morgan';
 import swaggerUI from 'swagger-ui-express';
 import YAML from 'yamljs';
 
-const swaggerDocument = YAML.load('./swagger/swagger.yaml');
+const swaggerDocument = YAML.load(
+  'node_modules/@windingtree/glider-types/dist/win.yaml'
+);
 
 const PORT = process.env.SWAGGER_PORT || 3000;
 

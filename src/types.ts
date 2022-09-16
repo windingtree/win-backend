@@ -2,16 +2,9 @@ import { Request, Router } from 'express';
 import { ObjectId } from 'mongodb';
 import {
   PassengerBooking,
-  PassengerSearch,
-  Price,
-  PriceItem,
-  PricePlanReferences
-} from '@windingtree/glider-types/types/derbysoft';
-import {
-  Accommodation,
-  Disclosures,
-  RewardType
-} from '@windingtree/glider-types/types/win';
+  PassengerSearch
+} from '@windingtree/glider-types/dist/accommodations';
+import { RewardType, OfferDbValue } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export interface User {
@@ -99,21 +92,6 @@ export interface SearchBody {
   passengers: [PassengerSearch, ...PassengerSearch[]];
 }
 
-export interface OfferDBValue {
-  _id?: ObjectId;
-  id: string;
-  accommodation: Accommodation;
-  accommodationId: string;
-  pricedItems?: PriceItem[];
-  disclosures?: Disclosures;
-  price: Price;
-  pricePlansReferences: PricePlanReferences;
-  expiration: Date;
-  arrival: Date;
-  departure: Date;
-  provider: HotelProviders;
-}
-
 export type DealStatus =
   | 'paid'
   | 'pending'
@@ -125,7 +103,7 @@ export type DealStatus =
 
 export interface DealDBValue {
   _id?: ObjectId;
-  offer: OfferDBValue;
+  offer: OfferDbValue;
   dealStorage: DealStorage;
   contract: NetworkInfo;
   offerId: string;
@@ -140,7 +118,7 @@ export interface DealDBValue {
 }
 
 export interface DealDTO {
-  offer: OfferDBValue;
+  offer: OfferDbValue;
   offerId: string;
   createdAt: Date;
   status: DealStatus;
