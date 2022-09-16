@@ -1,14 +1,14 @@
 version: '2.1'
 services:
-    redisdb:
-        image: redis
-        volumes:
-          - ~/redis/redisData:/data
-        command: redis-server --requirepass test
-        ports:
-            - 6379:6379
-        networks:
-            - localdev
+  redisdb:
+    image: redis
+    volumes:
+      - ~/redis/redisData:/data
+    command: redis-server --requirepass test
+    ports:
+      - 6379:6379
+    networks:
+      - localdev
 networks:
-    localdev:
-        driver: bridge
+  localdev:
+    driver: bridge
