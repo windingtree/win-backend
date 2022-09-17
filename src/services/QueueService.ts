@@ -3,7 +3,7 @@ import { QueueBaseOptions } from 'bullmq/dist/esm/interfaces/queue-options';
 import { DealDBValue, DealWorkerData } from '../types';
 import bookingService from './BookingService';
 import { sleep } from '../utils';
-import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
+import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
 import dealRepository from '../repositories/DealRepository';
 import offerRepository from '../repositories/OfferRepository';
 import { DateTime } from 'luxon';
@@ -103,7 +103,10 @@ export class QueueService {
         if (
           deal ||
           !offer ||
-          DateTime.now() > DateTime.fromISO(offer.expiration.toISOString())
+          DateTime.now() >
+            DateTime.fromISO(
+              (offer.expiration as unknown as Date).toISOString()
+            )
         ) {
           return;
         }

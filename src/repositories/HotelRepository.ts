@@ -1,7 +1,7 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
 import { Collection } from 'mongodb';
-import { Accommodation } from '@windingtree/glider-types/types/win';
+import { WinAccommodation } from '@windingtree/glider-types/dist/win';
 import { OfferDBValue } from '../types';
 
 export class HotelRepository {
@@ -12,7 +12,7 @@ export class HotelRepository {
     this.dbService = MongoDBService.getInstance();
   }
 
-  protected async getCollection(): Promise<Collection<Accommodation>> {
+  protected async getCollection(): Promise<Collection<WinAccommodation>> {
     const dbClient = await this.dbService.getDbClient();
     const database = dbClient.db(DBName);
 
@@ -24,7 +24,7 @@ export class HotelRepository {
     lat: number,
     radius: number,
     ids: string[]
-  ): Promise<Accommodation[]> {
+  ): Promise<WinAccommodation[]> {
     const collection = await this.getCollection();
 
     const cursor = await collection.find({
@@ -40,7 +40,7 @@ export class HotelRepository {
       }
     });
 
-    const hotels = new Set<Accommodation>();
+    const hotels = new Set<WinAccommodation>();
 
     await cursor.forEach((item) => {
       hotels.add(item);
@@ -49,20 +49,22 @@ export class HotelRepository {
     return Array.from(hotels);
   }
 
-  public async bulkCreate(hotels: Accommodation[]): Promise<void> {
+  public async bulkCreate(hotels: WinAccommodation[]): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.insertMany(hotels);
   }
 
-  public async getOne(accommodationId: string): Promise<Accommodation | null> {
+  public async getOne(
+    accommodationId: string
+  ): Promise<WinAccommodation | null> {
     const collection = await this.getCollection();
 
     return await collection.findOne({ id: accommodationId });
   }
 
-  public async getByIds(ids: string[]): Promise<Accommodation[]> {
-    const result: Accommodation[] = [];
+  public async getByIds(ids: string[]): Promise<WinAccommodation[]> {
+    const result: WinAccommodation[] = [];
     const collection = await this.getCollection();
 
     if ((await collection.countDocuments()) === 0) {

@@ -111,7 +111,7 @@ export const providersUrls = {
   amadeus: amadeusProxyUrl
 };
 
-export const getUrlByKey = (key: HotelProviders): string => {
+export const getUrlByKey = (key: string): string => {
   return providersUrls[key];
 };
 

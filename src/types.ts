@@ -3,18 +3,13 @@ import { ObjectId } from 'mongodb';
 import {
   LocationSearch,
   PassengerBooking,
-  PassengerSearch,
-  Price,
-  PriceItem,
-  PricePlanReferences
-} from '@windingtree/glider-types/types/derbysoft';
-import {
-  Accommodation,
-  Disclosures,
-  RewardType
-} from '@windingtree/glider-types/types/win';
+  PassengerSearch
+} from '@windingtree/glider-types/dist/accommodations';
+import { RewardType, OfferDbValue } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { MongoLocation } from '../dist/esm/src/types';
+import { Disclosures } from '@windingtree/glider-types/types/win';
+import { PricePlanReferences } from '@windingtree/glider-types/types/derbysoft';
 
 export interface User {
   login: string;
@@ -120,7 +115,7 @@ export interface SearchBody {
   passengers: [PassengerSearch, ...PassengerSearch[]];
 }
 
-export interface OfferDBValue {
+export interface OfferDbValue {
   _id?: ObjectId;
   id: string;
   accommodation: Accommodation;
@@ -148,7 +143,7 @@ export type DealStatus =
 
 export interface DealDBValue {
   _id?: ObjectId;
-  offer: OfferDBValue;
+  offer: OfferDbValue;
   dealStorage: DealStorage;
   contract: NetworkInfo;
   offerId: string;
@@ -163,7 +158,7 @@ export interface DealDBValue {
 }
 
 export interface DealDTO {
-  offer: OfferDBValue;
+  offer: OfferDbValue;
   offerId: string;
   createdAt: Date;
   status: DealStatus;

@@ -1,5 +1,5 @@
 import circleToPolygon from 'circle-to-polygon';
-import { PassengerBooking } from '@windingtree/glider-types/types/derbysoft';
+import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
 import { regexp } from '@windingtree/org.id-utils';
 
 export const makeCircumscribedSquare: (
