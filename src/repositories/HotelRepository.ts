@@ -2,7 +2,6 @@ import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
 import { Collection } from 'mongodb';
 import { WinAccommodation } from '@windingtree/glider-types/dist/win';
-import { OfferDBValue } from '../types';
 
 export class HotelRepository {
   private dbService: MongoDBService;

@@ -1,15 +1,12 @@
 import { Request, Router } from 'express';
 import { ObjectId } from 'mongodb';
 import {
-  LocationSearch,
   PassengerBooking,
   PassengerSearch
 } from '@windingtree/glider-types/dist/accommodations';
-import { RewardType, OfferDbValue } from '@windingtree/glider-types/dist/win';
+import { OfferDbValue, RewardType } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { MongoLocation } from '../dist/esm/src/types';
-import { Disclosures } from '@windingtree/glider-types/types/win';
-import { PricePlanReferences } from '@windingtree/glider-types/types/derbysoft';
 
 export interface User {
   login: string;
@@ -113,23 +110,6 @@ export interface SearchBody {
     roomCount?: number;
   };
   passengers: [PassengerSearch, ...PassengerSearch[]];
-}
-
-export interface OfferDbValue {
-  _id?: ObjectId;
-  id: string;
-  accommodation: Accommodation;
-  accommodationId: string;
-  pricedItems?: PriceItem[];
-  disclosures?: Disclosures;
-  price: Price;
-  pricePlansReferences: PricePlanReferences;
-  expiration: Date;
-  arrival: Date;
-  departure: Date;
-  provider: HotelProviders;
-  requestHash: string;
-  sessionId: string;
 }
 
 export type DealStatus =

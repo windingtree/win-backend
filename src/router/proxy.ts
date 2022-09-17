@@ -8,9 +8,17 @@ export default (router: Router): void => {
     sessionMiddleware,
     proxyController.searchOffers
   );
-  router.post('/hotels/offers/:offerId/price', proxyController.offerPrice);
+  router.post(
+    '/hotels/offers/:offerId/price',
+    sessionMiddleware,
+    proxyController.offerPrice
+  );
 
-  router.get('/hotels/offers/:offerId/price', proxyController.getPricedOffer);
+  router.get(
+    '/hotels/offers/:offerId/price',
+    sessionMiddleware,
+    proxyController.getPricedOffer
+  );
   router.get(
     '/hotels/:accommodationId',
     sessionMiddleware,

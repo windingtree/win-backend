@@ -346,7 +346,7 @@ describe('test', async () => {
           }
         ]
       };
-      console.log(sessionToken);
+
       await requestWithSupertest
         .post('/api/hotels/offers/search')
         .send(body)
@@ -571,7 +571,7 @@ describe('test', async () => {
         .post(`/api/booking/${amadeusPricedOfferId}/reward`)
         .send({ rewardType: rewardChoice })
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${walletAccessToken}`)
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
 
       expect(res1.body.success).to.be.true;

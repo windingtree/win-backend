@@ -9,18 +9,6 @@ import hotelRepository from '../repositories/HotelRepository';
 import { makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
-import {
-  SearchCriteria,
-  SearchResponse
-} from '@windingtree/glider-types/types/derbysoft';
-import {
-  HotelProviders,
-  OfferDBValue,
-  SearchBody,
-  UserRequestDbData
-} from '@windingtree/glider-types/dist/accommodations';
-import { OfferDbValue } from '@windingtree/glider-types/dist/win';
-import { HotelProviders, SearchBody } from '../types';
 import ApiError from '../exceptions/ApiError';
 import { utils } from 'ethers';
 import {
@@ -28,11 +16,17 @@ import {
   MongoLocation,
   Offer,
   WinPricedOffer,
-  SearchResults
+  SearchResults,
+  OfferDbValue
 } from '@windingtree/glider-types/dist/win';
 import { assetsCurrencies } from '@windingtree/win-commons/dist/types';
 import { DateTime } from 'luxon';
 import userRequestRepository from '../repositories/UserRequestRepository';
+import { HotelProviders, SearchBody, UserRequestDbData } from '../types';
+import {
+  SearchCriteria,
+  SearchResponse
+} from '@windingtree/glider-types/dist/accommodations';
 
 export class ProxyService {
   public async getDerbySoftOffers(
@@ -44,7 +38,6 @@ export class ProxyService {
     const requestHash = utils.id(JSON.stringify(body));
     const cashedOffers = await this.getCachedOffers(sessionId, requestHash);
     if (cashedOffers) {
-      console.log('cashed');
       return cashedOffers;
     }
 
@@ -279,16 +272,14 @@ export class ProxyService {
     const cashedOffers = (
       await offerRepository.getBySession(sessionId, requestHash)
     ).filter((offer) => {
-      return (
-        DateTime.fromJSDate(offer.expiration).diffNow('minutes').minutes > 10
-      );
+      return DateTime.fromISO(offer.expiration).diffNow('minutes').minutes > 10;
     });
 
     if (!cashedOffers.length) {
       return null;
     }
 
-    const hotelIds = [
+    const hotelIds: string[] = [
       ...new Set(cashedOffers.map((offer) => offer.accommodationId))
     ];
     const hotels = await hotelRepository.getByIds(hotelIds);
@@ -303,7 +294,7 @@ export class ProxyService {
 
     cashedOffers.forEach((v) => {
       offersMap[v.id] = {
-        expiration: v.expiration.toISOString(),
+        expiration: new Date(v.expiration).toISOString(),
         price: v.price,
         pricePlansReferences: v.pricePlansReferences
       };
