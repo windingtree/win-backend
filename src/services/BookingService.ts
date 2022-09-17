@@ -131,7 +131,7 @@ export class BookingService {
 
     new ContractService(offer, passengersMap).start();
 
-    return (offer.expiration as unknown as Date).toISOString();
+    return new Date(offer.expiration).toISOString();
   }
 
   getDealsDTO(deals: DealDBValue[]): DealDTO[] {

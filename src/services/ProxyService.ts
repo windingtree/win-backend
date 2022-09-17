@@ -342,7 +342,7 @@ export class ProxyService {
     return {
       accommodation: offer.accommodation,
       offer: {
-        expiration: (offer.expiration as unknown as Date).toISOString(),
+        expiration: new Date(offer.expiration).toISOString(),
         price: offer.price,
         pricedItems: offer.pricedItems,
         disclosures: offer.disclosures
@@ -369,7 +369,7 @@ export class ProxyService {
 
     offers.forEach((v) => {
       offersMap[v.id] = {
-        expiration: (v.expiration as unknown as Date).toISOString(),
+        expiration: new Date(v.expiration).toISOString(),
         price: v.price,
         pricePlansReferences: v.pricePlansReferences
       };

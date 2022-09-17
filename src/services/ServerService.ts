@@ -113,7 +113,10 @@ export default class ServerService {
       this.app.use(morganLogger);
     }
 
-    const apiSpec = path.join(path.resolve(), 'swagger/swagger.yaml');
+    const apiSpec = path.join(
+      path.resolve(),
+      'node_modules/@windingtree/glider-types/dist/win.yaml'
+    );
 
     this.app.use(
       openApiValidator.middleware({
@@ -127,10 +130,6 @@ export default class ServerService {
     this.app.use('/api', router);
 
     this.app.use(errorMiddleware);
-
-    const swaggerDocument = YAML.load('./swagger/swagger.yaml');
-
-    this.app.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
   }
 
   get getApp(): Express {
