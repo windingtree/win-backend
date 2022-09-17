@@ -30,6 +30,7 @@ describe('test', async () => {
   let secretToken;
   let walletAccessToken;
   let walletRefreshToken;
+  let sessionToken;
 
   const staffLogin = 'test_staff_super_long_login';
   const staffPass = '123456qwerty';
@@ -296,6 +297,17 @@ describe('test', async () => {
       .expect(200);
   }).timeout(5000);
 
+  it('get user session', async () => {
+    const res = await requestWithSupertest
+      .get(`/api/session`)
+      .set('Accept', 'application/json')
+      .set('Authorization', `Bearer ${walletAccessToken}`)
+      .expect(200);
+
+    expect(res.body.token).to.be.a('string');
+    sessionToken = res.body.token;
+  }).timeout(5000);
+
   it('delete users', async () => {
     const manager = await userRepository.getUserByLogin(managerLogin);
     const anotherUser = await userRepository.getUserByLogin(anotherUserForTest);
@@ -334,11 +346,12 @@ describe('test', async () => {
           }
         ]
       };
-
+      console.log(sessionToken);
       await requestWithSupertest
         .post('/api/hotels/offers/search')
         .send(body)
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(400);
     }).timeout(10000);
 
@@ -377,6 +390,7 @@ describe('test', async () => {
         .post('/api/hotels/offers/search')
         .send(body)
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
       expect(res.body.offers).to.be.a('object');
 
@@ -410,6 +424,7 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/hotels/${accommodationId}`)
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -421,6 +436,7 @@ describe('test', async () => {
         .post(`/api/hotels/offers/${offerId}/price`)
         .send({})
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -432,6 +448,7 @@ describe('test', async () => {
         .post(`/api/hotels/offers/${amadeusOfferId}/price`)
         .send({})
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -442,6 +459,7 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/hotels/offers/${amadeusOfferId}/price`)
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -464,6 +482,7 @@ describe('test', async () => {
         .post(`/api/booking/${pricedOfferId}/guests`)
         .send(passengers)
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(400);
     });
 
@@ -502,6 +521,7 @@ describe('test', async () => {
         .post(`/api/booking/${amadeusPricedOfferId}/guests`)
         .send(guests)
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
       await sleep(20000);
     }).timeout(25000);
@@ -526,6 +546,7 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/booking/${amadeusPricedOfferId}/rewardOptions`)
         .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
 
       const options = res.body;

@@ -55,6 +55,26 @@ export class OfferRepository {
     return result;
   }
 
+  public async getBySession(
+    sessionId: string,
+    requestHash: string
+  ): Promise<OfferDBValue[]> {
+    const result: OfferDBValue[] = [];
+    const collection = await this.getCollection();
+
+    if ((await collection.countDocuments()) === 0) {
+      return [];
+    }
+
+    const cursor = await collection.find({ sessionId, requestHash });
+
+    await cursor.forEach((item) => {
+      result.push(item);
+    });
+
+    return result;
+  }
+
   public async upsertOffer(offer: OfferDBValue): Promise<void> {
     const collection = await this.getCollection();
 

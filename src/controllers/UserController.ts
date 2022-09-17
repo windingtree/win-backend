@@ -202,8 +202,13 @@ export class UserController {
 
   public async makeSession(req: Request, res: Response, next: NextFunction) {
     try {
-      const ip = getRequestIpAddress(req);
-      const userAgent = req.header('user-agent');
+      let ip = getRequestIpAddress(req);
+      let userAgent = req.header('user-agent');
+
+      if (process.env.NODE_IS_TEST === 'true') {
+        ip = '127.0.0.1';
+        userAgent = 'supertest';
+      }
 
       if (!userAgent || !ip) {
         throw ApiError.BadRequest('ip or user agent not found');

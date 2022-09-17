@@ -2,6 +2,7 @@ import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
 import { Collection } from 'mongodb';
 import { Accommodation } from '@windingtree/glider-types/types/win';
+import { OfferDBValue } from '../types';
 
 export class HotelRepository {
   private dbService: MongoDBService;
@@ -58,6 +59,23 @@ export class HotelRepository {
     const collection = await this.getCollection();
 
     return await collection.findOne({ id: accommodationId });
+  }
+
+  public async getByIds(ids: string[]): Promise<Accommodation[]> {
+    const result: Accommodation[] = [];
+    const collection = await this.getCollection();
+
+    if ((await collection.countDocuments()) === 0) {
+      return [];
+    }
+
+    const cursor = await collection.find({ id: { $in: ids } });
+
+    await cursor.forEach((item) => {
+      result.push(item);
+    });
+
+    return result;
   }
 }
 

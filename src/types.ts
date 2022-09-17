@@ -1,6 +1,7 @@
 import { Request, Router } from 'express';
 import { ObjectId } from 'mongodb';
 import {
+  LocationSearch,
   PassengerBooking,
   PassengerSearch,
   Price,
@@ -13,6 +14,7 @@ import {
   RewardType
 } from '@windingtree/glider-types/types/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
+import { MongoLocation } from '../dist/esm/src/types';
 
 export interface User {
   login: string;
@@ -61,12 +63,31 @@ export interface Session {
   expiredAt: Date;
 }
 
+export interface UserRequestDbData extends UserRequest {
+  _id: ObjectId | null;
+}
+
+export interface UserRequest {
+  sessionId: string;
+  accommodationId: string;
+  provider: string;
+  providerAccommodationId: string;
+  hotelLocation: MongoLocation;
+  startDate: Date;
+  requestBody: SearchBody;
+  requestHash: string;
+}
+
 export interface AuthRequest extends Request {
   user: UserDTO;
 }
 
 export interface WalletRequest extends Request {
   walletAddress: string;
+}
+
+export interface SessionRequest extends Request {
+  sessionId: string;
 }
 
 export enum State {
@@ -112,6 +133,8 @@ export interface OfferDBValue {
   arrival: Date;
   departure: Date;
   provider: HotelProviders;
+  requestHash: string;
+  sessionId: string;
 }
 
 export type DealStatus =

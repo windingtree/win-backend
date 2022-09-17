@@ -2,6 +2,7 @@ import ServerService from './services/ServerService';
 import { port, prometheusEnabled } from './config';
 import { MetricsService } from './services/MetricsService';
 import { QueueService } from './services/QueueService';
+import { utils } from 'ethers';
 
 process.on('unhandledRejection', async (error) => {
   console.log(error);
