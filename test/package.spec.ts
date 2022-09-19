@@ -31,6 +31,8 @@ describe('test', async () => {
   let walletAccessToken;
   let walletRefreshToken;
   let sessionToken;
+  let sessionToken2;
+  let providerHotelId;
 
   const staffLogin = 'test_staff_super_long_login';
   const staffPass = '123456qwerty';
@@ -301,11 +303,20 @@ describe('test', async () => {
     const res = await requestWithSupertest
       .get(`/api/session`)
       .set('Accept', 'application/json')
-      .set('Authorization', `Bearer ${walletAccessToken}`)
       .expect(200);
 
     expect(res.body.token).to.be.a('string');
     sessionToken = res.body.token;
+  }).timeout(5000);
+
+  it('get user session 2', async () => {
+    const res = await requestWithSupertest
+      .get(`/api/session`)
+      .set('Accept', 'application/json')
+      .expect(200);
+
+    expect(res.body.token).to.be.a('string');
+    sessionToken2 = res.body.token;
   }).timeout(5000);
 
   it('delete users', async () => {
@@ -429,7 +440,25 @@ describe('test', async () => {
 
       expect(res.body).to.be.a('object');
       expect(res.body.accommodations[accommodationId]).to.be.a('object');
+
+      providerHotelId = res.body.accommodations[accommodationId].hotelId;
     }).timeout(5000);
+
+    it('get cashed hotel info shared by link', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/hotels/${accommodationId}`)
+        .set('Accept', 'application/json')
+        .set('Authorization', `Bearer ${sessionToken2}`)
+        .expect(200);
+
+      expect(res.body).to.be.a('object');
+      const accommodation =
+        res.body.accommodations[Object.keys(res.body.accommodations)[0]];
+      expect(accommodation.hotelId).to.be.eq(providerHotelId);
+      expect(Object.keys(res.body.accommodations)[0]).to.be.not.eq(
+        accommodationId
+      );
+    }).timeout(15000);
 
     it('get offer price', async () => {
       const res = await requestWithSupertest
@@ -540,7 +569,7 @@ describe('test', async () => {
       // expect(deal.status).to.be.equal('booked');
       const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
       expect(amadeusDeal.status).to.be.equal('booked');
-    }).timeout(25000);
+    }).timeout(30000);
 
     it('return the reward options', async () => {
       const res = await requestWithSupertest
