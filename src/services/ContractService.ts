@@ -4,7 +4,7 @@ import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferBackEnd, State } from '../types';
-import { allowedNetworks, testWallet } from '../config';
+import { allowedNetworks, getNetworkInfo, testWallet } from '../config';
 import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
@@ -124,7 +124,23 @@ export class ContractService {
           return null;
         }
 
-        //todo how to check currency
+        const network = getNetworkInfo(chainId);
+        const address = utils.getAddress(dealStorage.asset);
+        const asset = network.contracts.assets.find(
+          (asset) => asset.address === address
+        );
+
+        if (
+          !['USD', this.offer.price.currency].includes(asset?.currency || '')
+        ) {
+          await dealRepository.updateDeal(
+            serviceId,
+            'transactionError',
+            'Invalid currency of offer'
+          );
+          this.stop();
+          return null;
+        }
 
         return dealStorage;
       }

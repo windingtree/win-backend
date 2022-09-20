@@ -327,7 +327,7 @@ describe('test', async () => {
   });
 
   describe('proxy', async () => {
-    let offerId;
+    //let offerId;
     let amadeusOfferId;
     let pricedOfferId;
     let amadeusPricedOfferId;
@@ -406,17 +406,17 @@ describe('test', async () => {
       expect(res.body.offers).to.be.a('object');
 
       const offersKeys = Object.keys(res.body.offers);
-      for (const offerKey of offersKeys) {
-        const key = Object.keys(
-          res.body.offers[offerKey].pricePlansReferences
-        )[0];
-        const accommodationId =
-          res.body.offers[offerKey].pricePlansReferences[key].accommodation;
-        if (key === accommodationId) {
-          offerId = offerKey;
-          break;
-        }
-      }
+      // for (const offerKey of offersKeys) {
+      //   const key = Object.keys(
+      //     res.body.offers[offerKey].pricePlansReferences
+      //   )[0];
+      //   // const accommodationId =
+      //   //   res.body.offers[offerKey].pricePlansReferences[key].accommodation;
+      //   // if (key === accommodationId) {
+      //   //   offerId = offerKey;
+      //   //   break;
+      //   // }
+      // }
 
       for (const offerKey of offersKeys) {
         const key = Object.keys(
