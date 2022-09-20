@@ -7,10 +7,7 @@ import { DealStorage, OfferBackEnd, State } from '../types';
 import { allowedNetworks, testWallet } from '../config';
 import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
-import {
-  assetsCurrencies,
-  NetworkInfo
-} from '@windingtree/win-commons/dist/types';
+import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { QueueService } from './QueueService';
 import { Job } from 'bullmq';
 import { getContractServiceId } from '../utils';
