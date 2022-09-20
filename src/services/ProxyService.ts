@@ -16,13 +16,17 @@ import {
   MongoLocation,
   Offer,
   WinPricedOffer,
-  SearchResults,
-  OfferDbValue
+  SearchResults
 } from '@windingtree/glider-types/dist/win';
 import { assetsCurrencies } from '@windingtree/win-commons/dist/types';
 import { DateTime } from 'luxon';
 import userRequestRepository from '../repositories/UserRequestRepository';
-import { HotelProviders, SearchBody, UserRequestDbData } from '../types';
+import {
+  HotelProviders,
+  OfferBackEnd,
+  SearchBody,
+  UserRequestDbData
+} from '../types';
 import {
   SearchCriteria,
   SearchResponse
@@ -195,7 +199,7 @@ export class ProxyService {
 
       const { offers } = data;
 
-      const offersSet = new Set<OfferDbValue>();
+      const offersSet = new Set<OfferBackEnd>();
 
       Object.keys(offers).map((k) => {
         const offer = offers[k];
@@ -227,7 +231,7 @@ export class ProxyService {
           decimalPlaces: offer.price.decimalPlaces
         };
 
-        const offerDBValue: OfferDbValue = {
+        const offerDBValue: OfferBackEnd = {
           id: k,
           accommodation,
           accommodationId,
@@ -381,7 +385,7 @@ export class ProxyService {
 
     //todo remove after derby and amadeus proxy fix types
 
-    const offerDBValue: OfferDbValue = {
+    const offerDBValue: OfferBackEnd = {
       arrival: offer.arrival,
       departure: offer.departure,
       id: data.offerId,

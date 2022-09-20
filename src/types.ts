@@ -4,9 +4,12 @@ import {
   PassengerBooking,
   PassengerSearch
 } from '@windingtree/glider-types/dist/accommodations';
-import { OfferDbValue, RewardType } from '@windingtree/glider-types/dist/win';
+import {
+  MongoLocation,
+  OfferDbValue,
+  RewardType
+} from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
-import { MongoLocation } from '../dist/esm/src/types';
 
 export interface User {
   login: string;
@@ -70,6 +73,12 @@ export interface UserRequest {
   requestHash: string;
 }
 
+export interface OfferBackEnd extends OfferDbValue {
+  accommodationId: string;
+  requestHash: string;
+  sessionId: string;
+}
+
 export interface AuthRequest extends Request {
   user: UserDTO;
 }
@@ -123,7 +132,7 @@ export type DealStatus =
 
 export interface DealDBValue {
   _id?: ObjectId;
-  offer: OfferDbValue;
+  offer: OfferBackEnd;
   dealStorage: DealStorage;
   contract: NetworkInfo;
   offerId: string;

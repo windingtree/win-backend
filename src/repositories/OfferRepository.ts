@@ -1,7 +1,7 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
-import { OfferDbValue } from '@windingtree/glider-types/dist/win';
 import { Collection } from 'mongodb';
+import { OfferBackEnd } from '../types';
 
 export class OfferRepository {
   private dbService: MongoDBService;
@@ -11,26 +11,26 @@ export class OfferRepository {
     this.dbService = MongoDBService.getInstance();
   }
 
-  protected async getCollection(): Promise<Collection<OfferDbValue>> {
+  protected async getCollection(): Promise<Collection<OfferBackEnd>> {
     const dbClient = await this.dbService.getDbClient();
     const database = dbClient.db(DBName);
 
     return database.collection(this.collectionName);
   }
 
-  public async bulkCreate(offers: Array<OfferDbValue>): Promise<void> {
+  public async bulkCreate(offers: Array<OfferBackEnd>): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.insertMany(offers);
   }
 
-  public async create(offer: OfferDbValue): Promise<void> {
+  public async create(offer: OfferBackEnd): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.insertOne(offer);
   }
 
-  public async getOne(offerId: string): Promise<OfferDbValue | null> {
+  public async getOne(offerId: string): Promise<OfferBackEnd | null> {
     const collection = await this.getCollection();
 
     return await collection.findOne({ id: offerId });
@@ -38,8 +38,8 @@ export class OfferRepository {
 
   public async getByAccommodation(
     accommodationId: string
-  ): Promise<OfferDbValue[]> {
-    const result: OfferDbValue[] = [];
+  ): Promise<OfferBackEnd[]> {
+    const result: OfferBackEnd[] = [];
     const collection = await this.getCollection();
 
     if ((await collection.countDocuments()) === 0) {
@@ -55,7 +55,7 @@ export class OfferRepository {
     return result;
   }
 
-  public async upsertOffer(offer: OfferDbValue): Promise<void> {
+  public async upsertOffer(offer: OfferBackEnd): Promise<void> {
     const collection = await this.getCollection();
 
     await collection.updateOne(
@@ -68,8 +68,8 @@ export class OfferRepository {
   public async getBySession(
     sessionId: string,
     requestHash: string
-  ): Promise<OfferDbValue[]> {
-    const result: OfferDbValue[] = [];
+  ): Promise<OfferBackEnd[]> {
+    const result: OfferBackEnd[] = [];
     const collection = await this.getCollection();
 
     if ((await collection.countDocuments()) === 0) {
