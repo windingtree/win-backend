@@ -4,15 +4,13 @@ import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
 import { DealStorage, OfferBackEnd, State } from '../types';
-import { allowedNetworks, testWallet } from '../config';
+import { allowedNetworks, getNetworkInfo, testWallet } from '../config';
 import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
 import { getOwners } from '@windingtree/win-commons/dist/multisig';
-import {
-  assetsCurrencies,
-  NetworkInfo
-} from '@windingtree/win-commons/dist/types';
+import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { QueueService } from './QueueService';
 import { Job } from 'bullmq';
+import { getContractServiceId } from '../utils';
 
 export class ContractService {
   protected offer: OfferBackEnd;
@@ -60,10 +58,12 @@ export class ContractService {
     const provider = new providers.JsonRpcProvider(rpc, chainId);
 
     let price = '0';
-    let currency = '';
+    let quotePrice = '0';
     if (this.offer.price) {
       price = String(this.offer.price.public);
-      currency = String(this.offer.price.currency);
+    }
+    if (this.offer.quote) {
+      quotePrice = String(this.offer.quote.targetAmount);
     }
     if (process.env.NODE_IS_TEST === 'true') {
       const dealStorage: DealStorage = {
@@ -86,7 +86,7 @@ export class ContractService {
       const serviceId = this.offer.id;
 
       const wipPay = WinPay__factory.connect(contracts.winPay, provider);
-      const deal = await wipPay.deals(utils.id(serviceId));
+      const deal = await wipPay.deals(getContractServiceId(serviceId));
 
       const dealStorage: DealStorage = {
         asset: deal.asset,
@@ -111,7 +111,58 @@ export class ContractService {
           passengers: this.passengers
         });
 
-        if (!utils.parseEther(price).eq(dealStorage.value)) {
+        const network = getNetworkInfo(chainId);
+        const address = utils.getAddress(dealStorage.asset);
+        const asset = network.contracts.assets.find(
+          (asset) => asset.coin === address
+        );
+
+        if (!asset) {
+          await dealRepository.updateDeal(
+            serviceId,
+            'transactionError',
+            'Invalid assets configuration'
+          );
+          this.stop();
+          return null;
+        }
+
+        if (
+          !['USD', this.offer.price.currency].includes(asset?.currency || '')
+        ) {
+          await dealRepository.updateDeal(
+            serviceId,
+            'transactionError',
+            'Invalid currency of offer'
+          );
+          this.stop();
+          return null;
+        }
+
+        if (utils.parseEther(price).eq(dealStorage.value)) {
+          if (asset.currency !== this.offer.price.currency) {
+            await dealRepository.updateDeal(
+              serviceId,
+              'transactionError',
+              'Invalid payment currency'
+            );
+            this.stop();
+            return null;
+          }
+        } else if (
+          this.offer.quote &&
+          utils.parseEther(quotePrice).eq(dealStorage.value)
+        ) {
+          if (asset.currency !== this.offer.quote.targetCurrency) {
+            await dealRepository.updateDeal(
+              serviceId,
+              'transactionError',
+              'Invalid payment currency'
+            );
+            this.stop();
+            return null;
+          }
+        } else {
           await dealRepository.updateDeal(
             serviceId,
             'transactionError',
@@ -121,15 +172,6 @@ export class ContractService {
           return null;
         }
 
-        if (!assetsCurrencies.includes(currency)) {
-          await dealRepository.updateDeal(
-            serviceId,
-            'transactionError',
-            'Invalid currency of offer'
-          );
-          this.stop();
-          return null;
-        }
         return dealStorage;
       }
     } catch (e) {

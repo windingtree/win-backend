@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import { ethers } from 'ethers';
 import config from '@windingtree/win-commons/dist/config';
-import { HotelProviders } from './types';
 
 dotenv.config();
 
