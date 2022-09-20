@@ -111,24 +111,21 @@ export class ContractService {
           passengers: this.passengers
         });
 
-        if (
-          !utils.parseEther(price).eq(dealStorage.value) ||
-          !utils.parseEther(quotePrice).eq(dealStorage.value)
-        ) {
-          await dealRepository.updateDeal(
-            serviceId,
-            'transactionError',
-            'Invalid value of offer'
-          );
-          this.stop();
-          return null;
-        }
-
         const network = getNetworkInfo(chainId);
         const address = utils.getAddress(dealStorage.asset);
         const asset = network.contracts.assets.find(
           (asset) => asset.address === address
         );
+
+        if (!asset) {
+          await dealRepository.updateDeal(
+            serviceId,
+            'transactionError',
+            'Invalid assets configuration'
+          );
+          this.stop();
+          return null;
+        }
 
         if (
           !['USD', this.offer.price.currency].includes(asset?.currency || '')
@@ -137,6 +134,39 @@ export class ContractService {
             serviceId,
             'transactionError',
             'Invalid currency of offer'
+          );
+          this.stop();
+          return null;
+        }
+
+        if (utils.parseEther(price).eq(dealStorage.value)) {
+          if (asset.currency !== this.offer.price.currency) {
+            await dealRepository.updateDeal(
+              serviceId,
+              'transactionError',
+              'Invalid payment currency'
+            );
+            this.stop();
+            return null;
+          }
+        } else if (
+          this.offer.quote &&
+          utils.parseEther(quotePrice).eq(dealStorage.value)
+        ) {
+          if (asset.currency !== this.offer.quote.targetCurrency) {
+            await dealRepository.updateDeal(
+              serviceId,
+              'transactionError',
+              'Invalid payment currency'
+            );
+            this.stop();
+            return null;
+          }
+        } else {
+          await dealRepository.updateDeal(
+            serviceId,
+            'transactionError',
+            'Invalid value of offer'
           );
           this.stop();
           return null;
