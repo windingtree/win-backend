@@ -376,8 +376,8 @@ describe('test', async () => {
       const body = {
         accommodation: {
           location: {
-            lon: 13.3888599,
-            lat: 52.5170365,
+            lat: 52.3727598,
+            lon: 4.8936041,
             radius: 20000
           },
           arrival,
@@ -460,17 +460,17 @@ describe('test', async () => {
       );
     }).timeout(15000);
 
-    it('get offer price', async () => {
-      const res = await requestWithSupertest
-        .post(`/api/hotels/offers/${offerId}/price`)
-        .send({})
-        .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
-        .expect(200);
-
-      expect(res.body).to.be.a('object');
-      pricedOfferId = res.body.offerId;
-    }).timeout(20000);
+    // it('get offer price', async () => {
+    //   const res = await requestWithSupertest
+    //     .post(`/api/hotels/offers/${offerId}/price`)
+    //     .send({})
+    //     .set('Accept', 'application/json')
+    //     .set('Authorization', `Bearer ${sessionToken}`)
+    //     .expect(200);
+    //
+    //   expect(res.body).to.be.a('object');
+    //   pricedOfferId = res.body.offerId;
+    // }).timeout(20000);
 
     it('get amadeus offer price', async () => {
       const res = await requestWithSupertest

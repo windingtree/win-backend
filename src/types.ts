@@ -10,6 +10,7 @@ import {
   RewardType
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
+import { Quote } from '@windingtree/glider-types/dist/simard';
 
 export interface User {
   login: string;
@@ -73,10 +74,12 @@ export interface UserRequest {
   requestHash: string;
 }
 
+//todo rename
 export interface OfferBackEnd extends OfferDbValue {
   accommodationId: string;
   requestHash: string;
   sessionId: string;
+  quote?: Quote;
 }
 
 export interface AuthRequest extends Request {

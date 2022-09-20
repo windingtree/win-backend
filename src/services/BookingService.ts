@@ -14,7 +14,7 @@ import { ContractService } from './ContractService';
 import EmailSenderService from './EmailSenderService';
 import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
 import { DealDBValue, DealDTO, DealStorage, OfferBackEnd } from '../types';
-import { parseEmailAddress } from '../utils';
+import { getContractServiceId, parseEmailAddress } from '../utils';
 import { QueueService } from './QueueService';
 
 export class BookingService {
@@ -23,9 +23,13 @@ export class BookingService {
     dealStorage: DealStorage,
     passengers: { [key: string]: PassengerBooking }
   ): Promise<boolean> {
+    const deal = await dealRepository.getDeal(offer.id);
     const data = {
       currency: offer.price?.currency,
       amount: String(offer.price?.public),
+      serviceId: getContractServiceId(offer.id),
+      quoteId: offer.quote?.quoteId,
+      chainId: deal.contract.chainId,
       receiverOrgId: simardOrgId,
       customerReferences: {
         travellerLastName: '-',

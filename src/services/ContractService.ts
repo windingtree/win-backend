@@ -13,6 +13,7 @@ import {
 } from '@windingtree/win-commons/dist/types';
 import { QueueService } from './QueueService';
 import { Job } from 'bullmq';
+import { getContractServiceId } from '../utils';
 
 export class ContractService {
   protected offer: OfferBackEnd;
@@ -60,10 +61,12 @@ export class ContractService {
     const provider = new providers.JsonRpcProvider(rpc, chainId);
 
     let price = '0';
-    let currency = '';
+    let quotePrice = '0';
     if (this.offer.price) {
       price = String(this.offer.price.public);
-      currency = String(this.offer.price.currency);
+    }
+    if (this.offer.quote) {
+      quotePrice = String(this.offer.quote.targetAmount);
     }
     if (process.env.NODE_IS_TEST === 'true') {
       const dealStorage: DealStorage = {
@@ -86,7 +89,7 @@ export class ContractService {
       const serviceId = this.offer.id;
 
       const wipPay = WinPay__factory.connect(contracts.winPay, provider);
-      const deal = await wipPay.deals(utils.id(serviceId));
+      const deal = await wipPay.deals(getContractServiceId(serviceId));
 
       const dealStorage: DealStorage = {
         asset: deal.asset,
@@ -111,7 +114,10 @@ export class ContractService {
           passengers: this.passengers
         });
 
-        if (!utils.parseEther(price).eq(dealStorage.value)) {
+        if (
+          !utils.parseEther(price).eq(dealStorage.value) ||
+          !utils.parseEther(quotePrice).eq(dealStorage.value)
+        ) {
           await dealRepository.updateDeal(
             serviceId,
             'transactionError',
@@ -121,15 +127,8 @@ export class ContractService {
           return null;
         }
 
-        if (!assetsCurrencies.includes(currency)) {
-          await dealRepository.updateDeal(
-            serviceId,
-            'transactionError',
-            'Invalid currency of offer'
-          );
-          this.stop();
-          return null;
-        }
+        //todo how to check currency
+
         return dealStorage;
       }
     } catch (e) {
