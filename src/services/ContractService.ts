@@ -135,7 +135,7 @@ export class ContractService {
         const network = getNetworkInfo(chainId);
         const address = utils.getAddress(dealStorage.asset);
         const asset = network.contracts.assets.find(
-          (asset) => asset.address === address
+          (asset) => asset.coin === address
         );
 
         if (
