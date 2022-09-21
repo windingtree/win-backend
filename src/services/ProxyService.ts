@@ -118,16 +118,6 @@ export class ProxyService {
       if (!data) {
         continue;
       }
-      const filteredAccommodations: string[] = [];
-      for (const [key, value] of Object.entries(data.offers)) {
-        if (assetsCurrencies.includes(value.price.currency)) {
-          filteredAccommodations.push(
-            Object.values(value.pricePlansReferences)[0].accommodation
-          );
-        } else {
-          delete data.offers[key];
-        }
-      }
 
       if (!Object.keys(data.offers).length) {
         continue;
@@ -139,10 +129,6 @@ export class ProxyService {
       const hotelsMap: Record<string, WinAccommodation> = {};
 
       for (const [key, value] of Object.entries(accommodations)) {
-        if (!filteredAccommodations.includes(key)) {
-          continue;
-        }
-
         const location: MongoLocation = {
           coordinates: [
             Number(value.location?.long),
