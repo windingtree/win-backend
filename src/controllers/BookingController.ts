@@ -2,6 +2,7 @@ import { AuthRequest, WalletRequest } from '../types';
 import { NextFunction, Request, Response } from 'express';
 import bookingService from '../services/BookingService';
 import rewardService from '../services/RewardService';
+import groupBookingService from '../services/GroupBookingService';
 import ApiError from '../exceptions/ApiError';
 
 export class BookingController {
@@ -71,6 +72,20 @@ export class BookingController {
       const rewardOption = req.body.rewardType;
 
       await rewardService.updateOption(offerId, rewardOption);
+
+      res.json({ success: true });
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async createGroupBookingRequest(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      await groupBookingService.createGroupBookingRequest(req.body);
 
       res.json({ success: true });
     } catch (e) {

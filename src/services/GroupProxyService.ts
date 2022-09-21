@@ -1,13 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
-import {
-  clientJwt,
-  getUrlByKey,
-  providersUrls,
-  serviceProviderId
-} from '../config';
+import { clientJwt, providersUrls } from '../config';
 import hotelRepository from '../repositories/HotelRepository';
 import { makeCircumscribedSquare } from '../utils';
-import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
 import {
   SearchCriteria,
@@ -16,18 +10,15 @@ import {
 import { OfferDbValue } from '@windingtree/glider-types/dist/win';
 import { HotelProviders, SearchBody } from '../types';
 import ApiError from '../exceptions/ApiError';
-import { utils } from 'ethers';
 import {
   WinAccommodation,
   MongoLocation,
-  Offer,
-  WinPricedOffer,
   SearchResults
 } from '@windingtree/glider-types/dist/win';
 import { assetsCurrencies } from '@windingtree/win-commons/dist/types';
 
-export class ProxyService {
-  public async getDerbySoftOffers(body: SearchBody): Promise<SearchResults> {
+export class GroupProxyService {
+  public async getGroupOffers(body: SearchBody): Promise<SearchResults> {
     const { lon, lat, radius } = body.accommodation.location;
     const { arrival, departure } = body.accommodation;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
@@ -45,7 +36,7 @@ export class ProxyService {
 
     for (const providerName in providersUrls) {
       promises.push(
-        this.getProviderPromise(providersUrls[providerName], resBody)
+        this.getProviderGroupSearchPromise(providersUrls[providerName], resBody)
       );
 
       providersNameArray.push(providerName);
@@ -240,148 +231,14 @@ export class ProxyService {
     return commonData;
   }
 
-  private getProviderPromise(
+  private getProviderGroupSearchPromise(
     providerUrl: string,
     resBody: SearchCriteria
   ): Promise<AxiosResponse> {
-    return axios.post(`${providerUrl}/offers/search`, resBody, {
+    return axios.post(`${providerUrl}/groups/search`, resBody, {
       headers: { Authorization: `Bearer ${clientJwt}` }
     });
   }
-
-  public async getDerbySoftOfferPrice(
-    offerId: string
-  ): Promise<WinPricedOffer> {
-    const offer = await offerRepository.getOne(offerId);
-
-    if (!offer) {
-      throw ApiError.NotFound('offer not found');
-    }
-
-    const url = getUrlByKey(offer.provider);
-
-    let res;
-    try {
-      res = await axios.post(
-        `${url}/offers/${offerId}/price`,
-        {},
-        {
-          headers: { Authorization: `Bearer ${clientJwt}` }
-        }
-      );
-    } catch (e) {
-      if (e.status !== 404 || process.env.NODE_IS_TEST !== 'true') {
-        LogService.red(e);
-      }
-      throw e;
-    }
-
-    const { data } = res;
-    const expiration = new Date(data.offer.expiration);
-
-    data.offer.price = {
-      currency: data.offer.price.currency,
-      private: data.offer.price.private
-        ? String(data.offer.price.private)
-        : undefined,
-      public: String(data.offer.price.public),
-      commission: data.offer.price.commission
-        ? String(data.offer.price.commission)
-        : undefined,
-      taxes: data.offer.price.taxes
-        ? String(data.offer.price.taxes)
-        : undefined,
-      isAmountBeforeTax: data.offer.price.isAmountBeforeTax,
-      decimalPlaces: data.offer.price.decimalPlaces
-    };
-
-    for (const item of data.offer.pricedItems) {
-      item.fare.forEach((fare) => {
-        fare.amount = String(fare.amount);
-      });
-
-      item.taxes.forEach((tax) => {
-        tax.amount = String(tax.amount);
-      });
-    }
-
-    //todo remove after derby and amadeus proxy fix types
-
-    const offerDBValue: OfferDbValue = {
-      arrival: offer.arrival,
-      departure: offer.departure,
-      id: data.offerId,
-      accommodation: offer.accommodation,
-      accommodationId: offer.accommodationId,
-      pricePlansReferences: offer.pricePlansReferences,
-      expiration: expiration.toISOString(),
-      pricedItems: data.offer.pricedItems,
-      disclosures: data.offer.disclosures,
-      price: data.offer.price,
-      provider: offer.provider
-    };
-
-    await offerRepository.upsertOffer(offerDBValue);
-
-    data.accommodation = {
-      ...offer.accommodation,
-      _id: offer.accommodation._id?.toString()
-    };
-
-    data.serviceId = utils.id(data.offerId);
-    data.provider = serviceProviderId;
-
-    return data;
-  }
-
-  public async getPricedOffer(offerId: string): Promise<WinPricedOffer> {
-    const offer = await offerRepository.getOne(offerId);
-
-    if (!offer || !offer.price || !offer.pricedItems || !offer.disclosures) {
-      throw ApiError.NotFound('offer not found');
-    }
-
-    return {
-      accommodation: offer.accommodation,
-      offer: {
-        expiration: new Date(offer.expiration).toISOString(),
-        price: offer.price,
-        pricedItems: offer.pricedItems,
-        disclosures: offer.disclosures
-      },
-      offerId: offer.id,
-      provider: utils.id(offer.id),
-      serviceId: serviceProviderId
-    };
-  }
-
-  public async getAccommodation(
-    accommodationId: string
-  ): Promise<SearchResults> {
-    const offers = await offerRepository.getByAccommodation(accommodationId);
-    const accommodation = await hotelRepository.getOne(accommodationId);
-
-    if (!offers.length || !accommodation) {
-      throw ApiError.NotFound('offer not found');
-    }
-
-    const offersMap: {
-      [k: string]: Offer;
-    } = {};
-
-    offers.forEach((v) => {
-      offersMap[v.id] = {
-        expiration: new Date(v.expiration).toISOString(),
-        price: v.price,
-        pricePlansReferences: v.pricePlansReferences
-      };
-    });
-
-    return {
-      accommodations: { [accommodationId]: accommodation },
-      offers: offersMap
-    };
-  }
 }
 
-export default new ProxyService();
+export default new GroupProxyService();

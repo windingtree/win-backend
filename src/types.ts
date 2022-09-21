@@ -4,7 +4,12 @@ import {
   PassengerBooking,
   PassengerSearch
 } from '@windingtree/glider-types/dist/accommodations';
-import { RewardType, OfferDbValue } from '@windingtree/glider-types/dist/win';
+import {
+  RewardType,
+  OfferDbValue,
+  OrganizerInformation,
+  GroupBookingDeposit
+} from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export interface User {
@@ -137,3 +142,25 @@ export type DealWorkerData = {
   id: string;
   passengers: { [key: string]: PassengerBooking };
 };
+
+export interface GroupRoom {
+  quantity: number;
+  offer: OfferDbValue;
+}
+
+export type GroupBookingRequestStatus = 'paid' | 'pending';
+
+export interface GroupBookingRequestDBValue {
+  _id?: ObjectId;
+  contact: OrganizerInformation;
+  createdAt: Date;
+  guestsCount: number;
+  rooms: GroupRoom[];
+  invoice: boolean;
+  deposit: GroupBookingDeposit;
+  requestId: string;
+  status: GroupBookingRequestStatus;
+  dealStorage?: DealStorage;
+  contract?: NetworkInfo;
+  organizerBlockchainAddress?: string[];
+}
