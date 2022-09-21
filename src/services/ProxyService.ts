@@ -343,7 +343,10 @@ export class ProxyService {
     data.serviceId = getContractServiceId(data.offerId);
     data.provider = serviceProviderId;
 
-    return data;
+    return {
+      ...data,
+      ...{ quote }
+    };
   }
 
   public async getPricedOffer(offerId: string): Promise<WinPricedOffer> {
