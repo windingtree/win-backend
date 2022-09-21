@@ -33,10 +33,9 @@ export default class GroupBookingEmailService {
           ],
           dynamic_template_data: {
             orderId: requestId,
-            // property: {
-            //     name: accommodationName,
-            // }
-            name: accommodationName
+            property: {
+              name: accommodationName
+            }
           }
         }
       ],
