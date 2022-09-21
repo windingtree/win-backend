@@ -3,10 +3,12 @@ import {
   clientJwt,
   getUrlByKey,
   providersUrls,
-  serviceProviderId
+  serviceProviderId,
+  simardJwt,
+  simardUrl
 } from '../config';
 import hotelRepository from '../repositories/HotelRepository';
-import { makeCircumscribedSquare } from '../utils';
+import { getContractServiceId, makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
 import {
@@ -25,6 +27,7 @@ import {
   SearchResults
 } from '@windingtree/glider-types/dist/win';
 import { assetsCurrencies } from '@windingtree/win-commons/dist/types';
+import { Quote } from '@windingtree/glider-types/dist/simard';
 
 export class ProxyService {
   public async getDerbySoftOffers(body: SearchBody): Promise<SearchResults> {
@@ -277,6 +280,28 @@ export class ProxyService {
     }
 
     const { data } = res;
+
+    let quote: Quote | undefined;
+
+    if (data.offer.price.currency !== 'USD') {
+      try {
+        const quoteData = {
+          sourceCurrency: data.offer.price.currency,
+          sourceAmount: data.offer.price.public,
+          targetCurrency: 'USD'
+        };
+        const quoteRes = await axios.post(`${simardUrl}/quotes`, quoteData, {
+          headers: { Authorization: `Bearer ${simardJwt}` }
+        });
+
+        quote = quoteRes.data;
+      } catch (e) {
+        if (e.status !== 404 || process.env.NODE_IS_TEST !== 'true') {
+          LogService.red(e);
+        }
+      }
+    }
+
     const expiration = new Date(data.offer.expiration);
 
     data.offer.price = {
@@ -318,7 +343,8 @@ export class ProxyService {
       pricedItems: data.offer.pricedItems,
       disclosures: data.offer.disclosures,
       price: data.offer.price,
-      provider: offer.provider
+      provider: offer.provider,
+      ...{ quote }
     };
 
     await offerRepository.upsertOffer(offerDBValue);
@@ -328,7 +354,7 @@ export class ProxyService {
       _id: offer.accommodation._id?.toString()
     };
 
-    data.serviceId = utils.id(data.offerId);
+    data.serviceId = getContractServiceId(data.offerId);
     data.provider = serviceProviderId;
 
     return data;
@@ -350,7 +376,7 @@ export class ProxyService {
         disclosures: offer.disclosures
       },
       offerId: offer.id,
-      provider: utils.id(offer.id),
+      provider: getContractServiceId(offer.id),
       serviceId: serviceProviderId
     };
   }

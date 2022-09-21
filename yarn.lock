@@ -1442,10 +1442,10 @@
   dependencies:
     web-streams-polyfill "^3.1.1"
 
-"@windingtree/glider-types@^2.6.0":
-  version "2.6.0"
-  resolved "https://registry.yarnpkg.com/@windingtree/glider-types/-/glider-types-2.6.0.tgz#cbdf1827b8f1bfe301112d3c5da1795e9b5ef07e"
-  integrity sha512-9THHJXVXbm//8Udqj2PcJ99Ei+I2Uf0nkF5sAEMbpAz+WZovhSCX3MAZb2xmLdX4YIgt0b9J+K5zK4/aVppE3w==
+"@windingtree/glider-types@^2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@windingtree/glider-types/-/glider-types-2.7.0.tgz#9d4c8c446f7bf57a702692a64ca4cbcb9002b64b"
+  integrity sha512-8ZR9iQeYd9ZX1uH8LMMn6TWKhLcSIcOtybbWNQ54nUMyQQMLae+f3kHBDrCg4VQTVfXT4Wqw6Ir9v8K/o0xikw==
 
 "@windingtree/org.id-auth@1.0.0-beta.47", "@windingtree/org.id-auth@^1.0.0-beta.47":
   version "1.0.0-beta.47"
@@ -1482,10 +1482,10 @@
     "@windingtree/org.id-utils" "^1.0.0-beta.47"
     "@windingtree/org.json-schema" "1.0.2"
 
-"@windingtree/win-commons@^1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@windingtree/win-commons/-/win-commons-1.7.0.tgz#e11473f367cf1f6e22bb162f300d70ce72c1a953"
-  integrity sha512-+eEhPavVdElEhZVws79fkOzdo0S5Cy4h+m+GYVKTQWRugIhkzUOId5uS+MXpec/N0ugKoggVnCE0AMYgViLhiA==
+"@windingtree/win-commons@^1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@windingtree/win-commons/-/win-commons-1.8.0.tgz#3860275cb4729a897e34ec7bc598861843c27b1e"
+  integrity sha512-EWJqDBckNdir3XznR2qJ7V/T1sW+hF5So7XNiA/Dmbs0Z2x0f+VMdVajO5s6s39ndcqxwApl66bi+fSFZpaPPw==
   dependencies:
     ethers "^5.6.9"
 
