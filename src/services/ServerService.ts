@@ -13,8 +13,6 @@ import { MetricsService } from './MetricsService';
 import * as openApiValidator from 'express-openapi-validator';
 import path from 'path';
 import { validationMiddleware } from '../middlewares/ValidationMiddleware';
-import swaggerUI from 'swagger-ui-express';
-import YAML from 'yamljs';
 
 export default class ServerService {
   protected PORT: number;

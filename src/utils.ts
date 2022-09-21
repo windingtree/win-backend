@@ -1,6 +1,7 @@
 import circleToPolygon from 'circle-to-polygon';
 import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
 import { regexp } from '@windingtree/org.id-utils';
+import { utils } from 'ethers';
 
 export const makeCircumscribedSquare: (
   lon: number,
@@ -85,4 +86,8 @@ export const getRequestIpAddress = (request) => {
 
 export const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+export const getContractServiceId = (offerId: string): string => {
+  return utils.id(offerId);
 };
