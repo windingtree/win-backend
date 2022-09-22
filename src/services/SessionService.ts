@@ -4,7 +4,7 @@ import { randomUUID } from 'crypto';
 import sessionRepository from '../repositories/SessionRepository';
 
 export class SessionService {
-  public async makeSession(ip: string, userAgent: string) {
+  public async makeSession(ip: string, userAgent: string): Promise<string> {
     const uuid = randomUUID();
 
     await sessionRepository.setSession(uuid, ip, userAgent);

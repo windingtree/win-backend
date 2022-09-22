@@ -44,5 +44,5 @@ export default (router: Router): void => {
   router.post('/bookings/auth', userController.walletAuth);
   router.post('/bookings/auth/refresh', userController.walletRefresh);
 
-  router.get('/session', userController.makeSession);
+  //router.get('/session', userController.makeSession);
 };

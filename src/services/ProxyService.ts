@@ -14,13 +14,12 @@ import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
 import { utils } from 'ethers';
 import {
-  WinAccommodation,
   MongoLocation,
   Offer,
-  WinPricedOffer,
-  SearchResults
+  SearchResults,
+  WinAccommodation,
+  WinPricedOffer
 } from '@windingtree/glider-types/dist/win';
-import { assetsCurrencies } from '@windingtree/win-commons/dist/types';
 import { DateTime } from 'luxon';
 import userRequestRepository from '../repositories/UserRequestRepository';
 import {

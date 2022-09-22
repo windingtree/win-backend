@@ -33,7 +33,6 @@ describe('test', async () => {
   let walletAccessToken;
   let walletRefreshToken;
   let sessionToken;
-  let sessionToken2;
   let providerHotelId;
 
   const staffLogin = 'test_staff_super_long_login';
@@ -301,26 +300,6 @@ describe('test', async () => {
       .expect(200);
   }).timeout(5000);
 
-  it('get user session', async () => {
-    const res = await requestWithSupertest
-      .get(`/api/session`)
-      .set('Accept', 'application/json')
-      .expect(200);
-
-    expect(res.body.token).to.be.a('string');
-    sessionToken = res.body.token;
-  }).timeout(5000);
-
-  it('get user session 2', async () => {
-    const res = await requestWithSupertest
-      .get(`/api/session`)
-      .set('Accept', 'application/json')
-      .expect(200);
-
-    expect(res.body.token).to.be.a('string');
-    sessionToken2 = res.body.token;
-  }).timeout(5000);
-
   it('delete users', async () => {
     const manager = await userRepository.getUserByLogin(managerLogin);
     const anotherUser = await userRepository.getUserByLogin(anotherUserForTest);
@@ -364,7 +343,6 @@ describe('test', async () => {
         .post('/api/hotels/offers/search')
         .send(body)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(400);
     }).timeout(10000);
 
@@ -372,8 +350,9 @@ describe('test', async () => {
       const today = new Date();
       const arrival = new Date();
       const departure = new Date();
-      arrival.setDate(today.getDate() + 7);
-      departure.setDate(today.getDate() + 8);
+      const day = Math.floor(Math.random() * 10) || 1;
+      arrival.setDate(today.getDate() + day);
+      departure.setDate(today.getDate() + day + 1);
 
       const body = {
         accommodation: {
@@ -403,8 +382,11 @@ describe('test', async () => {
         .post('/api/hotels/offers/search')
         .send(body)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
         .expect(200);
+
+      sessionToken = res.headers['set-cookie'][0];
+      sessionToken = sessionToken.split('=')[1].split(';')[0];
+
       expect(res.body.offers).to.be.a('object');
 
       const offersKeys = Object.keys(res.body.offers);
@@ -437,20 +419,19 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/hotels/${accommodationId}`)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       expect(res.body).to.be.a('object');
       expect(res.body.accommodations[accommodationId]).to.be.a('object');
 
       providerHotelId = res.body.accommodations[accommodationId].hotelId;
-    }).timeout(5000);
+    }).timeout(10000);
 
     it('get cashed hotel info shared by link', async () => {
       const res = await requestWithSupertest
         .get(`/api/hotels/${accommodationId}`)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken2}`)
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -467,7 +448,7 @@ describe('test', async () => {
     //     .post(`/api/hotels/offers/${offerId}/price`)
     //     .send({})
     //     .set('Accept', 'application/json')
-    //     .set('Authorization', `Bearer ${sessionToken}`)
+    //     .set('Cookie', [`sessionToken=${sessionToken}`])
     //     .expect(200);
     //
     //   expect(res.body).to.be.a('object');
@@ -479,7 +460,7 @@ describe('test', async () => {
         .post(`/api/hotels/offers/${amadeusOfferId}/price`)
         .send({})
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -490,7 +471,7 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/hotels/offers/${amadeusOfferId}/price`)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -513,7 +494,7 @@ describe('test', async () => {
         .post(`/api/booking/${pricedOfferId}/guests`)
         .send(passengers)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(400);
     });
 
@@ -552,7 +533,7 @@ describe('test', async () => {
         .post(`/api/booking/${amadeusPricedOfferId}/guests`)
         .send(guests)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
       await sleep(20000);
     }).timeout(25000);
@@ -577,7 +558,7 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/booking/${amadeusPricedOfferId}/rewardOptions`)
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${sessionToken}`)
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       const options = res.body;
@@ -602,7 +583,7 @@ describe('test', async () => {
         .post(`/api/booking/${amadeusPricedOfferId}/reward`)
         .send({ rewardType: rewardChoice })
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${walletAccessToken}`)
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       expect(res1.body.success).to.be.true;
@@ -622,6 +603,151 @@ describe('test', async () => {
       const deal = await dealRepository.getDeal(amadeusPricedOfferId);
       expect(deal.userEmailAddress).to.be.equal(userEmailAddress);
     }).timeout(25000);
+  });
+
+  describe('group booking', async () => {
+    let goodOfferIds: string[] = [];
+    const badOfferIds: string[] = [];
+
+    it('search for group offers', async () => {
+      const today = new Date();
+      const arrival = new Date();
+      const departure = new Date();
+      arrival.setDate(today.getDate() + 67);
+      departure.setDate(today.getDate() + 69);
+
+      const body = {
+        accommodation: {
+          location: {
+            lon: 13.3888599,
+            lat: 52.5170365,
+            radius: 20000
+          },
+          arrival,
+          departure,
+          roomCount: 11
+        },
+        passengers: [
+          {
+            type: 'ADT',
+            count: 21
+          }
+        ]
+      };
+
+      const res = await requestWithSupertest
+        .post('/api/groups/search')
+        .send(body)
+        .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
+        .expect(200);
+      expect(res.body.offers).to.be.a('object');
+
+      // Store 2 offerIds in same accommodation and 2 offerIds in different accommodations
+      const offersKeys = Object.keys(res.body.offers);
+      const offersByAccommodations: { [key: string]: Array<string> } = {};
+      for (const offerKey of offersKeys) {
+        const key = Object.keys(
+          res.body.offers[offerKey].pricePlansReferences
+        )[0];
+        const accommodation =
+          res.body.offers[offerKey].pricePlansReferences[key].accommodation;
+        if (!offersByAccommodations[accommodation]) {
+          offersByAccommodations[accommodation] = [];
+        }
+        offersByAccommodations[accommodation].push(offerKey);
+      }
+
+      for (const accommodationId in offersByAccommodations) {
+        if (offersByAccommodations[accommodationId].length >= 2) {
+          goodOfferIds = offersByAccommodations[accommodationId].slice(0, 2);
+          continue;
+        }
+        if (goodOfferIds.length == 2) {
+          badOfferIds.push(goodOfferIds[0]);
+          badOfferIds.push(offersByAccommodations[accommodationId][0]);
+          break;
+        }
+      }
+    }).timeout(30000);
+
+    it('request a group booking', async () => {
+      const body: GroupBookingRequest = {
+        organizerInfo: {
+          firstName: 'Bob',
+          lastName: 'Marley',
+          emailAddress: userEmailAddress,
+          phoneNumber: '+32123456789'
+        },
+        guestCount: 21,
+        offers: [
+          {
+            offerId: goodOfferIds[0],
+            quantity: 6
+          },
+          {
+            offerId: goodOfferIds[1],
+            quantity: 11
+          }
+        ],
+        deposit: {
+          amount: '100.00',
+          currency: 'USD'
+        },
+        invoice: true
+      };
+
+      await requestWithSupertest
+        .post('/api/groups/bookingRequest')
+        .send(body)
+        .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
+        .expect(200);
+
+      // check storage using names
+      // TODO: remove this function and use service id when smart contract interaction is here.
+      const records =
+        await groupBookingRequestRepository.getGroupBookingRequestByName(
+          body.organizerInfo.firstName,
+          body.organizerInfo.lastName
+        );
+      expect(records.slice(-1)[0].rooms[0].offer.id).to.equals(goodOfferIds[0]);
+      expect(records.slice(-1)[0].rooms[1].offer.id).to.equals(goodOfferIds[1]);
+    }).timeout(30000);
+
+    it('request a group booking in 2 different hotels', async () => {
+      const body: GroupBookingRequest = {
+        organizerInfo: {
+          firstName: 'Bob',
+          lastName: 'Marley',
+          emailAddress: userEmailAddress,
+          phoneNumber: '+32123456789'
+        },
+        guestCount: 21,
+        offers: [
+          {
+            offerId: badOfferIds[0],
+            quantity: 6
+          },
+          {
+            offerId: badOfferIds[1],
+            quantity: 11
+          }
+        ],
+        deposit: {
+          amount: '100.00',
+          currency: 'USD'
+        },
+        invoice: true
+      };
+
+      await requestWithSupertest
+        .post('/api/groups/bookingRequest')
+        .send(body)
+        .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
+        .expect(400);
+    }).timeout(30000);
   });
 
   after(async () => {

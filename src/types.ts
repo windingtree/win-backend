@@ -5,11 +5,11 @@ import {
   PassengerSearch
 } from '@windingtree/glider-types/dist/accommodations';
 import {
-  RewardType,
+  GroupBookingDeposit,
+  MongoLocation,
   OfferDbValue,
   OrganizerInformation,
-  GroupBookingDeposit,
-  MongoLocation
+  RewardType
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
