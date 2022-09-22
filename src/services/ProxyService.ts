@@ -33,6 +33,7 @@ import {
   SearchCriteria,
   SearchResponse
 } from '@windingtree/glider-types/dist/accommodations';
+import { Quote } from '@windingtree/glider-types/dist/simard';
 
 export class ProxyService {
   public async getDerbySoftOffers(
@@ -132,16 +133,6 @@ export class ProxyService {
       if (!data) {
         continue;
       }
-      const filteredAccommodations: string[] = [];
-      for (const [key, value] of Object.entries(data.offers)) {
-        if (assetsCurrencies.includes(value.price.currency)) {
-          filteredAccommodations.push(
-            Object.values(value.pricePlansReferences)[0].accommodation
-          );
-        } else {
-          delete data.offers[key];
-        }
-      }
 
       if (!Object.keys(data.offers).length) {
         continue;
@@ -154,10 +145,6 @@ export class ProxyService {
       const requests = new Set<UserRequestDbData>();
 
       for (const [key, value] of Object.entries(accommodations)) {
-        if (!filteredAccommodations.includes(key)) {
-          continue;
-        }
-
         const location: MongoLocation = {
           coordinates: [
             Number(value.location?.long),
@@ -223,7 +210,9 @@ export class ProxyService {
 
         offer.price = {
           currency: offer.price.currency,
-          private: offer.price.private ? String(offer.price.priva) : undefined,
+          private: offer.price.private
+            ? String(offer.price.private)
+            : undefined,
           public: String(offer.price.public),
           commission: offer.price.commission
             ? String(offer.price.commission)
@@ -358,7 +347,8 @@ export class ProxyService {
 
     const { data } = res;
 
-    let quote;
+    let quote: Quote | undefined;
+
     if (data.offer.price.currency !== 'USD') {
       try {
         const quoteData = {
@@ -383,7 +373,7 @@ export class ProxyService {
     data.offer.price = {
       currency: data.offer.price.currency,
       private: data.offer.price.private
-        ? String(data.offer.price.priva)
+        ? String(data.offer.price.private)
         : undefined,
       public: String(data.offer.price.public),
       commission: data.offer.price.commission
@@ -435,7 +425,10 @@ export class ProxyService {
     data.serviceId = getContractServiceId(data.offerId);
     data.provider = serviceProviderId;
 
-    return data;
+    return {
+      ...data,
+      ...{ quote }
+    };
   }
 
   public async getPricedOffer(offerId: string): Promise<WinPricedOffer> {

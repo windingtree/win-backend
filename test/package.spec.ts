@@ -5,6 +5,7 @@ import { AppRole } from '../src/types';
 import userService from '../src/services/UserService';
 import userRepository from '../src/repositories/UserRepository';
 import dealRepository from '../src/repositories/DealRepository';
+import groupBookingRequestRepository from '../src/repositories/GroupBookingRequestRepository';
 import MongoDBService from '../src/services/MongoDBService';
 import { constants } from 'ethers';
 import {
@@ -14,6 +15,7 @@ import {
 } from '@windingtree/win-commons/dist/auth';
 import { testWallet } from '../src/config';
 import { QueueService } from '../src/services/QueueService';
+import { GroupBookingRequest } from '@windingtree/glider-types/dist/win';
 
 let appService: ServerService;
 
@@ -620,6 +622,148 @@ describe('test', async () => {
       const deal = await dealRepository.getDeal(amadeusPricedOfferId);
       expect(deal.userEmailAddress).to.be.equal(userEmailAddress);
     }).timeout(25000);
+  });
+
+  describe('group booking', async () => {
+    let goodOfferIds: string[] = [];
+    const badOfferIds: string[] = [];
+
+    it('search for group offers', async () => {
+      const today = new Date();
+      const arrival = new Date();
+      const departure = new Date();
+      arrival.setDate(today.getDate() + 67);
+      departure.setDate(today.getDate() + 69);
+
+      const body = {
+        accommodation: {
+          location: {
+            lon: 13.3888599,
+            lat: 52.5170365,
+            radius: 20000
+          },
+          arrival,
+          departure,
+          roomCount: 11
+        },
+        passengers: [
+          {
+            type: 'ADT',
+            count: 21
+          }
+        ]
+      };
+
+      const res = await requestWithSupertest
+        .post('/api/groups/search')
+        .send(body)
+        .set('Accept', 'application/json')
+        .expect(200);
+      expect(res.body.offers).to.be.a('object');
+
+      // Store 2 offerIds in same accommodation and 2 offerIds in different accommodations
+      const offersKeys = Object.keys(res.body.offers);
+      const offersByAccommodations: { [key: string]: Array<string> } = {};
+      for (const offerKey of offersKeys) {
+        const key = Object.keys(
+          res.body.offers[offerKey].pricePlansReferences
+        )[0];
+        const accommodation =
+          res.body.offers[offerKey].pricePlansReferences[key].accommodation;
+        if (!offersByAccommodations[accommodation]) {
+          offersByAccommodations[accommodation] = [];
+        }
+        offersByAccommodations[accommodation].push(offerKey);
+      }
+
+      for (const accommodationId in offersByAccommodations) {
+        if (offersByAccommodations[accommodationId].length >= 2) {
+          goodOfferIds = offersByAccommodations[accommodationId].slice(0, 2);
+          continue;
+        }
+        if (goodOfferIds.length == 2) {
+          badOfferIds.push(goodOfferIds[0]);
+          badOfferIds.push(offersByAccommodations[accommodationId][0]);
+          break;
+        }
+      }
+    }).timeout(30000);
+
+    it('request a group booking', async () => {
+      const body: GroupBookingRequest = {
+        organizerInfo: {
+          firstName: 'Bob',
+          lastName: 'Marley',
+          emailAddress: userEmailAddress,
+          phoneNumber: '+32123456789'
+        },
+        guestCount: 21,
+        offers: [
+          {
+            offerId: goodOfferIds[0],
+            quantity: 6
+          },
+          {
+            offerId: goodOfferIds[1],
+            quantity: 11
+          }
+        ],
+        deposit: {
+          amount: '100.00',
+          currency: 'USD'
+        },
+        invoice: true
+      };
+
+      const res = await requestWithSupertest
+        .post('/api/groups/bookingRequest')
+        .send(body)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      // check storage using names
+      // TODO: remove this function and use service id when smart contract interaction is here.
+      const records =
+        await groupBookingRequestRepository.getGroupBookingRequestByName(
+          body.organizerInfo.firstName,
+          body.organizerInfo.lastName
+        );
+      expect(records.slice(-1)[0].rooms[0].offer.id).to.equals(goodOfferIds[0]);
+      expect(records.slice(-1)[0].rooms[1].offer.id).to.equals(goodOfferIds[1]);
+    }).timeout(30000);
+
+    it('request a group booking in 2 different hotels', async () => {
+      const body: GroupBookingRequest = {
+        organizerInfo: {
+          firstName: 'Bob',
+          lastName: 'Marley',
+          emailAddress: userEmailAddress,
+          phoneNumber: '+32123456789'
+        },
+        guestCount: 21,
+        offers: [
+          {
+            offerId: badOfferIds[0],
+            quantity: 6
+          },
+          {
+            offerId: badOfferIds[1],
+            quantity: 11
+          }
+        ],
+        deposit: {
+          amount: '100.00',
+          currency: 'USD'
+        },
+        invoice: true
+      };
+
+      await requestWithSupertest
+        .post('/api/groups/bookingRequest')
+        .send(body)
+        .set('Accept', 'application/json')
+        .expect(400);
+    }).timeout(30000);
   });
 
   after(async () => {

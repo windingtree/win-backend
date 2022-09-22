@@ -5,12 +5,14 @@ import usersRoutes from './users';
 import proxyRoutes from './proxy';
 import bookingRoutes from './booking';
 import healthRoutes from './health';
+import groupsRoutes from './groups';
 
 const routes: RouterInitializer[] = [
   usersRoutes,
   proxyRoutes,
   bookingRoutes,
-  healthRoutes
+  healthRoutes,
+  groupsRoutes
 ];
 
 const router = Router();

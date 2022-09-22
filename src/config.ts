@@ -71,6 +71,9 @@ export const sendgridEmailTo = String(process.env.SENDGRID_EMAIL_TO || '');
 export const sendgridEmailTemplateId = String(
   process.env.SENDGRID_EMAIL_TEMPLATE_ID
 );
+export const sendgridGroupBookingEmailTemplateId = String(
+  process.env.SENDGRID_GROUP_BOOKING_EMAIL_TEMPLATE_ID
+);
 export const defaultRadius = 2000; //in meters
 export const allowLocalhostUI = Boolean(
   process.env.ALLOW_LOCALHOST_UI === 'true'
