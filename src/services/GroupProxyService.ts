@@ -7,8 +7,7 @@ import {
   SearchCriteria,
   SearchResponse
 } from '@windingtree/glider-types/dist/accommodations';
-import { OfferDbValue } from '@windingtree/glider-types/dist/win';
-import { HotelProviders, SearchBody } from '../types';
+import { HotelProviders, OfferBackEnd, SearchBody } from '../types';
 import ApiError from '../exceptions/ApiError';
 import {
   WinAccommodation,
@@ -161,7 +160,7 @@ export class GroupProxyService {
 
       const { offers } = data;
 
-      const offersSet = new Set<OfferDbValue>();
+      const offersSet = new Set<OfferBackEnd>();
 
       Object.keys(offers).map((k) => {
         const offer = offers[k];
@@ -195,7 +194,7 @@ export class GroupProxyService {
           decimalPlaces: offer.price.decimalPlaces
         };
 
-        const offerDBValue: OfferDbValue = {
+        const offerDBValue: OfferBackEnd = {
           id: k,
           accommodation,
           accommodationId,
@@ -206,7 +205,9 @@ export class GroupProxyService {
           price: offer.price,
           provider: provider as HotelProviders,
           pricedItems: [],
-          disclosures: []
+          disclosures: [],
+          requestHash: '',
+          sessionId: ''
         };
 
         offersSet.add(offerDBValue);

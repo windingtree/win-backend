@@ -8,7 +8,8 @@ import {
   RewardType,
   OfferDbValue,
   OrganizerInformation,
-  GroupBookingDeposit
+  GroupBookingDeposit,
+  MongoLocation
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
