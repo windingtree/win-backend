@@ -20,7 +20,9 @@ export default async (req, res, next) => {
 
       res.cookie('sessionToken', sessionToken, {
         maxAge: sessionTokenMaxAge,
-        httpOnly: true
+        httpOnly: true,
+        sameSite: 'None',
+        secure: true
       });
     }
 
