@@ -32,6 +32,8 @@ describe('test', async () => {
   let secretToken;
   let walletAccessToken;
   let walletRefreshToken;
+  let sessionToken;
+  let providerHotelId;
 
   const staffLogin = 'test_staff_super_long_login';
   const staffPass = '123456qwerty';
@@ -306,7 +308,7 @@ describe('test', async () => {
   });
 
   describe('proxy', async () => {
-    let offerId;
+    //let offerId;
     let amadeusOfferId;
     let pricedOfferId;
     let amadeusPricedOfferId;
@@ -348,8 +350,9 @@ describe('test', async () => {
       const today = new Date();
       const arrival = new Date();
       const departure = new Date();
-      arrival.setDate(today.getDate() + 7);
-      departure.setDate(today.getDate() + 8);
+      const day = Math.floor(Math.random() * 10) || 1;
+      arrival.setDate(today.getDate() + day);
+      departure.setDate(today.getDate() + day + 1);
 
       const body = {
         accommodation: {
@@ -380,6 +383,10 @@ describe('test', async () => {
         .send(body)
         .set('Accept', 'application/json')
         .expect(200);
+
+      sessionToken = res.headers['set-cookie'][0];
+      sessionToken = sessionToken.split('=')[1].split(';')[0];
+
       expect(res.body.offers).to.be.a('object');
 
       const offersKeys = Object.keys(res.body.offers);
@@ -387,12 +394,12 @@ describe('test', async () => {
       //   const key = Object.keys(
       //     res.body.offers[offerKey].pricePlansReferences
       //   )[0];
-      //   const accommodationId =
-      //     res.body.offers[offerKey].pricePlansReferences[key].accommodation;
-      //   if (key === accommodationId) {
-      //     offerId = offerKey;
-      //     break;
-      //   }
+      //   // const accommodationId =
+      //   //   res.body.offers[offerKey].pricePlansReferences[key].accommodation;
+      //   // if (key === accommodationId) {
+      //   //   offerId = offerKey;
+      //   //   break;
+      //   // }
       // }
 
       for (const offerKey of offersKeys) {
@@ -412,19 +419,38 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/hotels/${accommodationId}`)
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       expect(res.body).to.be.a('object');
       expect(res.body.accommodations[accommodationId]).to.be.a('object');
-    }).timeout(5000);
+
+      providerHotelId = res.body.accommodations[accommodationId].hotelId;
+    }).timeout(10000);
+
+    it('get cashed hotel info shared by link', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/hotels/${accommodationId}`)
+        .set('Accept', 'application/json')
+        .expect(200);
+
+      expect(res.body).to.be.a('object');
+      const accommodation =
+        res.body.accommodations[Object.keys(res.body.accommodations)[0]];
+      expect(accommodation.hotelId).to.be.eq(providerHotelId);
+      expect(Object.keys(res.body.accommodations)[0]).to.be.not.eq(
+        accommodationId
+      );
+    }).timeout(15000);
 
     // it('get offer price', async () => {
     //   const res = await requestWithSupertest
     //     .post(`/api/hotels/offers/${offerId}/price`)
     //     .send({})
     //     .set('Accept', 'application/json')
+    //     .set('Cookie', [`sessionToken=${sessionToken}`])
     //     .expect(200);
-
+    //
     //   expect(res.body).to.be.a('object');
     //   pricedOfferId = res.body.offerId;
     // }).timeout(20000);
@@ -434,6 +460,7 @@ describe('test', async () => {
         .post(`/api/hotels/offers/${amadeusOfferId}/price`)
         .send({})
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -444,6 +471,7 @@ describe('test', async () => {
       const res = await requestWithSupertest
         .get(`/api/hotels/offers/${amadeusOfferId}/price`)
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       expect(res.body).to.be.a('object');
@@ -466,6 +494,7 @@ describe('test', async () => {
         .post(`/api/booking/${pricedOfferId}/guests`)
         .send(passengers)
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(400);
     });
 
@@ -504,6 +533,7 @@ describe('test', async () => {
         .post(`/api/booking/${amadeusPricedOfferId}/guests`)
         .send(guests)
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
       await sleep(20000);
     }).timeout(25000);
@@ -522,12 +552,13 @@ describe('test', async () => {
       // expect(deal.status).to.be.equal('booked');
       const amadeusDeal = deals.find((v) => v.offerId === amadeusPricedOfferId);
       expect(amadeusDeal.status).to.be.equal('booked');
-    }).timeout(25000);
+    }).timeout(30000);
 
     it('return the reward options', async () => {
       const res = await requestWithSupertest
         .get(`/api/booking/${amadeusPricedOfferId}/rewardOptions`)
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       const options = res.body;
@@ -552,7 +583,7 @@ describe('test', async () => {
         .post(`/api/booking/${amadeusPricedOfferId}/reward`)
         .send({ rewardType: rewardChoice })
         .set('Accept', 'application/json')
-        .set('Authorization', `Bearer ${walletAccessToken}`)
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       expect(res1.body.success).to.be.true;
@@ -608,6 +639,7 @@ describe('test', async () => {
         .post('/api/groups/search')
         .send(body)
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
       expect(res.body.offers).to.be.a('object');
 
@@ -665,10 +697,11 @@ describe('test', async () => {
         invoice: true
       };
 
-      const res = await requestWithSupertest
+      await requestWithSupertest
         .post('/api/groups/bookingRequest')
         .send(body)
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
       // check storage using names
@@ -712,6 +745,7 @@ describe('test', async () => {
         .post('/api/groups/bookingRequest')
         .send(body)
         .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(400);
     }).timeout(30000);
   });

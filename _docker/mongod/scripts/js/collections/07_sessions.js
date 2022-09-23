@@ -1,3 +1,3 @@
 db.createCollection('sessions');
-db.deals.createIndex({ uuid: 1 });
-db.deals.createIndex({ expiredAt: 1 }, { expireAfterSeconds: 0 });
+db.sessions.createIndex({ uuid: 1 });
+db.sessions.createIndex({ expiredAt: 1 }, { expireAfterSeconds: 0 });

@@ -5,14 +5,11 @@ import {
   tokenPrecision,
   tco2Precision
 } from '../config';
-import {
-  RewardOption,
-  RewardType,
-  OfferDbValue
-} from '@windingtree/glider-types/dist/win';
+import { RewardOption, RewardType } from '@windingtree/glider-types/dist/win';
 import ApiError from '../exceptions/ApiError';
 import dealRepository from '../repositories/DealRepository';
 import offerRepository from '../repositories/OfferRepository';
+import { OfferBackEnd } from '../types';
 
 const options = {
   LIF: {
@@ -29,7 +26,7 @@ const options = {
 
 export class RewardService {
   public async getOptions(offerId: string): Promise<RewardOption[]> {
-    let offer: OfferDbValue | null;
+    let offer: OfferBackEnd | null;
     try {
       offer = await offerRepository.getOne(offerId);
       if (!offer) {

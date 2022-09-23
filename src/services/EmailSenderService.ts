@@ -6,7 +6,8 @@ import {
   sendgridEmailTemplateId,
   sendgridEmailTo
 } from '../config';
-import { OfferDbValue } from '@windingtree/glider-types/dist/win';
+import { OfferBackEnd } from '../types';
+import { formatEmailDate } from '../utils';
 
 export default class EmailSenderService {
   private readonly fromEmail: string;
@@ -17,15 +18,17 @@ export default class EmailSenderService {
     this.fromEmail = sendgridEmailFrom;
   }
 
-  public setMessage(offer: OfferDbValue, passengers, tokenId: string) {
+  public setMessage(offer: OfferBackEnd, passengers, tokenId: string) {
     const checkIn = offer.accommodation.checkinoutPolicy.checkinTime
       ? offer.accommodation.checkinoutPolicy.checkinTime.slice(0, -3)
       : '';
     const checkOut = offer.accommodation.checkinoutPolicy.checkoutTime
       ? offer.accommodation.checkinoutPolicy.checkoutTime.slice(0, -3)
       : '';
-    const start_date = `${new Date(offer.arrival).toDateString()} ${checkIn}`;
-    const end_date = `${new Date(offer.departure).toDateString()} ${checkOut}`;
+    const start_date = `${formatEmailDate(new Date(offer.arrival))} ${checkIn}`;
+    const end_date = `${formatEmailDate(
+      new Date(offer.departure)
+    )} ${checkOut}`;
     this.message = {
       from: this.fromEmail,
       personalizations: [
@@ -44,9 +47,13 @@ export default class EmailSenderService {
             policy: '-',
             address: offer.accommodation.contactInformation.address,
             contact: {
-              email: offer.accommodation.contactInformation.emails?.join(', '),
+              email:
+                offer.accommodation.contactInformation.emails?.join(', ') ||
+                'N/A',
               phone:
-                offer.accommodation.contactInformation.phoneNumbers?.join(', ')
+                offer.accommodation.contactInformation.phoneNumbers?.join(
+                  ', '
+                ) || 'N/A'
             },
             token_id: tokenId
           }

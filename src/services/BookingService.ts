@@ -13,14 +13,13 @@ import ApiError from '../exceptions/ApiError';
 import { ContractService } from './ContractService';
 import EmailSenderService from './EmailSenderService';
 import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
-import { OfferDbValue } from '@windingtree/glider-types/dist/win';
-import { DealDBValue, DealDTO, DealStorage } from '../types';
+import { DealDBValue, DealDTO, DealStorage, OfferBackEnd } from '../types';
 import { getContractServiceId, parseEmailAddress } from '../utils';
 import { QueueService } from './QueueService';
 
 export class BookingService {
   public async booking(
-    offer: OfferDbValue,
+    offer: OfferBackEnd,
     dealStorage: DealStorage,
     passengers: { [key: string]: PassengerBooking }
   ): Promise<boolean> {

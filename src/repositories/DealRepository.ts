@@ -1,8 +1,8 @@
 import MongoDBService from '../services/MongoDBService';
 import { DBName } from '../config';
 import { Collection } from 'mongodb';
-import { DealDBValue, DealStatus, DealStorage } from '../types';
-import { RewardType, OfferDbValue } from '@windingtree/glider-types/dist/win';
+import { DealDBValue, DealStatus, DealStorage, OfferBackEnd } from '../types';
+import { RewardType } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export class DealRepository {
@@ -34,7 +34,7 @@ export class DealRepository {
   }
 
   public async createDeal(
-    offer: OfferDbValue,
+    offer: OfferBackEnd,
     dealStorage: DealStorage,
     contract: NetworkInfo,
     addresses: string[]

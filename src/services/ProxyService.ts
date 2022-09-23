@@ -11,29 +11,41 @@ import hotelRepository from '../repositories/HotelRepository';
 import { getContractServiceId, makeCircumscribedSquare } from '../utils';
 import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
+import ApiError from '../exceptions/ApiError';
+import { utils } from 'ethers';
+import {
+  MongoLocation,
+  Offer,
+  SearchResults,
+  WinAccommodation,
+  WinPricedOffer
+} from '@windingtree/glider-types/dist/win';
+import { DateTime } from 'luxon';
+import userRequestRepository from '../repositories/UserRequestRepository';
+import {
+  HotelProviders,
+  OfferBackEnd,
+  SearchBody,
+  UserRequestDbData
+} from '../types';
 import {
   SearchCriteria,
   SearchResponse
 } from '@windingtree/glider-types/dist/accommodations';
-import { OfferDbValue } from '@windingtree/glider-types/dist/win';
-import { HotelProviders, SearchBody } from '../types';
-import ApiError from '../exceptions/ApiError';
-import { utils } from 'ethers';
-import {
-  WinAccommodation,
-  MongoLocation,
-  Offer,
-  WinPricedOffer,
-  SearchResults
-} from '@windingtree/glider-types/dist/win';
-import { assetsCurrencies } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
 
 export class ProxyService {
-  public async getDerbySoftOffers(body: SearchBody): Promise<SearchResults> {
+  public async getDerbySoftOffers(
+    body: SearchBody,
+    sessionId: string
+  ): Promise<SearchResults> {
     const { lon, lat, radius } = body.accommodation.location;
-    const { arrival, departure } = body.accommodation;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
+    const requestHash = utils.id(JSON.stringify(body));
+    const cashedOffers = await this.getCachedOffers(sessionId, requestHash);
+    if (cashedOffers) {
+      return cashedOffers;
+    }
 
     const resBody: SearchCriteria = {
       ...body,
@@ -67,8 +79,9 @@ export class ProxyService {
 
     const commonData = await this.processProvider(
       providersData,
-      arrival,
-      departure
+      body,
+      requestHash,
+      sessionId
     );
 
     if (
@@ -104,8 +117,9 @@ export class ProxyService {
     providersData: {
       [key: string]: SearchResponse;
     },
-    arrival: string,
-    departure: string
+    searchBody: SearchBody,
+    requestHash: string,
+    sessionId: string
   ): Promise<SearchResults> {
     const commonData: SearchResults = {
       accommodations: {},
@@ -127,6 +141,7 @@ export class ProxyService {
 
       const hotels = new Set<WinAccommodation>();
       const hotelsMap: Record<string, WinAccommodation> = {};
+      const requests = new Set<UserRequestDbData>();
 
       for (const [key, value] of Object.entries(accommodations)) {
         const location: MongoLocation = {
@@ -147,6 +162,18 @@ export class ProxyService {
 
         hotels.add(hotel);
         hotelsMap[key] = hotel;
+
+        requests.add({
+          _id: null,
+          accommodationId: key,
+          hotelLocation: hotel.location,
+          provider: String(hotel.provider), //todo remove String() after use new glider types
+          providerAccommodationId: hotel.hotelId,
+          requestBody: searchBody,
+          requestHash: requestHash,
+          sessionId,
+          startDate: new Date(searchBody.accommodation.arrival)
+        });
       }
 
       if (!hotels.size) {
@@ -154,12 +181,13 @@ export class ProxyService {
       }
 
       await hotelRepository.bulkCreate(Array.from(hotels));
+      await userRequestRepository.bulkCreate(Array.from(requests));
 
       const sortedHotels = Array.from(hotels);
 
       const { offers } = data;
 
-      const offersSet = new Set<OfferDbValue>();
+      const offersSet = new Set<OfferBackEnd>();
 
       Object.keys(offers).map((k) => {
         const offer = offers[k];
@@ -193,18 +221,20 @@ export class ProxyService {
           decimalPlaces: offer.price.decimalPlaces
         };
 
-        const offerDBValue: OfferDbValue = {
+        const offerDBValue: OfferBackEnd = {
           id: k,
           accommodation,
           accommodationId,
           pricePlansReferences,
-          arrival: new Date(arrival).toISOString(),
-          departure: new Date(departure).toISOString(),
+          arrival: new Date(searchBody.accommodation.arrival).toISOString(),
+          departure: new Date(searchBody.accommodation.departure).toISOString(),
           expiration: new Date(offer.expiration).toISOString(),
           price: offer.price,
           provider: provider as HotelProviders,
           pricedItems: [],
-          disclosures: []
+          disclosures: [],
+          requestHash,
+          sessionId
         };
 
         offersSet.add(offerDBValue);
@@ -227,6 +257,55 @@ export class ProxyService {
     }
 
     return commonData;
+  }
+
+  private async getCachedOffers(
+    sessionId: string,
+    requestHash: string
+  ): Promise<SearchResults | null> {
+    const cashedOffers = (
+      await offerRepository.getBySession(sessionId, requestHash)
+    ).filter((offer) => {
+      return DateTime.fromISO(offer.expiration).diffNow('minutes').minutes > 10;
+    });
+
+    if (!cashedOffers.length) {
+      return null;
+    }
+
+    const hotelIds: string[] = [
+      ...new Set(cashedOffers.map((offer) => offer.accommodationId))
+    ];
+    const hotels = await hotelRepository.getByIds(hotelIds);
+
+    if (!hotels.length) {
+      return null;
+    }
+
+    const offersMap: {
+      [k: string]: Offer;
+    } = {};
+
+    cashedOffers.forEach((v) => {
+      offersMap[v.id] = {
+        expiration: new Date(v.expiration).toISOString(),
+        price: v.price,
+        pricePlansReferences: v.pricePlansReferences
+      };
+    });
+
+    const accommodations: {
+      [k: string]: WinAccommodation;
+    } = {};
+
+    hotels.forEach((hotel) => {
+      accommodations[hotel.id] = hotel;
+    });
+
+    return {
+      accommodations,
+      offers: offersMap
+    };
   }
 
   private getProviderPromise(
@@ -318,7 +397,7 @@ export class ProxyService {
 
     //todo remove after derby and amadeus proxy fix types
 
-    const offerDBValue: OfferDbValue = {
+    const offerDBValue: OfferBackEnd = {
       arrival: offer.arrival,
       departure: offer.departure,
       id: data.offerId,
@@ -330,7 +409,9 @@ export class ProxyService {
       disclosures: data.offer.disclosures,
       price: data.offer.price,
       provider: offer.provider,
-      ...{ quote }
+      sessionId: offer.sessionId,
+      requestHash: offer.requestHash,
+      quote
     };
 
     await offerRepository.upsertOffer(offerDBValue);
@@ -371,12 +452,49 @@ export class ProxyService {
   }
 
   public async getAccommodation(
-    accommodationId: string
+    accommodationId: string,
+    sessionId: string
   ): Promise<SearchResults> {
-    const offers = await offerRepository.getByAccommodation(accommodationId);
-    const accommodation = await hotelRepository.getOne(accommodationId);
+    const userRequest = await userRequestRepository.getRequestByAccommodationId(
+      accommodationId
+    );
 
-    if (!offers.length || !accommodation) {
+    if (!userRequest) {
+      throw ApiError.NotFound('offer not found');
+    }
+
+    let offers = await offerRepository.getByAccommodation(accommodationId);
+    let accommodation = await hotelRepository.getOne(accommodationId);
+    let newAccommodationId = '';
+
+    if (
+      !offers.length ||
+      !accommodation ||
+      userRequest.sessionId !== sessionId
+    ) {
+      const searchBody: SearchBody = userRequest.requestBody;
+      searchBody.accommodation.location = {
+        lon: userRequest.hotelLocation.coordinates[0],
+        lat: userRequest.hotelLocation.coordinates[1],
+        radius: 5
+      };
+      const search = await this.getDerbySoftOffers(
+        userRequest.requestBody,
+        sessionId
+      );
+
+      for (const [key, value] of Object.entries(search.accommodations)) {
+        if (value.hotelId === userRequest.providerAccommodationId) {
+          newAccommodationId = key;
+          break;
+        }
+      }
+
+      offers = await offerRepository.getByAccommodation(newAccommodationId);
+      accommodation = await hotelRepository.getOne(newAccommodationId);
+    }
+
+    if (!accommodation || !offers.length) {
       throw ApiError.NotFound('offer not found');
     }
 
@@ -393,7 +511,9 @@ export class ProxyService {
     });
 
     return {
-      accommodations: { [accommodationId]: accommodation },
+      accommodations: {
+        [newAccommodationId || accommodationId]: accommodation
+      },
       offers: offersMap
     };
   }

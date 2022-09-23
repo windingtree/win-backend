@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import bookingController from '../controllers/BookingController';
 import walletAuthMiddleware from '../middlewares/WalletAuthMiddleware';
+import sessionMiddleware from '../middlewares/SessionMiddleware';
 
 export default (router: Router): void => {
   router.get(
@@ -8,10 +9,19 @@ export default (router: Router): void => {
     walletAuthMiddleware,
     bookingController.myBookings
   );
-  router.post('/booking/:offerId/guests', bookingController.setPassengers);
+  router.post(
+    '/booking/:offerId/guests',
+    sessionMiddleware,
+    bookingController.setPassengers
+  );
   router.get(
     '/booking/:offerId/rewardOptions',
+    sessionMiddleware,
     bookingController.getRewardOptions
   );
-  router.post('/booking/:offerId/reward', bookingController.setRewardOption);
+  router.post(
+    '/booking/:offerId/reward',
+    sessionMiddleware,
+    bookingController.setRewardOption
+  );
 };

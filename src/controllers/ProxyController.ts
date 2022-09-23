@@ -1,4 +1,4 @@
-import { AuthRequest } from '../types';
+import { AuthRequest, SessionRequest } from '../types';
 import { NextFunction, Request, Response } from 'express';
 import proxyService from '../services/ProxyService';
 import groupProxyService from '../services/GroupProxyService';
@@ -7,7 +7,7 @@ import { DateTime } from 'luxon';
 
 export class ProxyController {
   public async searchOffers(
-    req: AuthRequest,
+    req: SessionRequest,
     res: Response,
     next: NextFunction
   ) {
@@ -21,7 +21,10 @@ export class ProxyController {
         throw ApiError.BadRequest('Dates must be in future');
       }
 
-      const offers = await proxyService.getDerbySoftOffers(req.body);
+      const offers = await proxyService.getDerbySoftOffers(
+        req.body,
+        req.sessionId
+      );
 
       res.json(offers);
     } catch (e) {
@@ -56,13 +59,16 @@ export class ProxyController {
   }
 
   public async getAccommodation(
-    req: AuthRequest,
+    req: SessionRequest,
     res: Response,
     next: NextFunction
   ) {
     try {
       const { accommodationId } = req.params;
-      const data = await proxyService.getAccommodation(accommodationId);
+      const data = await proxyService.getAccommodation(
+        accommodationId,
+        req.sessionId
+      );
 
       res.json(data);
     } catch (e) {

@@ -61,6 +61,23 @@ export class HotelRepository {
 
     return await collection.findOne({ id: accommodationId });
   }
+
+  public async getByIds(ids: string[]): Promise<WinAccommodation[]> {
+    const result: WinAccommodation[] = [];
+    const collection = await this.getCollection();
+
+    if ((await collection.countDocuments()) === 0) {
+      return [];
+    }
+
+    const cursor = await collection.find({ id: { $in: ids } });
+
+    await cursor.forEach((item) => {
+      result.push(item);
+    });
+
+    return result;
+  }
 }
 
 export default new HotelRepository();

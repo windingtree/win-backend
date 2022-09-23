@@ -1,17 +1,29 @@
 import ApiError from '../exceptions/ApiError';
 import sessionService from '../services/SessionService';
 import sessionRepository from '../repositories/SessionRepository';
+import { sessionTokenMaxAge } from '../config';
+import { getRequestIpAddress } from '../utils';
 
 export default async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return next(ApiError.UnauthorizedError());
-    }
-
-    const sessionToken = authHeader.split(' ')[1];
+    let { sessionToken } = req.cookies;
     if (!sessionToken) {
-      return next(ApiError.UnauthorizedError());
+      let ip = getRequestIpAddress(req);
+      let userAgent = req.header('user-agent');
+
+      if (process.env.NODE_IS_TEST === 'true') {
+        ip = '127.0.0.1';
+        userAgent = 'supertest';
+      }
+
+      sessionToken = await sessionService.makeSession(ip, userAgent);
+
+      res.cookie('sessionToken', sessionToken, {
+        maxAge: sessionTokenMaxAge,
+        httpOnly: true,
+        sameSite: 'None',
+        secure: true
+      });
     }
 
     const data = sessionService.validateSessionToken(sessionToken);

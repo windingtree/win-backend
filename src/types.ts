@@ -5,10 +5,11 @@ import {
   PassengerSearch
 } from '@windingtree/glider-types/dist/accommodations';
 import {
-  RewardType,
+  GroupBookingDeposit,
+  MongoLocation,
   OfferDbValue,
   OrganizerInformation,
-  GroupBookingDeposit
+  RewardType
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
@@ -60,6 +61,29 @@ export interface Session {
   expiredAt: Date;
 }
 
+export interface UserRequestDbData extends UserRequest {
+  _id: ObjectId | null;
+}
+
+export interface UserRequest {
+  sessionId: string;
+  accommodationId: string;
+  provider: string;
+  providerAccommodationId: string;
+  hotelLocation: MongoLocation;
+  startDate: Date;
+  requestBody: SearchBody;
+  requestHash: string;
+}
+
+//todo rename
+export interface OfferBackEnd extends OfferDbValue {
+  accommodationId: string;
+  requestHash: string;
+  sessionId: string;
+  quote?: Quote;
+}
+
 export interface AuthRequest extends Request {
   user: UserDTO;
 }
@@ -74,6 +98,10 @@ export interface OfferBackEnd extends OfferDbValue {
 
 export interface WalletRequest extends Request {
   walletAddress: string;
+}
+
+export interface SessionRequest extends Request {
+  sessionId: string;
 }
 
 export enum State {
@@ -117,7 +145,7 @@ export type DealStatus =
 
 export interface DealDBValue {
   _id?: ObjectId;
-  offer: OfferDbValue;
+  offer: OfferBackEnd;
   dealStorage: DealStorage;
   contract: NetworkInfo;
   offerId: string;

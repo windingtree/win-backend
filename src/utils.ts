@@ -2,6 +2,7 @@ import circleToPolygon from 'circle-to-polygon';
 import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
 import { regexp } from '@windingtree/org.id-utils';
 import { utils } from 'ethers';
+import { DateTime } from 'luxon';
 
 export const makeCircumscribedSquare: (
   lon: number,
@@ -90,4 +91,10 @@ export const sleep = (ms) => {
 
 export const getContractServiceId = (offerId: string): string => {
   return utils.id(offerId);
+};
+
+export const formatEmailDate = (date: Date): string => {
+  return DateTime.fromJSDate(date).toFormat('EEE, MMM dd, yyyy', {
+    locale: 'en'
+  });
 };
