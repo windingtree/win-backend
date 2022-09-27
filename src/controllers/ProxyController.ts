@@ -21,6 +21,15 @@ export class ProxyController {
         throw ApiError.BadRequest('Dates must be in future');
       }
 
+      if (
+        DateTime.fromISO(arrival).startOf('day') >=
+        DateTime.fromISO(departure).startOf('day')
+      ) {
+        throw ApiError.BadRequest(
+          'checkout time must be larger than checkin time'
+        );
+      }
+
       const offers = await proxyService.getDerbySoftOffers(
         req.body,
         req.sessionId
