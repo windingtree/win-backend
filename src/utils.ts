@@ -1,8 +1,13 @@
 import circleToPolygon from 'circle-to-polygon';
 import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations';
+import { Quote } from '@windingtree/glider-types/dist/simard';
 import { regexp } from '@windingtree/org.id-utils';
 import { utils } from 'ethers';
 import { DateTime } from 'luxon';
+import cc from 'currency-codes';
+import { appEnvironment, simardJwt, simardUrl } from './config';
+import axios from 'axios';
+import Big from 'big.js';
 
 export const makeCircumscribedSquare: (
   lon: number,
@@ -97,4 +102,46 @@ export const formatEmailDate = (date: Date): string => {
   return DateTime.fromJSDate(date).toFormat('EEE, MMM dd, yyyy', {
     locale: 'en'
   });
+};
+
+export const getCurrencyDecimals = (currency: string): number => {
+  // get number of currency decimals - default to 2
+  let decimals = cc.code(currency)!.digits;
+  if (!decimals) {
+    // use a default of 2 if undefined
+    decimals = 2;
+  }
+  return decimals;
+};
+
+export const convertAmount = async (
+  targetAmount: string,
+  targetCurrency: string,
+  sourceCurrency: string
+): Promise<Quote> => {
+  if (process.env.NODE_IS_TEST === 'true') {
+    const rate = '0.5';
+    return {
+      quoteId: 'abc',
+      sourceCurrency: sourceCurrency,
+      sourceAmount: new Big(targetAmount)
+        .mul(rate)
+        .toFixed(getCurrencyDecimals(targetCurrency)),
+      targetCurrency: targetCurrency,
+      targetAmount: targetAmount,
+      rate: rate
+    };
+  }
+
+  const quoteData = {
+    sourceCurrency,
+    targetAmount,
+    targetCurrency
+  };
+
+  const quoteRes = await axios.post(`${simardUrl}/quotes`, quoteData, {
+    headers: { Authorization: `Bearer ${simardJwt}` }
+  });
+
+  return quoteRes.data;
 };

@@ -608,6 +608,7 @@ describe('test', async () => {
   describe('group booking', async () => {
     let goodOfferIds: string[] = [];
     const badOfferIds: string[] = [];
+    let requestId: string;
 
     it('search for group offers', async () => {
       const today = new Date();
@@ -639,10 +640,11 @@ describe('test', async () => {
         .post('/api/groups/search')
         .send(body)
         .set('Accept', 'application/json')
-        .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
       expect(res.body.offers).to.be.a('object');
 
+      sessionToken = res.headers['set-cookie'][0];
+      sessionToken = sessionToken.split('=')[1].split(';')[0];
       // Store 2 offerIds in same accommodation and 2 offerIds in different accommodations
       const offersKeys = Object.keys(res.body.offers);
       const offersByAccommodations: { [key: string]: Array<string> } = {};
@@ -697,22 +699,35 @@ describe('test', async () => {
         invoice: true
       };
 
-      await requestWithSupertest
+      const res = await requestWithSupertest
         .post('/api/groups/bookingRequest')
         .send(body)
         .set('Accept', 'application/json')
         .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
 
-      // check storage using names
-      // TODO: remove this function and use service id when smart contract interaction is here.
-      const records =
-        await groupBookingRequestRepository.getGroupBookingRequestByName(
-          body.organizerInfo.firstName,
-          body.organizerInfo.lastName
+      requestId = res.body.requestId;
+
+      expect(Number(res.body.depositOptions.offerCurrency.amount)).to.be.above(
+        100
+      );
+      expect(res.body.depositOptions.offerCurrency.currency).to.be.equal('EUR');
+      expect(Number(res.body.depositOptions.usd)).to.be.above(100);
+
+      const record =
+        await groupBookingRequestRepository.getGroupBookingRequestById(
+          requestId
         );
-      expect(records.slice(-1)[0].rooms[0].offer.id).to.equals(goodOfferIds[0]);
-      expect(records.slice(-1)[0].rooms[1].offer.id).to.equals(goodOfferIds[1]);
+      expect(record.rooms[0].offer.id).to.equals(goodOfferIds[0]);
+      expect(record.rooms[1].offer.id).to.equals(goodOfferIds[1]);
+      expect(Number(record.totals.offerCurrency.amount)).to.be.above(100);
+      expect(record.totals.offerCurrency.currency).to.be.equal('EUR');
+      expect(Number(record.totals.usd)).to.be.above(100);
+      expect(Number(record.depositOptions.offerCurrency.amount)).to.be.above(
+        100
+      );
+      expect(record.depositOptions.offerCurrency.currency).to.be.equal('EUR');
+      expect(Number(record.depositOptions.usd)).to.be.above(100);
     }).timeout(30000);
 
     it('request a group booking in 2 different hotels', async () => {
@@ -748,6 +763,47 @@ describe('test', async () => {
         .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(400);
     }).timeout(30000);
+
+    it('return the reward options', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/groups/${requestId}/rewardOptions`)
+        .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
+        .expect(200);
+
+      const options = res.body;
+      expect(options).to.have.lengthOf(2);
+      {
+        const { rewardType, quantity, tokenName } = options[0];
+        expect(rewardType).to.be.equal('CO2_OFFSET');
+        expect(Number(quantity)).to.be.greaterThan(0);
+        expect(tokenName).to.be.equal('NCT');
+      }
+      {
+        const { rewardType, quantity, tokenName } = options[1];
+        expect(rewardType).to.be.equal('TOKEN');
+        expect(Number(quantity)).to.be.greaterThan(99);
+        expect(tokenName).to.be.equal('LIF');
+      }
+    }).timeout(25000);
+
+    it('set the reward option', async () => {
+      const rewardChoice = 'TOKEN';
+      const res1 = await requestWithSupertest
+        .post(`/api/groups/${requestId}/reward`)
+        .send({ rewardType: rewardChoice })
+        .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
+        .expect(200);
+
+      expect(res1.body.success).to.be.true;
+
+      const record =
+        await groupBookingRequestRepository.getGroupBookingRequestById(
+          requestId
+        );
+      expect(record.rewardOption).to.be.equal(rewardChoice);
+    }).timeout(25000);
   });
 
   after(async () => {

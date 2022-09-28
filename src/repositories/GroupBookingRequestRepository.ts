@@ -1,11 +1,13 @@
 import { GroupBookingRequestDBValue, GroupRoom } from '../types';
 import {
-  GroupBookingDeposit,
-  OrganizerInformation
+  GroupBookingDeposits,
+  OrganizerInformation,
+  RewardType
 } from '@windingtree/glider-types/dist/win';
 import MongoDBService from '../services/MongoDBService';
 import { Collection } from 'mongodb';
 import { DBName } from '../config';
+import { CreatedIssue } from 'jira.js/out/version3/models';
 
 export class GroupBookingRequestRepository {
   private dbService: MongoDBService;
@@ -30,7 +32,8 @@ export class GroupBookingRequestRepository {
     contact: OrganizerInformation,
     invoice: boolean,
     guestsCount: number,
-    deposit: GroupBookingDeposit,
+    depositOptions: GroupBookingDeposits,
+    totals: GroupBookingDeposits,
     requestId: string
   ): Promise<void> {
     const collection = await this.getCollection();
@@ -40,8 +43,9 @@ export class GroupBookingRequestRepository {
       invoice,
       requestId,
       guestsCount,
-      deposit,
-      status: 'paid',
+      totals,
+      depositOptions,
+      status: 'pending',
       createdAt: new Date()
     });
   }
@@ -71,6 +75,14 @@ export class GroupBookingRequestRepository {
       throw new Error('GroupBookingRequest not found');
     }
     return bookingRequest.toArray();
+  }
+
+  public async updateRewardOption(
+    requestId: string,
+    rewardOption: RewardType
+  ): Promise<void> {
+    const collection = await this.getCollection();
+    await collection.updateOne({ requestId }, { $set: { rewardOption } });
   }
 }
 
