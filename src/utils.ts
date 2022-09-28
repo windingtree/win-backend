@@ -115,27 +115,27 @@ export const getCurrencyDecimals = (currency: string): number => {
 };
 
 export const convertAmount = async (
-  sourceAmount: string,
-  sourceCurrency: string,
-  targetCurrency: string
+  targetAmount: string,
+  targetCurrency: string,
+  sourceCurrency: string
 ): Promise<Quote> => {
   if (appEnvironment === 'development') {
     const rate = '0.5';
     return {
       quoteId: 'abc',
       sourceCurrency: sourceCurrency,
-      sourceAmount: sourceAmount,
-      targetCurrency: targetCurrency,
-      targetAmount: new Big(sourceAmount)
+      sourceAmount: new Big(targetAmount)
         .mul(rate)
         .toFixed(getCurrencyDecimals(targetCurrency)),
+      targetCurrency: targetCurrency,
+      targetAmount: targetAmount,
       rate: rate
     };
   }
 
   const quoteData = {
     sourceCurrency,
-    sourceAmount,
+    targetAmount,
     targetCurrency
   };
 

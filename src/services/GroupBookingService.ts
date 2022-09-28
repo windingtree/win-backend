@@ -94,7 +94,6 @@ export class GroupBookingService {
     // If the currency is different from USD, call simard-pay.
 
     // Compute the total in USD.
-    const totalOfferUSD = totalOfferCurrency;
     if (offerCurrency !== 'USD') {
       let quote: Quote;
       try {
