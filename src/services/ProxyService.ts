@@ -351,9 +351,9 @@ export class ProxyService {
     if (data.offer.price.currency !== 'USD') {
       try {
         const quoteData = {
-          sourceCurrency: data.offer.price.currency,
-          sourceAmount: data.offer.price.public,
-          targetCurrency: 'USD'
+          targetCurrency: data.offer.price.currency,
+          targetAmount: data.offer.price.public,
+          sourceCurrency: 'USD'
         };
         const quoteRes = await axios.post(`${simardUrl}/quotes`, quoteData, {
           headers: { Authorization: `Bearer ${simardJwt}` }
