@@ -102,8 +102,8 @@ export class GroupBookingService {
           offerCurrency,
           'USD'
         );
-        if (quote.targetAmount && quote.targetAmount.length !== 0) {
-          totals.usd = quote.targetAmount;
+        if (quote.sourceAmount && quote.sourceAmount.length !== 0) {
+          totals.usd = quote.sourceAmount;
         }
       } catch (e) {
         // If we don't manage to get the USD rate, we continue the flow without it.
