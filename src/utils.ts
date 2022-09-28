@@ -119,7 +119,7 @@ export const convertAmount = async (
   targetCurrency: string,
   sourceCurrency: string
 ): Promise<Quote> => {
-  if (appEnvironment === 'development') {
+  if (process.env.NODE_IS_TEST === 'true') {
     const rate = '0.5';
     return {
       quoteId: 'abc',

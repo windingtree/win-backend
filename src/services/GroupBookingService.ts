@@ -11,7 +11,11 @@ import { randomUUID } from 'crypto';
 import groupBookingRequestRepository from '../repositories/GroupBookingRequestRepository';
 import GroupBookingEmailService from './GroupBookingEmailService';
 import JiraService from './JiraService';
-import { appEnvironment, groupDepositPercentage } from '../config';
+import {
+  appEnvironment,
+  groupDepositPercentage,
+  jiraDisableNotifications
+} from '../config';
 import Big from 'big.js';
 import { convertAmount, getCurrencyDecimals } from '../utils';
 import LogService from './LogService';
@@ -149,7 +153,7 @@ export class GroupBookingService {
     // This check is here to forbid the call to Jira in the unit tests.
     // TODO: It might be worth to do a retry here... This should be done when groups queue is in place.
     let jiraTicket: CreatedIssue;
-    if (appEnvironment != 'development') {
+    if (jiraDisableNotifications === 'false') {
       const jiraService = new JiraService();
       const response = await jiraService.createJiraTicket(
         rooms,
@@ -165,7 +169,7 @@ export class GroupBookingService {
     }
 
     // Send confirmation mail
-    if (appEnvironment != 'development') {
+    if (process.env.NODE_IS_TEST !== 'true') {
       const emailService = new GroupBookingEmailService();
       emailService.setMessage(
         rooms[0].offer.accommodation.name,

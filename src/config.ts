@@ -41,6 +41,7 @@ checkEnvVariables([
   'JIRA_TOKEN',
   'JIRA_PROJECT_ID',
   'JIRA_GROUP_ISSUE_ID',
+  'DISABLE_JIRA_NOTIFICATIONS',
   'GROUP_DEPOSIT_PERCENTAGE'
 ]);
 
@@ -142,6 +143,9 @@ export const jiraEmailAddress = String(process.env.JIRA_EMAIL);
 export const jiraToken = String(process.env.JIRA_TOKEN);
 export const jiraProjectId = String(process.env.JIRA_PROJECT_ID);
 export const jiraGroupIssueId = String(process.env.JIRA_GROUP_ISSUE_ID);
+export const jiraDisableNotifications = String(
+  process.env.DISABLE_JIRA_NOTIFICATIONS
+);
 
 export const groupDepositPercentage = Number(
   process.env.GROUP_DEPOSIT_PERCENTAGE
