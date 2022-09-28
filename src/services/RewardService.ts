@@ -8,8 +8,9 @@ import {
 import { RewardOption, RewardType } from '@windingtree/glider-types/dist/win';
 import ApiError from '../exceptions/ApiError';
 import dealRepository from '../repositories/DealRepository';
+import groupBookingRequestRepository from '../repositories/GroupBookingRequestRepository';
 import offerRepository from '../repositories/OfferRepository';
-import { OfferBackEnd } from '../types';
+import { OfferBackEnd, GroupBookingRequestDBValue } from '../types';
 
 const options = {
   LIF: {
@@ -48,13 +49,34 @@ export class RewardService {
     const currencyOffer = offer.price.currency;
 
     const rewardValue = (Number(priceOffer) * rewardPercentage) / 100;
+    return this.generateOptions(rewardValue, currencyOffer);
+  }
 
+  public async updateOption(
+    offerId: string,
+    rewardOption: RewardType
+  ): Promise<boolean> {
+    try {
+      await dealRepository.getDeal(offerId);
+    } catch (e) {
+      throw ApiError.NotFound('deal not found');
+    }
+
+    await dealRepository.updateRewardOption(offerId, rewardOption);
+
+    return true;
+  }
+
+  private async generateOptions(
+    rewardValue: number,
+    currency: string
+  ): Promise<RewardOption[]> {
     let priceNCT: number, priceLIF: number;
     try {
       const res = await axios.get(
         `${coinGeckoURL}/simple/price?ids=${options.LIF.id},${
           options.NCT.id
-        }&vs_currencies=${currencyOffer.toLowerCase()}`
+        }&vs_currencies=${currency.toLowerCase()}`
       );
       // {
       //     "toucan-protocol-nature-carbon-tonne": {
@@ -65,8 +87,8 @@ export class RewardService {
       //     }
       // }
 
-      priceNCT = res.data[options.NCT.id][currencyOffer.toLowerCase()];
-      priceLIF = res.data[options.LIF.id][currencyOffer.toLowerCase()];
+      priceNCT = res.data[options.NCT.id][currency.toLowerCase()];
+      priceLIF = res.data[options.LIF.id][currency.toLowerCase()];
     } catch (e) {
       throw ApiError.NotFound(`Price of the reward not found`);
     }
@@ -77,7 +99,11 @@ export class RewardService {
     }
 
     const qtyNCT = rewardValue / priceNCT;
-    const qtyLIF = Math.round(rewardValue / priceLIF / 100) * 100; // LIF is rounded to the hundreds.
+    // Note: update these numbers when moon
+    let qtyLIF = Math.round(rewardValue / priceLIF / 100) * 100; // LIF is rounded to the hundreds.
+    if (qtyLIF === 0) {
+      qtyLIF = 100;
+    }
 
     return [
       {
@@ -93,17 +119,48 @@ export class RewardService {
     ];
   }
 
-  public async updateOption(
-    offerId: string,
+  public async getGroupOptions(requestId: string): Promise<RewardOption[]> {
+    // TODO: once the smart contract check is developed, the data won't be in database yet here.
+    // We will have to find it in the queue.
+    let record: GroupBookingRequestDBValue | null;
+    try {
+      record = await groupBookingRequestRepository.getGroupBookingRequestById(
+        requestId
+      );
+    } catch (e) {
+      throw ApiError.NotFound('group booking request not found');
+    }
+
+    let total = '';
+    let currency = '';
+    if (record.totals.usd && record.totals.usd.length !== 0) {
+      total = record.totals.usd;
+      currency = 'USD';
+    } else {
+      total = record.totals.offerCurrency.amount;
+      currency = record.totals.offerCurrency.currency;
+    }
+
+    // apply the percentage (precision does not matter here)
+    const rewardValue = (Number(total) * rewardPercentage) / 100;
+
+    return this.generateOptions(rewardValue, currency);
+  }
+
+  public async updateGroupOption(
+    requestId: string,
     rewardOption: RewardType
   ): Promise<boolean> {
     try {
-      await dealRepository.getDeal(offerId);
+      await groupBookingRequestRepository.getGroupBookingRequestById(requestId);
     } catch (e) {
-      throw ApiError.NotFound('deal not found');
+      throw ApiError.NotFound('group booking not found');
     }
 
-    await dealRepository.updateRewardOption(offerId, rewardOption);
+    await groupBookingRequestRepository.updateRewardOption(
+      requestId,
+      rewardOption
+    );
 
     return true;
   }

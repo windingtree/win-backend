@@ -76,6 +76,7 @@ export class ProxyController {
     }
   }
 
+  // TODO: add cache mechanism to group search.
   public async searchGroupOffers(
     req: Request,
     res: Response,

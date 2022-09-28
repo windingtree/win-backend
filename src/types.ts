@@ -5,14 +5,17 @@ import {
   PassengerSearch
 } from '@windingtree/glider-types/dist/accommodations';
 import {
-  GroupBookingDeposit,
+  Amount,
+  Currency,
   MongoLocation,
   OfferDbValue,
   OrganizerInformation,
-  RewardType
+  RewardType,
+  GroupBookingDeposits
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
+import { CreatedIssue } from 'jira.js/out/version3/models';
 
 export interface User {
   login: string;
@@ -185,19 +188,22 @@ export interface GroupRoom {
   offer: OfferDbValue;
 }
 
-export type GroupBookingRequestStatus = 'paid' | 'pending';
+export type GroupBookingRequestStatus = 'pending' | 'paid';
 
 export interface GroupBookingRequestDBValue {
   _id?: ObjectId;
+  requestId: string;
   contact: OrganizerInformation;
   createdAt: Date;
   guestsCount: number;
   rooms: GroupRoom[];
   invoice: boolean;
-  deposit: GroupBookingDeposit;
-  requestId: string;
+  totals: GroupBookingDeposits; // Used to compute the rewards.
+  depositOptions: GroupBookingDeposits;
   status: GroupBookingRequestStatus;
+  jiraTicket?: CreatedIssue;
   dealStorage?: DealStorage;
   contract?: NetworkInfo;
   organizerBlockchainAddress?: string[];
+  rewardOption?: RewardType;
 }

@@ -85,7 +85,42 @@ export class BookingController {
     next: NextFunction
   ) {
     try {
-      await groupBookingService.createGroupBookingRequest(req.body);
+      const response = await groupBookingService.createGroupBookingRequest(
+        req.body
+      );
+
+      res.json(response);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async getGroupRewardOptions(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { requestId } = req.params;
+
+      const data = await rewardService.getGroupOptions(requestId);
+
+      res.json(data);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async setGroupRewardOption(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { requestId } = req.params;
+      const rewardOption = req.body.rewardType;
+
+      await rewardService.updateGroupOption(requestId, rewardOption);
 
       res.json({ success: true });
     } catch (e) {
