@@ -63,7 +63,7 @@ export class ContractService {
       price = String(this.offer.price.public);
     }
     if (this.offer.quote) {
-      quotePrice = String(this.offer.quote.targetAmount);
+      quotePrice = String(this.offer.quote.sourceAmount);
     }
     if (process.env.NODE_IS_TEST === 'true') {
       const dealStorage: DealStorage = {
@@ -153,7 +153,7 @@ export class ContractService {
           this.offer.quote &&
           utils.parseEther(quotePrice).eq(dealStorage.value)
         ) {
-          if (asset.currency !== this.offer.quote.targetCurrency) {
+          if (asset.currency !== this.offer.quote.sourceCurrency) {
             await dealRepository.updateDeal(
               serviceId,
               'transactionError',
