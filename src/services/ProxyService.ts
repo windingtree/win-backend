@@ -44,6 +44,7 @@ export class ProxyService {
     const requestHash = utils.id(JSON.stringify(body));
     const cashedOffers = await this.getCachedOffers(sessionId, requestHash);
     if (cashedOffers) {
+      cashedOffers.offers = await this.addRates(cashedOffers.offers);
       return cashedOffers;
     }
 
@@ -256,6 +257,8 @@ export class ProxyService {
       };
     }
 
+    commonData.offers = await this.addRates(commonData.offers);
+
     return commonData;
   }
 
@@ -428,6 +431,53 @@ export class ProxyService {
       ...data,
       ...{ quote }
     };
+  }
+
+  private async getRates(
+    currencies: string[]
+  ): Promise<{ [k: string]: number }> {
+    const rates = {};
+    for (const currency of currencies) {
+      const ratesData = {
+        source: currency,
+        target: 'USD'
+      };
+      try {
+        const quoteRes = await axios.get(`${simardUrl}/rates`, {
+          params: ratesData,
+          headers: { Authorization: `Bearer ${simardJwt}` }
+        });
+        rates[currency] = quoteRes.data.rate;
+      } catch (e) {
+        // error
+      }
+    }
+
+    return rates;
+  }
+
+  private async addRates(offers: { [k: string]: Offer }): Promise<{
+    [k: string]: Offer;
+  }> {
+    const currencies: string[] = [
+      ...new Set(Object.values(offers).map((offer) => offer.price.currency))
+    ];
+
+    const rates = await this.getRates(currencies);
+
+    for (const key in offers) {
+      const offer = offers[key];
+      const { currency } = offer.price;
+      if (currency !== 'USD' && rates[currency]) {
+        const usdPrice =
+          parseFloat(offer.price.public || '0') * rates[currency];
+        offers[key].convertedPrice = {
+          USD: usdPrice.toFixed(2)
+        };
+      }
+    }
+
+    return offers;
   }
 
   public async getPricedOffer(offerId: string): Promise<WinPricedOffer> {
