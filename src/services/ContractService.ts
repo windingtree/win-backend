@@ -153,7 +153,7 @@ export class ContractService {
           this.offer.quote &&
           utils.parseEther(quotePrice).eq(dealStorage.value)
         ) {
-          if (asset.currency !== this.offer.quote.sourceCurrency) {
+          if (asset.currency !== this.offer.quote.targetCurrency) {
             await dealRepository.updateDeal(
               serviceId,
               'transactionError',
