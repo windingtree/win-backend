@@ -136,7 +136,7 @@ export class ContractService {
             await dealRepository.updateDeal(
               serviceId,
               'transactionError',
-              'Invalid payment currency'
+              `Invalid payment currency: ${this.offer.price.currency} while expected ${asset.currency}`
             );
             this.stop();
             return null;
