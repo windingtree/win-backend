@@ -1,5 +1,5 @@
 import LogService from './LogService';
-import { constants, providers, utils } from 'ethers';
+import { constants, providers, utils, BigNumber as BN } from 'ethers';
 import { WinPay__factory } from '@windingtree/win-pay/dist/typechain';
 import bookingService from './BookingService';
 import dealRepository from '../repositories/DealRepository';
@@ -57,14 +57,8 @@ export class ContractService {
     const { rpc, chainId, contracts } = contractInfo;
     const provider = new providers.JsonRpcProvider(rpc, chainId);
 
-    let price = '0';
-    let quotePrice = '0';
-    if (this.offer.price) {
-      price = String(this.offer.price.public);
-    }
-    if (this.offer.quote) {
-      quotePrice = String(this.offer.quote.sourceAmount);
-    }
+    const price = String(this.offer.price.public);
+
     if (process.env.NODE_IS_TEST === 'true') {
       const dealStorage: DealStorage = {
         asset: utils.id('some_asset'),
@@ -96,9 +90,7 @@ export class ContractService {
         value: deal.value.toString()
       };
 
-      const statusDeal = dealStorage.state === State.PAID;
-
-      if (statusDeal) {
+      if (dealStorage.state === State.PAID) {
         await dealRepository.createDeal(
           this.offer,
           dealStorage,
@@ -114,22 +106,20 @@ export class ContractService {
         const network = getNetworkInfo(chainId);
         const address = utils.getAddress(dealStorage.asset);
         const asset = network.contracts.assets.find(
-          (asset) => asset.coin === address
+          (asset) => utils.getAddress(asset.coin) === address
         );
 
         if (!asset) {
           await dealRepository.updateDeal(
             serviceId,
             'transactionError',
-            'Invalid assets configuration'
+            `Asset with coin address ${address} not found`
           );
           this.stop();
           return null;
         }
 
-        if (
-          !['USD', this.offer.price.currency].includes(asset?.currency || '')
-        ) {
+        if (!['USD', this.offer.price.currency].includes(asset.currency)) {
           await dealRepository.updateDeal(
             serviceId,
             'transactionError',
@@ -139,7 +129,9 @@ export class ContractService {
           return null;
         }
 
-        if (utils.parseEther(price).eq(dealStorage.value)) {
+        const dealValue = BN.from(dealStorage.value);
+
+        if (dealValue.eq(utils.parseEther(price))) {
           if (asset.currency !== this.offer.price.currency) {
             await dealRepository.updateDeal(
               serviceId,
@@ -151,9 +143,9 @@ export class ContractService {
           }
         } else if (
           this.offer.quote &&
-          utils.parseEther(quotePrice).eq(dealStorage.value)
+          dealValue.eq(utils.parseEther(String(this.offer.quote.sourceAmount)))
         ) {
-          if (asset.currency !== this.offer.quote.targetCurrency) {
+          if (asset.currency !== this.offer.quote.sourceCurrency) {
             await dealRepository.updateDeal(
               serviceId,
               'transactionError',
