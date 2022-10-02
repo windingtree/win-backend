@@ -2,24 +2,19 @@ import { GroupRoom } from '../types';
 import {
   GroupBookingDeposits,
   GroupBookingRequest,
-  GroupBookingRequestResponse
+  GroupBookingRequestResponse,
+  OfferIdAndQuantity
 } from '@windingtree/glider-types/dist/win';
 import { Quote } from '@windingtree/glider-types/dist/simard';
 import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
 import { randomUUID } from 'crypto';
-import groupBookingRequestRepository from '../repositories/GroupBookingRequestRepository';
-import GroupBookingEmailService from './GroupBookingEmailService';
-import JiraService from './JiraService';
-import {
-  appEnvironment,
-  groupDepositPercentage,
-  jiraDisableNotifications
-} from '../config';
+import { groupDepositPercentage } from '../config';
 import Big from 'big.js';
 import { convertAmount, getCurrencyDecimals } from '../utils';
 import LogService from './LogService';
-import { CreatedIssue } from 'jira.js/out/version3/models';
+import { GroupQueueService } from './GroupQueueService';
+import { utils } from 'ethers';
 
 export class GroupBookingService {
   public async createGroupBookingRequest(
@@ -75,11 +70,6 @@ export class GroupBookingService {
 
     const requestId = randomUUID();
 
-    // TODO: change the flow to poll the blockchain and check payment.
-    // And with the queue, rewards will be able to check the queue to get the request information.
-
-    // const depositOptions: GroupBookingDeposits;
-
     // Compute the total in offerCurrency.
     let totalOfferCurrency = new Big(0);
     const offerCurrency = currency;
@@ -95,7 +85,6 @@ export class GroupBookingService {
         currency: offerCurrency
       }
     };
-    // If the currency is different from USD, call simard-pay.
 
     // Compute the total in USD.
     if (offerCurrency !== 'USD') {
@@ -138,46 +127,19 @@ export class GroupBookingService {
         .toFixed(2);
     }
 
-    // Store the request in database
-    await groupBookingRequestRepository.createGroupBookingRequest(
+    const serviceId = computeGroupServiceId(offers);
+
+    await GroupQueueService.getInstance().addDealJob(requestId, {
       rooms,
-      organizerInfo,
+      contact: organizerInfo,
       invoice,
-      guestCount,
+      guestsCount: guestCount,
       depositOptions,
       totals,
-      requestId
-    );
-
-    // Create a Jira Ticket
-    // This check is here to forbid the call to Jira in the unit tests.
-    // TODO: It might be worth to do a retry here... This should be done when groups queue is in place.
-    let jiraTicket: CreatedIssue;
-    if (jiraDisableNotifications === 'false') {
-      const jiraService = new JiraService();
-      const response = await jiraService.createJiraTicket(
-        rooms,
-        organizerInfo,
-        invoice,
-        guestCount,
-        depositOptions,
-        totals,
-        requestId
-      );
-      if (response) jiraTicket = response;
-      // TODO: update the db record with Jira ticket
-    }
-
-    // Send confirmation mail
-    if (process.env.NODE_IS_TEST !== 'true') {
-      const emailService = new GroupBookingEmailService();
-      emailService.setMessage(
-        rooms[0].offer.accommodation.name,
-        requestId,
-        organizerInfo
-      );
-      await emailService.sendEmail();
-    }
+      requestId,
+      status: 'pending',
+      serviceId
+    });
 
     return {
       requestId,
@@ -185,5 +147,18 @@ export class GroupBookingService {
     };
   }
 }
+
+// TODO: move this function to the `common` library.
+const computeGroupServiceId = (offers: OfferIdAndQuantity[]): string => {
+  // Note: I recreate the array just to be sure that the order in object properties is respected.
+  const newOffers: any[] = [];
+  for (const offer of offers) {
+    const obj = {};
+    obj['offerId'] = offer.offerId;
+    obj['quantity'] = offer.quantity;
+    newOffers.push(obj);
+  }
+  return utils.id(JSON.stringify(newOffers));
+};
 
 export default new GroupBookingService();

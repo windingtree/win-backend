@@ -2,6 +2,8 @@ import ServerService from './services/ServerService';
 import { port, prometheusEnabled } from './config';
 import { MetricsService } from './services/MetricsService';
 import { QueueService } from './services/QueueService';
+import { GroupQueueService } from './services/GroupQueueService';
+import { RewardQueueService } from './services/RewardQueueService';
 
 process.on('unhandledRejection', async (error) => {
   console.log(error);
@@ -17,6 +19,8 @@ const main = async (): Promise<void> => {
 
   await QueueService.getInstance().runDealWorker();
   await QueueService.getInstance().runContractWorker();
+  await GroupQueueService.getInstance().runGroupDealWorker();
+  await RewardQueueService.getInstance().runRewardsWorker();
 
   await server.start();
 };
