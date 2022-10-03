@@ -56,7 +56,7 @@ export class GroupQueueService {
   ): Promise<void> {
     // TODO: Strange bug call to `runGroupDealWorker` in index.ts does not work ...
     if (!this.dealWorker) {
-      this.runGroupDealWorker();
+      await this.runGroupDealWorker();
     }
 
     let delay = 30 * 1000; // Start 30s after the booking request.
