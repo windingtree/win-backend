@@ -74,7 +74,7 @@ export class RewardService {
     }
 
     RewardQueueService.getInstance().addRewardJob(offerId, {
-      dealType: 'Group',
+      dealType: 'Standard',
       id: offerId,
       rewardType: rewardOption
     });

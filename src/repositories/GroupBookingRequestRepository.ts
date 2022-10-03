@@ -36,7 +36,6 @@ export class GroupBookingRequestRepository {
     data: GroupBookingRequestDBValue
   ): Promise<void> {
     const collection = await this.getCollection();
-    data.status = 'complete';
     await collection.insertOne({
       ...data,
       createdAt: new Date()
@@ -59,12 +58,21 @@ export class GroupBookingRequestRepository {
     status: GroupBookingRequestStatus,
     contract: NetworkInfo,
     dealStorage: DealStorage,
-    blockchainUserAddresses: string[]
+    blockchainUserAddresses: string[],
+    errorMessage: string
   ): Promise<void> {
     const collection = await this.getCollection();
     await collection.updateOne(
       { requestId },
-      { $set: { status, contract, dealStorage, blockchainUserAddresses } }
+      {
+        $set: {
+          status,
+          contract,
+          dealStorage,
+          blockchainUserAddresses,
+          errorMessage
+        }
+      }
     );
   }
 
@@ -90,7 +98,13 @@ export class GroupBookingRequestRepository {
     rewardOption: RewardType
   ): Promise<void> {
     const collection = await this.getCollection();
-    await collection.updateOne({ requestId }, { $set: { rewardOption } });
+    const res = await collection.updateOne(
+      { requestId },
+      { $set: { rewardOption } }
+    );
+    if (res.matchedCount === 0) {
+      throw new Error('Deal not found');
+    }
   }
 }
 

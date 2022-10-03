@@ -21,7 +21,6 @@ import DealError from '../exceptions/DealError';
 // Note: exceptions here finish automatically the workers' job's attempt.
 export const groupDealWorker = async (job: Job) => {
   const data: GroupBookingRequestDBValue = job.data;
-  data.attemptsMade = job.attemptsMade;
 
   if (data.status === 'pending') {
     let paymentInfo: PaymentInfo;
@@ -35,14 +34,17 @@ export const groupDealWorker = async (job: Job) => {
       data.dealStorage = paymentInfo.dealStorage;
       data.blockchainUserAddresses = paymentInfo.blockchainUserAddresses;
       data.status = 'depositPaid';
+      job.update(data);
     } catch (e) {
       if (e instanceof DealError) {
         // If the deal exist, we create the database record, even if there is an error.
         data.contract = e.networkInfo;
         data.dealStorage = e.dealStorage;
         data.blockchainUserAddresses = e.blockchainUserAddresses;
+        data.errorMessage = e.message;
         data.status = 'dealError';
         await groupBookingRequestRepository.createGroupBookingRequest(data);
+        job.update(data);
       }
       throw e;
     }
@@ -64,13 +66,17 @@ export const groupDealWorker = async (job: Job) => {
       data.status,
       data.contract,
       data.dealStorage,
-      data.blockchainUserAddresses
+      data.blockchainUserAddresses,
+      ''
     );
+    data.status = 'stored';
+    job.update(data);
   }
 
   if (data.status === 'depositPaid') {
     await groupBookingRequestRepository.createGroupBookingRequest(data);
     data.status = 'stored';
+    job.update(data);
   }
 
   // Create a Jira Ticket
@@ -78,6 +84,7 @@ export const groupDealWorker = async (job: Job) => {
     const ticket = await createTicket(data);
     data.jiraTicket = ticket;
     data.status = 'ticketCreated';
+    job.update(data);
   }
 
   if (data.status === 'ticketCreated') {
@@ -87,12 +94,14 @@ export const groupDealWorker = async (job: Job) => {
       data.jiraTicket!
     );
     data.status = 'ticketStored';
+    job.update(data);
   }
 
   // Send confirmation mail
   if (data.status === 'ticketStored') {
     await sendEmail(data);
     data.status = 'emailSent';
+    job.update(data);
   }
 
   if (data.status === 'emailSent') {
@@ -101,6 +110,7 @@ export const groupDealWorker = async (job: Job) => {
       'complete'
     );
     data.status = 'complete';
+    job.update(data);
   }
 };
 

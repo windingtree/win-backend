@@ -91,7 +91,13 @@ export class DealRepository {
     rewardOption: RewardType
   ): Promise<void> {
     const collection = await this.getCollection();
-    await collection.updateOne({ offerId }, { $set: { rewardOption } });
+    const res = await collection.updateOne(
+      { offerId },
+      { $set: { rewardOption } }
+    );
+    if (res.matchedCount === 0) {
+      throw new Error('Deal not found');
+    }
   }
 }
 

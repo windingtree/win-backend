@@ -32,7 +32,7 @@ export class RewardQueueService {
     let backOffDelay = 30 * 1000; // 30s
     // Reduce delay for tests.
     if (process.env.NODE_IS_TEST === 'true') {
-      backOffDelay = 2 * 1000;
+      backOffDelay = 1 * 1000;
     }
     this.rewardScheduler = new QueueScheduler('Rewards', this.connectionConfig);
     this.rewardQueue = new Queue('Rewards', {
@@ -75,7 +75,7 @@ export class RewardQueueService {
     });
 
     // this.rewardWorker.on('completed', async (job: Job) => {
-    //   LogService.green(`Reward updated for Request: ${job.id}`)
+    //   LogService.green(`Reward updated for Id: ${job.id}`)
     // })
   }
 
@@ -88,6 +88,11 @@ export class RewardQueueService {
 
 const rewardsWorker = async (job: Job) => {
   const data: RewardWorkerData = job.data;
+
+  // Test retry
+  if (process.env.NODE_IS_TEST === 'true' && job.attemptsMade == 1) {
+    data.id = 'abcde';
+  }
 
   if (data.dealType === 'Standard') {
     await DealRepository.updateRewardOption(data.id, data.rewardType);
