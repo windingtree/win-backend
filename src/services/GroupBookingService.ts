@@ -143,6 +143,7 @@ export class GroupBookingService {
 
     return {
       requestId,
+      serviceId,
       depositOptions
     };
   }
