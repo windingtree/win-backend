@@ -29,6 +29,9 @@ describe('test', async () => {
   const managerLogin = 'test_manager_super_long_login';
   const managerPass = '123456qwerty';
 
+  await GroupQueueService.getInstance().runGroupDealWorker();
+  await RewardQueueService.getInstance().runRewardsWorker();
+
   let refreshToken;
   let accessToken;
   let secretToken;

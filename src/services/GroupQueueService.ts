@@ -54,11 +54,6 @@ export class GroupQueueService {
     key: string,
     value: GroupBookingRequestDBValue
   ): Promise<void> {
-    // TODO: Strange bug call to `runGroupDealWorker` in index.ts does not work ...
-    if (!this.dealWorker) {
-      await this.runGroupDealWorker();
-    }
-
     let delay = 30 * 1000; // Start 30s after the booking request.
     if (process.env.NODE_IS_TEST === 'true') {
       delay = 1 * 1000; // Reduce delay for tests.

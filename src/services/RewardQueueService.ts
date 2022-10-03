@@ -58,11 +58,6 @@ export class RewardQueueService {
     key: string,
     value: RewardWorkerData
   ): Promise<void> {
-    // TODO: Strange bug call to `runGRewardsWorker` in index.ts does not work ...
-    if (!this.rewardWorker) {
-      await this.runRewardsWorker();
-    }
-
     await this.rewardQueue.add(key, value, {
       jobId: key
     });
