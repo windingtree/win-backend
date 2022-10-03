@@ -36,8 +36,8 @@ export default class JiraService {
 
     this.projectID = jiraProjectId;
     this.issueTypeID = jiraGroupIssueId;
-    if (appEnvironment === 'test') {
-      this.summaryPrefix = 'TEST: ';
+    if (appEnvironment !== 'production') {
+      this.summaryPrefix = '[TEST] ';
     } else {
       this.summaryPrefix = '';
     }
@@ -51,7 +51,7 @@ export default class JiraService {
     depositOptions: GroupBookingDeposits,
     totals: GroupBookingDeposits,
     requestId: string
-  ): Promise<CreatedIssue | undefined> {
+  ): Promise<CreatedIssue> {
     const parameters = this.createGroupBookingIssueParameters(
       rooms,
       contact,
@@ -61,13 +61,8 @@ export default class JiraService {
       totals,
       requestId
     );
-    try {
-      const result = await this.client.issues.createIssue(parameters);
-      return result;
-    } catch (e) {
-      LogService.yellow('Jira: ' + e);
-      return undefined;
-    }
+    const result = await this.client.issues.createIssue(parameters);
+    return result;
   }
 
   // TODO: we need to add more fields to the template: offer1, offer2, offer3, with quantities, the deposit, the organizer info,...

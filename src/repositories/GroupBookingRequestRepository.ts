@@ -1,4 +1,9 @@
-import { GroupBookingRequestDBValue, GroupRoom } from '../types';
+import {
+  DealStorage,
+  GroupBookingRequestDBValue,
+  GroupBookingRequestStatus,
+  GroupRoom
+} from '../types';
 import {
   GroupBookingDeposits,
   OrganizerInformation,
@@ -8,6 +13,7 @@ import MongoDBService from '../services/MongoDBService';
 import { Collection } from 'mongodb';
 import { DBName } from '../config';
 import { CreatedIssue } from 'jira.js/out/version3/models';
+import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 
 export class GroupBookingRequestRepository {
   private dbService: MongoDBService;
@@ -26,26 +32,12 @@ export class GroupBookingRequestRepository {
     return database.collection(this.collectionName);
   }
 
-  // TODO: add smart contract info
   public async createGroupBookingRequest(
-    rooms: GroupRoom[],
-    contact: OrganizerInformation,
-    invoice: boolean,
-    guestsCount: number,
-    depositOptions: GroupBookingDeposits,
-    totals: GroupBookingDeposits,
-    requestId: string
+    data: GroupBookingRequestDBValue
   ): Promise<void> {
     const collection = await this.getCollection();
     await collection.insertOne({
-      contact,
-      rooms,
-      invoice,
-      requestId,
-      guestsCount,
-      totals,
-      depositOptions,
-      status: 'pending',
+      ...data,
       createdAt: new Date()
     });
   }
@@ -61,20 +53,44 @@ export class GroupBookingRequestRepository {
     return bookingRequest;
   }
 
-  // Used for tests
-  public async getGroupBookingRequestByName(
-    firstName: string,
-    lastName: string
-  ): Promise<Array<GroupBookingRequestDBValue>> {
+  public async updateBlockchainInfo(
+    requestId: string,
+    status: GroupBookingRequestStatus,
+    contract: NetworkInfo,
+    dealStorage: DealStorage,
+    blockchainUserAddresses: string[],
+    errorMessage: string
+  ): Promise<void> {
     const collection = await this.getCollection();
-    const bookingRequest = await collection.find({
-      'contact.firstName': firstName,
-      'contact.lastName': lastName
-    });
-    if (!bookingRequest) {
-      throw new Error('GroupBookingRequest not found');
-    }
-    return bookingRequest.toArray();
+    await collection.updateOne(
+      { requestId },
+      {
+        $set: {
+          status,
+          contract,
+          dealStorage,
+          blockchainUserAddresses,
+          errorMessage
+        }
+      }
+    );
+  }
+
+  public async updateJiraInfo(
+    requestId: string,
+    status: GroupBookingRequestStatus,
+    jiraTicket: CreatedIssue
+  ): Promise<void> {
+    const collection = await this.getCollection();
+    await collection.updateOne({ requestId }, { $set: { status, jiraTicket } });
+  }
+
+  public async updateStatus(
+    requestId: string,
+    status: GroupBookingRequestStatus
+  ): Promise<void> {
+    const collection = await this.getCollection();
+    await collection.updateOne({ requestId }, { $set: { status } });
   }
 
   public async updateRewardOption(
@@ -82,7 +98,13 @@ export class GroupBookingRequestRepository {
     rewardOption: RewardType
   ): Promise<void> {
     const collection = await this.getCollection();
-    await collection.updateOne({ requestId }, { $set: { rewardOption } });
+    const res = await collection.updateOne(
+      { requestId },
+      { $set: { rewardOption } }
+    );
+    if (res.matchedCount === 0) {
+      throw new Error('Deal not found');
+    }
   }
 }
 

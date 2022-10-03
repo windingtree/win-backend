@@ -11,6 +11,8 @@ import dealRepository from '../repositories/DealRepository';
 import groupBookingRequestRepository from '../repositories/GroupBookingRequestRepository';
 import offerRepository from '../repositories/OfferRepository';
 import { OfferBackEnd, GroupBookingRequestDBValue } from '../types';
+import { GroupQueueService } from './GroupQueueService';
+import { RewardQueueService } from './RewardQueueService';
 
 const options = {
   LIF: {
@@ -56,14 +58,26 @@ export class RewardService {
     offerId: string,
     rewardOption: RewardType
   ): Promise<boolean> {
+    let offer: OfferBackEnd | null;
     try {
-      await dealRepository.getDeal(offerId);
+      // TODO: here we should check the queue instead of the offer db.
+      offer = await offerRepository.getOne(offerId);
+      if (!offer) {
+        const deal = await dealRepository.getDeal(offerId);
+        if (!deal.offer) {
+          throw ApiError.NotFound('offer not found in deal');
+        }
+        offer = deal.offer;
+      }
     } catch (e) {
-      throw ApiError.NotFound('deal not found');
+      throw ApiError.NotFound('Issue when retrieving offer: ' + e);
     }
 
-    await dealRepository.updateRewardOption(offerId, rewardOption);
-
+    RewardQueueService.getInstance().addRewardJob(offerId, {
+      dealType: 'Standard',
+      id: offerId,
+      rewardType: rewardOption
+    });
     return true;
   }
 
@@ -119,20 +133,38 @@ export class RewardService {
     ];
   }
 
-  public async getGroupOptions(requestId: string): Promise<RewardOption[]> {
-    // TODO: once the smart contract check is developed, the data won't be in database yet here.
-    // We will have to find it in the queue.
-    let record: GroupBookingRequestDBValue | null;
+  public async retrieveGroupRecord(
+    requestId: string
+  ): Promise<GroupBookingRequestDBValue> {
+    // Check the queue first.
+    let record: GroupBookingRequestDBValue | undefined;
     try {
-      record = await groupBookingRequestRepository.getGroupBookingRequestById(
-        requestId
-      );
+      record = await GroupQueueService.getInstance().getDealJob(requestId);
     } catch (e) {
-      throw ApiError.NotFound('group booking request not found');
+      // Check the db if not in queue.
+      try {
+        record = await groupBookingRequestRepository.getGroupBookingRequestById(
+          requestId
+        );
+      } catch (e) {
+        throw ApiError.NotFound('Rewards: group booking request not found');
+      }
     }
+
+    // Just in case...
+    if (!record) {
+      throw ApiError.NotFound('Rewards: group booking request not found');
+    }
+
+    return record;
+  }
+
+  public async getGroupOptions(requestId: string): Promise<RewardOption[]> {
+    const record = await this.retrieveGroupRecord(requestId);
 
     let total = '';
     let currency = '';
+    // We prefer the USD amount to limit conversion issues in coinGecko API.
     if (record.totals.usd && record.totals.usd.length !== 0) {
       total = record.totals.usd;
       currency = 'USD';
@@ -151,17 +183,16 @@ export class RewardService {
     requestId: string,
     rewardOption: RewardType
   ): Promise<boolean> {
-    try {
-      await groupBookingRequestRepository.getGroupBookingRequestById(requestId);
-    } catch (e) {
-      throw ApiError.NotFound('group booking not found');
-    }
+    // Check existence of the group request.
+    await this.retrieveGroupRecord(requestId);
 
-    await groupBookingRequestRepository.updateRewardOption(
-      requestId,
-      rewardOption
-    );
-
+    // Here we use a dedicated queue for the update because the booking might still be in the queue, and in a transitory state
+    // and we don't know for how long.
+    RewardQueueService.getInstance().addRewardJob(requestId, {
+      dealType: 'Group',
+      id: requestId,
+      rewardType: rewardOption
+    });
     return true;
   }
 }

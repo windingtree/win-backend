@@ -5,7 +5,7 @@ import { regexp } from '@windingtree/org.id-utils';
 import { utils } from 'ethers';
 import { DateTime } from 'luxon';
 import cc from 'currency-codes';
-import { appEnvironment, simardJwt, simardUrl } from './config';
+import { simardJwt, simardUrl } from './config';
 import axios from 'axios';
 import Big from 'big.js';
 

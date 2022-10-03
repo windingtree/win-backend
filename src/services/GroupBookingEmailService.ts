@@ -44,8 +44,6 @@ export default class GroupBookingEmailService {
   }
 
   public async sendEmail() {
-    await client.send(this.message).catch((error) => {
-      LogService.red(error);
-    });
+    await client.send(this.message);
   }
 }

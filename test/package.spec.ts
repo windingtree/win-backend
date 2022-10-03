@@ -15,7 +15,9 @@ import {
 } from '@windingtree/win-commons/dist/auth';
 import { testWallet } from '../src/config';
 import { QueueService } from '../src/services/QueueService';
+import { GroupQueueService } from '../src/services/GroupQueueService';
 import { GroupBookingRequest } from '@windingtree/glider-types/dist/win';
+import { RewardQueueService } from '../src/services/RewardQueueService';
 
 let appService: ServerService;
 
@@ -26,6 +28,9 @@ describe('test', async () => {
 
   const managerLogin = 'test_manager_super_long_login';
   const managerPass = '123456qwerty';
+
+  await GroupQueueService.getInstance().runGroupDealWorker();
+  await RewardQueueService.getInstance().runRewardsWorker();
 
   let refreshToken;
   let accessToken;
@@ -585,9 +590,9 @@ describe('test', async () => {
         .set('Accept', 'application/json')
         .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
-
       expect(res1.body.success).to.be.true;
 
+      await sleep(5 * 1000);
       const res2 = await requestWithSupertest
         .get(`/api/booking/${(await testWallet).address}`)
         .set('Accept', 'application/json')
@@ -673,6 +678,40 @@ describe('test', async () => {
       }
     }).timeout(30000);
 
+    it('request a group booking in 2 different hotels', async () => {
+      const body: GroupBookingRequest = {
+        organizerInfo: {
+          firstName: 'Bob',
+          lastName: 'Marley',
+          emailAddress: userEmailAddress,
+          phoneNumber: '+32123456789'
+        },
+        guestCount: 21,
+        offers: [
+          {
+            offerId: badOfferIds[0],
+            quantity: 6
+          },
+          {
+            offerId: badOfferIds[1],
+            quantity: 11
+          }
+        ],
+        deposit: {
+          amount: '100.00',
+          currency: 'USD'
+        },
+        invoice: true
+      };
+
+      await requestWithSupertest
+        .post('/api/groups/bookingRequest')
+        .send(body)
+        .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
+        .expect(400);
+    }).timeout(30000);
+
     it('request a group booking', async () => {
       const body: GroupBookingRequest = {
         organizerInfo: {
@@ -713,11 +752,38 @@ describe('test', async () => {
       );
       expect(res.body.depositOptions.offerCurrency.currency).to.be.equal('EUR');
       expect(Number(res.body.depositOptions.usd)).to.be.above(100);
+    }).timeout(30000);
 
+    it('return the reward options from queue', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/groups/${requestId}/rewardOptions`)
+        .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
+        .expect(200);
+
+      const options = res.body;
+      expect(options).to.have.lengthOf(2);
+      {
+        const { rewardType, quantity, tokenName } = options[0];
+        expect(rewardType).to.be.equal('CO2_OFFSET');
+        expect(Number(quantity)).to.be.greaterThan(0);
+        expect(tokenName).to.be.equal('NCT');
+      }
+      {
+        const { rewardType, quantity, tokenName } = options[1];
+        expect(rewardType).to.be.equal('TOKEN');
+        expect(Number(quantity)).to.be.greaterThan(99);
+        expect(tokenName).to.be.equal('LIF');
+      }
+    }).timeout(25000);
+
+    it('Check record in database', async () => {
+      await sleep(10 * 1000);
       const record =
         await groupBookingRequestRepository.getGroupBookingRequestById(
           requestId
         );
+
       expect(record.rooms[0].offer.id).to.equals(goodOfferIds[0]);
       expect(record.rooms[1].offer.id).to.equals(goodOfferIds[1]);
       expect(Number(record.totals.offerCurrency.amount)).to.be.above(100);
@@ -730,41 +796,7 @@ describe('test', async () => {
       expect(Number(record.depositOptions.usd)).to.be.above(100);
     }).timeout(30000);
 
-    it('request a group booking in 2 different hotels', async () => {
-      const body: GroupBookingRequest = {
-        organizerInfo: {
-          firstName: 'Bob',
-          lastName: 'Marley',
-          emailAddress: userEmailAddress,
-          phoneNumber: '+32123456789'
-        },
-        guestCount: 21,
-        offers: [
-          {
-            offerId: badOfferIds[0],
-            quantity: 6
-          },
-          {
-            offerId: badOfferIds[1],
-            quantity: 11
-          }
-        ],
-        deposit: {
-          amount: '100.00',
-          currency: 'USD'
-        },
-        invoice: true
-      };
-
-      await requestWithSupertest
-        .post('/api/groups/bookingRequest')
-        .send(body)
-        .set('Accept', 'application/json')
-        .set('Cookie', [`sessionToken=${sessionToken}`])
-        .expect(400);
-    }).timeout(30000);
-
-    it('return the reward options', async () => {
+    it('return the reward options from db', async () => {
       const res = await requestWithSupertest
         .get(`/api/groups/${requestId}/rewardOptions`)
         .set('Accept', 'application/json')
@@ -798,6 +830,7 @@ describe('test', async () => {
 
       expect(res1.body.success).to.be.true;
 
+      await sleep(5 * 1000);
       const record =
         await groupBookingRequestRepository.getGroupBookingRequestById(
           requestId
@@ -809,5 +842,7 @@ describe('test', async () => {
   after(async () => {
     await MongoDBService.getInstance().cleanUp();
     await QueueService.getInstance().close();
+    await GroupQueueService.getInstance().close();
+    await RewardQueueService.getInstance().close();
   });
 });

@@ -183,27 +183,55 @@ export type DealWorkerData = {
   passengers: { [key: string]: PassengerBooking };
 };
 
+export type DealType = 'Standard' | 'Group';
+
+export type RewardWorkerData = {
+  id: string;
+  dealType: DealType;
+  rewardType: RewardType;
+};
+
 export interface GroupRoom {
   quantity: number;
   offer: OfferDbValue;
 }
 
-export type GroupBookingRequestStatus = 'pending' | 'paid';
+// These are the steps of a deal in this order
+export type GroupBookingRequestStatus =
+  | 'pending'
+  | 'dealError'
+  | 'depositPaid'
+  | 'stored'
+  | 'ticketCreated'
+  | 'ticketStored'
+  | 'emailSent'
+  | 'complete';
 
 export interface GroupBookingRequestDBValue {
   _id?: ObjectId;
   requestId: string;
   contact: OrganizerInformation;
-  createdAt: Date;
+  createdAt?: Date;
   guestsCount: number;
   rooms: GroupRoom[];
   invoice: boolean;
   totals: GroupBookingDeposits; // Used to compute the rewards.
   depositOptions: GroupBookingDeposits;
   status: GroupBookingRequestStatus;
+  serviceId: string;
+  attemptsMade?: number; // debug
   jiraTicket?: CreatedIssue;
   dealStorage?: DealStorage;
+  blockchainUserAddresses?: string[];
   contract?: NetworkInfo;
   organizerBlockchainAddress?: string[];
+  errorMessage?: string;
   rewardOption?: RewardType;
+}
+
+export interface PaymentInfo {
+  paidCurrency: string;
+  networkInfo: NetworkInfo;
+  dealStorage: DealStorage;
+  blockchainUserAddresses: string[];
 }
