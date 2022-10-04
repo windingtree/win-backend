@@ -59,7 +59,7 @@ export class ProxyService {
     getProviderPromise: (
       providerUrl: string,
       resBody: SearchCriteria
-    ) => Promise<AxiosResponse<any, any>>
+    ) => Promise<AxiosResponse>
   ): Promise<SearchResults> {
     const { lon, lat, radius } = body.accommodation.location;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);

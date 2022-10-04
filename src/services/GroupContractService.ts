@@ -87,11 +87,11 @@ export const groupDealWorker = async (job: Job) => {
     job.update(data);
   }
 
-  if (data.status === 'ticketCreated') {
+  if (data.status === 'ticketCreated' && data.jiraTicket) {
     await groupBookingRequestRepository.updateJiraInfo(
       data.requestId,
       data.status,
-      data.jiraTicket!
+      data.jiraTicket
     );
     data.status = 'ticketStored';
     job.update(data);
@@ -340,12 +340,7 @@ const createTicket = async (
     // Exception will be raised here if Jira is down
     const response = await jiraService.createJiraTicket(
       data.rooms,
-      data.contact,
-      data.invoice,
-      data.guestsCount,
-      data.depositOptions,
-      data.totals,
-      data.requestId
+      data.contact
     );
     return response;
   } else {

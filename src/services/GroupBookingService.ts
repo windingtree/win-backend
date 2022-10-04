@@ -2,8 +2,7 @@ import { GroupRoom } from '../types';
 import {
   GroupBookingDeposits,
   GroupBookingRequest,
-  GroupBookingRequestResponse,
-  OfferIdAndQuantity
+  GroupBookingRequestResponse
 } from '@windingtree/glider-types/dist/win';
 import { Quote } from '@windingtree/glider-types/dist/simard';
 import offerRepository from '../repositories/OfferRepository';
@@ -127,7 +126,7 @@ export class GroupBookingService {
         .toFixed(2);
     }
 
-    const serviceId = computeGroupServiceId(offers);
+    const serviceId = utils.id(JSON.stringify(offers));
 
     await GroupQueueService.getInstance().addDealJob(requestId, {
       rooms,
@@ -148,17 +147,5 @@ export class GroupBookingService {
     };
   }
 }
-
-const computeGroupServiceId = (offers: OfferIdAndQuantity[]): string => {
-  // Note: I recreate the array just to be sure that the order in object properties is respected.
-  const newOffers: any[] = [];
-  for (const offer of offers) {
-    const obj = {};
-    obj['offerId'] = offer.offerId;
-    obj['quantity'] = offer.quantity;
-    newOffers.push(obj);
-  }
-  return utils.id(JSON.stringify(newOffers));
-};
 
 export default new GroupBookingService();
