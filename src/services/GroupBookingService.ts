@@ -19,9 +19,8 @@ export class GroupBookingService {
   public async createGroupBookingRequest(
     bookingRequest: GroupBookingRequest
   ): Promise<GroupBookingRequestResponse> {
-    const { offers, organizerInfo, invoice, guestCount, deposit } =
-      bookingRequest;
-    if (!offers || !organizerInfo || !invoice || !guestCount || !deposit) {
+    const { offers, organizerInfo, invoice, guestCount } = bookingRequest;
+    if (!offers || !organizerInfo || !invoice || !guestCount) {
       throw ApiError.BadRequest('One field is missing in input');
     }
 
