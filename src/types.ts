@@ -11,7 +11,8 @@ import {
   OfferDbValue,
   OrganizerInformation,
   RewardType,
-  GroupBookingDeposits
+  GroupBookingDeposits,
+  PricePlan
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
@@ -84,19 +85,12 @@ export interface OfferBackEnd extends OfferDbValue {
   accommodationId: string;
   requestHash: string;
   sessionId: string;
+  pricePlan: PricePlan;
   quote?: Quote;
 }
 
 export interface AuthRequest extends Request {
   user: UserDTO;
-}
-
-//todo rename
-export interface OfferBackEnd extends OfferDbValue {
-  accommodationId: string;
-  requestHash: string;
-  sessionId: string;
-  quote?: Quote;
 }
 
 export interface WalletRequest extends Request {

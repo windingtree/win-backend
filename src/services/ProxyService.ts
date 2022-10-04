@@ -221,7 +221,10 @@ export class ProxyService {
         const accommodation = {
           ...sortedHotels.find((v) => v.id === accommodationId)
         } as WinAccommodation;
-
+        let pricePlan = {};
+        if (data.pricePlans) {
+          pricePlan = data.pricePlans[Object.keys(pricePlansReferences)[0]];
+        }
         if (accommodation.roomTypes && accommodation.roomTypes[roomType]) {
           accommodation.roomTypes = {
             [roomType]: accommodation.roomTypes[roomType]
@@ -255,7 +258,8 @@ export class ProxyService {
           pricedItems: [],
           disclosures: [],
           requestHash,
-          sessionId
+          sessionId,
+          pricePlan
         };
 
         offersSet.add(offerDBValue);
@@ -441,6 +445,7 @@ export class ProxyService {
       provider: offer.provider,
       sessionId: offer.sessionId,
       requestHash: offer.requestHash,
+      pricePlan: offer.pricePlan,
       quote
     };
 
