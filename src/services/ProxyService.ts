@@ -35,9 +35,31 @@ import {
 import { Quote } from '@windingtree/glider-types/dist/simard';
 
 export class ProxyService {
-  public async getDerbySoftOffers(
+  public async getProxiesOffers(
     body: SearchBody,
     sessionId: string
+  ): Promise<SearchResults> {
+    return await this.proxiesSearch(body, sessionId, this.getProviderPromise);
+  }
+
+  public async getGroupOffers(
+    body: SearchBody,
+    sessionId: string
+  ): Promise<SearchResults> {
+    return await this.proxiesSearch(
+      body,
+      sessionId,
+      this.getProviderGroupSearchPromise
+    );
+  }
+
+  private async proxiesSearch(
+    body: SearchBody,
+    sessionId: string,
+    getProviderPromise: (
+      providerUrl: string,
+      resBody: SearchCriteria
+    ) => Promise<AxiosResponse<any, any>>
   ): Promise<SearchResults> {
     const { lon, lat, radius } = body.accommodation.location;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
@@ -60,9 +82,7 @@ export class ProxyService {
     const providersNameArray: string[] = [];
 
     for (const providerName in providersUrls) {
-      promises.push(
-        this.getProviderPromise(providersUrls[providerName], resBody)
-      );
+      promises.push(getProviderPromise(providersUrls[providerName], resBody));
 
       providersNameArray.push(providerName);
     }
@@ -320,9 +340,16 @@ export class ProxyService {
     });
   }
 
-  public async getDerbySoftOfferPrice(
-    offerId: string
-  ): Promise<WinPricedOffer> {
+  private getProviderGroupSearchPromise(
+    providerUrl: string,
+    resBody: SearchCriteria
+  ): Promise<AxiosResponse> {
+    return axios.post(`${providerUrl}/groups/search`, resBody, {
+      headers: { Authorization: `Bearer ${clientJwt}` }
+    });
+  }
+
+  public async getProxyOfferPrice(offerId: string): Promise<WinPricedOffer> {
     const offer = await offerRepository.getOne(offerId);
 
     if (!offer) {
@@ -528,7 +555,7 @@ export class ProxyService {
         lat: userRequest.hotelLocation.coordinates[1],
         radius: 5
       };
-      const search = await this.getDerbySoftOffers(
+      const search = await this.getProxiesOffers(
         userRequest.requestBody,
         sessionId
       );

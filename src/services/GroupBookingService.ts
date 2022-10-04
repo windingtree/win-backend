@@ -149,7 +149,6 @@ export class GroupBookingService {
   }
 }
 
-// TODO: move this function to the `common` library.
 const computeGroupServiceId = (offers: OfferIdAndQuantity[]): string => {
   // Note: I recreate the array just to be sure that the order in object properties is respected.
   const newOffers: any[] = [];

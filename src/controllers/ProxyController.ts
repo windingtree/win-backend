@@ -1,7 +1,6 @@
 import { AuthRequest, SessionRequest } from '../types';
 import { NextFunction, Request, Response } from 'express';
 import proxyService from '../services/ProxyService';
-import groupProxyService from '../services/GroupProxyService';
 import ApiError from '../exceptions/ApiError';
 import { DateTime } from 'luxon';
 
@@ -30,7 +29,7 @@ export class ProxyController {
         );
       }
 
-      const offers = await proxyService.getDerbySoftOffers(
+      const offers = await proxyService.getProxiesOffers(
         req.body,
         req.sessionId
       );
@@ -44,7 +43,7 @@ export class ProxyController {
   public async offerPrice(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const { offerId } = req.params;
-      const data = await proxyService.getDerbySoftOfferPrice(offerId);
+      const data = await proxyService.getProxyOfferPrice(offerId);
 
       res.json(data);
     } catch (e) {
@@ -85,9 +84,8 @@ export class ProxyController {
     }
   }
 
-  // TODO: add cache mechanism to group search.
   public async searchGroupOffers(
-    req: Request,
+    req: SessionRequest,
     res: Response,
     next: NextFunction
   ) {
@@ -101,7 +99,16 @@ export class ProxyController {
         throw ApiError.BadRequest('Dates must be in future');
       }
 
-      const offers = await groupProxyService.getGroupOffers(req.body);
+      if (
+        DateTime.fromISO(arrival).startOf('day') >=
+        DateTime.fromISO(departure).startOf('day')
+      ) {
+        throw ApiError.BadRequest(
+          'checkout time must be larger than checkin time'
+        );
+      }
+
+      const offers = await proxyService.getGroupOffers(req.body, req.sessionId);
 
       res.json(offers);
     } catch (e) {

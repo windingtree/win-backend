@@ -219,7 +219,6 @@ export interface GroupBookingRequestDBValue {
   depositOptions: GroupBookingDeposits;
   status: GroupBookingRequestStatus;
   serviceId: string;
-  attemptsMade?: number; // debug
   jiraTicket?: CreatedIssue;
   dealStorage?: DealStorage;
   blockchainUserAddresses?: string[];
