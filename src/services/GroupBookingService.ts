@@ -8,7 +8,7 @@ import { Quote } from '@windingtree/glider-types/dist/simard';
 import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
 import { randomUUID } from 'crypto';
-import { groupDepositPercentage } from '../config';
+import { groupDepositPercentage, serviceProviderId } from '../config';
 import Big from 'big.js';
 import { convertAmount, getCurrencyDecimals } from '../utils';
 import LogService from './LogService';
@@ -142,7 +142,8 @@ export class GroupBookingService {
     return {
       requestId,
       serviceId,
-      depositOptions
+      depositOptions,
+      providerId: serviceProviderId
     };
   }
 }
