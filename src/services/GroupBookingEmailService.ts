@@ -1,5 +1,4 @@
 import client from '@sendgrid/mail';
-import LogService from './LogService';
 import {
   sendgridApiKey,
   sendgridEmailFrom,

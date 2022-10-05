@@ -697,10 +697,6 @@ describe('test', async () => {
             quantity: 11
           }
         ],
-        deposit: {
-          amount: '100.00',
-          currency: 'USD'
-        },
         invoice: true
       };
 
@@ -731,10 +727,6 @@ describe('test', async () => {
             quantity: 11
           }
         ],
-        deposit: {
-          amount: '100.00',
-          currency: 'USD'
-        },
         invoice: true
       };
 

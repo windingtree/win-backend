@@ -9,11 +9,7 @@ import {
   appEnvironment
 } from '../config';
 import { GroupRoom } from '../types';
-import {
-  GroupBookingDeposits,
-  OrganizerInformation
-} from '@windingtree/glider-types/dist/win';
-import LogService from './LogService';
+import { OrganizerInformation } from '@windingtree/glider-types/dist/win';
 import { CreatedIssue } from 'jira.js/out/version3/models';
 
 // Note: this service is only used today to log the group booking requests.
@@ -45,22 +41,9 @@ export default class JiraService {
 
   public async createJiraTicket(
     rooms: GroupRoom[],
-    contact: OrganizerInformation,
-    invoice: boolean,
-    guestsCount: number,
-    depositOptions: GroupBookingDeposits,
-    totals: GroupBookingDeposits,
-    requestId: string
+    contact: OrganizerInformation
   ): Promise<CreatedIssue> {
-    const parameters = this.createGroupBookingIssueParameters(
-      rooms,
-      contact,
-      invoice,
-      guestsCount,
-      depositOptions,
-      totals,
-      requestId
-    );
+    const parameters = this.createGroupBookingIssueParameters(rooms, contact);
     const result = await this.client.issues.createIssue(parameters);
     return result;
   }
@@ -69,12 +52,7 @@ export default class JiraService {
   // We need also to change the states of the template, it should start with "Deposit Paid".
   private createGroupBookingIssueParameters(
     rooms: GroupRoom[],
-    contact: OrganizerInformation,
-    invoice: boolean,
-    guestsCount: number,
-    depositOptions: GroupBookingDeposits,
-    totals: GroupBookingDeposits,
-    requestId: string
+    contact: OrganizerInformation
   ): CreateIssue {
     const summary =
       this.summaryPrefix +

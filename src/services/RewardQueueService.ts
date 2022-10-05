@@ -3,7 +3,6 @@ import { QueueBaseOptions } from 'bullmq/dist/esm/interfaces/queue-options';
 import { RewardWorkerData } from '../types';
 
 import { redisHost, redisPassword, redisPort, redisUsername } from '../config';
-import LogService from './LogService';
 import DealRepository from '../repositories/DealRepository';
 import GroupBookingRequestRepository from '../repositories/GroupBookingRequestRepository';
 

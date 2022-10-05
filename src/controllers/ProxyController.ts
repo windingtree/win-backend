@@ -1,5 +1,5 @@
 import { AuthRequest, SessionRequest } from '../types';
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import proxyService from '../services/ProxyService';
 import ApiError from '../exceptions/ApiError';
 import { DateTime } from 'luxon';

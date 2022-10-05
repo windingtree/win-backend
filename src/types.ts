@@ -5,8 +5,6 @@ import {
   PassengerSearch
 } from '@windingtree/glider-types/dist/accommodations';
 import {
-  Amount,
-  Currency,
   MongoLocation,
   OfferDbValue,
   OrganizerInformation,

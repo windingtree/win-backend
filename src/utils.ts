@@ -4,7 +4,7 @@ import { Quote } from '@windingtree/glider-types/dist/simard';
 import { regexp } from '@windingtree/org.id-utils';
 import { utils } from 'ethers';
 import { DateTime } from 'luxon';
-import cc from 'currency-codes';
+import cc, { CurrencyCodeRecord } from 'currency-codes';
 import { simardJwt, simardUrl } from './config';
 import axios from 'axios';
 import Big from 'big.js';
@@ -106,12 +106,12 @@ export const formatEmailDate = (date: Date): string => {
 
 export const getCurrencyDecimals = (currency: string): number => {
   // get number of currency decimals - default to 2
-  let decimals = cc.code(currency)!.digits;
-  if (!decimals) {
-    // use a default of 2 if undefined
-    decimals = 2;
+  const currencyRecord: CurrencyCodeRecord | undefined = cc.code(currency);
+  if (currencyRecord && currencyRecord.digits) {
+    return currencyRecord.digits;
+  } else {
+    return 2;
   }
-  return decimals;
 };
 
 export const convertAmount = async (

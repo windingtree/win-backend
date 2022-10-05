@@ -1,14 +1,9 @@
 import {
   DealStorage,
   GroupBookingRequestDBValue,
-  GroupBookingRequestStatus,
-  GroupRoom
+  GroupBookingRequestStatus
 } from '../types';
-import {
-  GroupBookingDeposits,
-  OrganizerInformation,
-  RewardType
-} from '@windingtree/glider-types/dist/win';
+import { RewardType } from '@windingtree/glider-types/dist/win';
 import MongoDBService from '../services/MongoDBService';
 import { Collection } from 'mongodb';
 import { DBName } from '../config';
