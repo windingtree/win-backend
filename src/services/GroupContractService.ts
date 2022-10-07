@@ -194,7 +194,7 @@ const checkPaymentOnBlockchain = async (
     dealStorage.customer,
     provider
   );
-  // if (networkInfo.mode.includes('prod')) {
+
   const paidCurrency = checkPaidAmount(
     networkInfo,
     dealStorage,
@@ -207,75 +207,7 @@ const checkPaymentOnBlockchain = async (
     networkInfo,
     blockchainUserAddresses
   };
-  // } else {
-  //   const paidCurrency = checkPaidAmountTest(
-  //     networkInfo,
-  //     dealStorage,
-  //     paymentOptions,
-  //     blockchainUserAddresses
-  //   );
-  //   return {
-  //     paidCurrency,
-  //     dealStorage,
-  //     networkInfo,
-  //     blockchainUserAddresses
-  //   };
-  // }
 };
-
-// const checkPaidAmountTest = (
-//   networkInfo: NetworkInfo,
-//   dealStorage: DealStorage,
-//   paymentOptions: GroupBookingDeposits,
-//   blockchainUserAddresses: string[]
-// ): string => {
-//   // The specificity here is that in test, erc-20 currencies have the same smart contract address, so we start by checking the amount.
-
-//   let currency = '';
-//   const dealValue = BN.from(dealStorage.value);
-//   if (
-//     paymentOptions.usd &&
-//     dealValue.eq(utils.parseEther(paymentOptions.usd))
-//   ) {
-//     currency = 'USD';
-//   } else if (
-//     dealValue.eq(utils.parseEther(paymentOptions.offerCurrency.amount))
-//   ) {
-//     currency = paymentOptions.offerCurrency.currency;
-//   } else if (
-//     paymentOptions.preferredCurrency &&
-//     dealValue.eq(utils.parseEther(paymentOptions.preferredCurrency.amount))
-//   ) {
-//     currency = paymentOptions.preferredCurrency.currency;
-//   }
-
-//   if (currency === '') {
-//     // The user paid the wrong amount.
-//     throw new DealError(
-//       `Test: wrong amount: ${dealStorage.value}`,
-//       networkInfo,
-//       dealStorage,
-//       blockchainUserAddresses
-//     );
-//   }
-
-//   const address = utils.getAddress(dealStorage.asset);
-//   const asset = networkInfo.contracts.assets.find(
-//     (asset) => asset.coin === address && asset.currency === currency
-//   );
-
-//   if (!asset) {
-//     // The user paid the good amount but in a stablecoin that does not match the requested currency.
-//     throw new DealError(
-//       `Test: no stableCoin in config for ${currency}`,
-//       networkInfo,
-//       dealStorage,
-//       blockchainUserAddresses
-//     );
-//   }
-
-//   return currency;
-// };
 
 const checkPaidAmount = (
   networkInfo: NetworkInfo,
