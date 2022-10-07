@@ -194,90 +194,90 @@ const checkPaymentOnBlockchain = async (
     dealStorage.customer,
     provider
   );
-  if (networkInfo.mode.includes('prod')) {
-    const paidCurrency = checkPaidAmountProd(
-      networkInfo,
-      dealStorage,
-      paymentOptions,
-      blockchainUserAddresses
-    );
-    return {
-      paidCurrency,
-      dealStorage,
-      networkInfo,
-      blockchainUserAddresses
-    };
-  } else {
-    const paidCurrency = checkPaidAmountTest(
-      networkInfo,
-      dealStorage,
-      paymentOptions,
-      blockchainUserAddresses
-    );
-    return {
-      paidCurrency,
-      dealStorage,
-      networkInfo,
-      blockchainUserAddresses
-    };
-  }
-};
-
-const checkPaidAmountTest = (
-  networkInfo: NetworkInfo,
-  dealStorage: DealStorage,
-  paymentOptions: GroupBookingDeposits,
-  blockchainUserAddresses: string[]
-): string => {
-  // The specificity here is that in test, erc-20 currencies have the same smart contract address, so we start by checking the amount.
-
-  let currency = '';
-  const dealValue = BN.from(dealStorage.value);
-  if (
-    paymentOptions.usd &&
-    dealValue.eq(utils.parseEther(paymentOptions.usd))
-  ) {
-    currency = 'USD';
-  } else if (
-    dealValue.eq(utils.parseEther(paymentOptions.offerCurrency.amount))
-  ) {
-    currency = paymentOptions.offerCurrency.currency;
-  } else if (
-    paymentOptions.preferredCurrency &&
-    dealValue.eq(utils.parseEther(paymentOptions.preferredCurrency.amount))
-  ) {
-    currency = paymentOptions.preferredCurrency.currency;
-  }
-
-  if (currency === '') {
-    // The user paid the wrong amount.
-    throw new DealError(
-      `Test: wrong amount: ${dealStorage.value}`,
-      networkInfo,
-      dealStorage,
-      blockchainUserAddresses
-    );
-  }
-
-  const address = utils.getAddress(dealStorage.asset);
-  const asset = networkInfo.contracts.assets.find(
-    (asset) => asset.coin === address && asset.currency === currency
+  // if (networkInfo.mode.includes('prod')) {
+  const paidCurrency = checkPaidAmount(
+    networkInfo,
+    dealStorage,
+    paymentOptions,
+    blockchainUserAddresses
   );
-
-  if (!asset) {
-    // The user paid the good amount but in a stablecoin that does not match the requested currency.
-    throw new DealError(
-      `Test: no stableCoin in config for ${currency}`,
-      networkInfo,
-      dealStorage,
-      blockchainUserAddresses
-    );
-  }
-
-  return currency;
+  return {
+    paidCurrency,
+    dealStorage,
+    networkInfo,
+    blockchainUserAddresses
+  };
+  // } else {
+  //   const paidCurrency = checkPaidAmountTest(
+  //     networkInfo,
+  //     dealStorage,
+  //     paymentOptions,
+  //     blockchainUserAddresses
+  //   );
+  //   return {
+  //     paidCurrency,
+  //     dealStorage,
+  //     networkInfo,
+  //     blockchainUserAddresses
+  //   };
+  // }
 };
 
-const checkPaidAmountProd = (
+// const checkPaidAmountTest = (
+//   networkInfo: NetworkInfo,
+//   dealStorage: DealStorage,
+//   paymentOptions: GroupBookingDeposits,
+//   blockchainUserAddresses: string[]
+// ): string => {
+//   // The specificity here is that in test, erc-20 currencies have the same smart contract address, so we start by checking the amount.
+
+//   let currency = '';
+//   const dealValue = BN.from(dealStorage.value);
+//   if (
+//     paymentOptions.usd &&
+//     dealValue.eq(utils.parseEther(paymentOptions.usd))
+//   ) {
+//     currency = 'USD';
+//   } else if (
+//     dealValue.eq(utils.parseEther(paymentOptions.offerCurrency.amount))
+//   ) {
+//     currency = paymentOptions.offerCurrency.currency;
+//   } else if (
+//     paymentOptions.preferredCurrency &&
+//     dealValue.eq(utils.parseEther(paymentOptions.preferredCurrency.amount))
+//   ) {
+//     currency = paymentOptions.preferredCurrency.currency;
+//   }
+
+//   if (currency === '') {
+//     // The user paid the wrong amount.
+//     throw new DealError(
+//       `Test: wrong amount: ${dealStorage.value}`,
+//       networkInfo,
+//       dealStorage,
+//       blockchainUserAddresses
+//     );
+//   }
+
+//   const address = utils.getAddress(dealStorage.asset);
+//   const asset = networkInfo.contracts.assets.find(
+//     (asset) => asset.coin === address && asset.currency === currency
+//   );
+
+//   if (!asset) {
+//     // The user paid the good amount but in a stablecoin that does not match the requested currency.
+//     throw new DealError(
+//       `Test: no stableCoin in config for ${currency}`,
+//       networkInfo,
+//       dealStorage,
+//       blockchainUserAddresses
+//     );
+//   }
+
+//   return currency;
+// };
+
+const checkPaidAmount = (
   networkInfo: NetworkInfo,
   dealStorage: DealStorage,
   paymentOptions: GroupBookingDeposits,
@@ -302,7 +302,7 @@ const checkPaidAmountProd = (
   if (
     asset.currency === 'USD' &&
     paymentOptions.usd &&
-    dealValue.eq(utils.parseEther(paymentOptions.usd))
+    dealValue.eq(utils.parseUnits(paymentOptions.usd, asset.decimals))
   ) {
     // Success
     return asset.currency;
@@ -311,7 +311,9 @@ const checkPaidAmountProd = (
   // Note: Might not be proposed as a payment option in the future...
   if (
     paymentOptions.offerCurrency.currency === asset.currency &&
-    dealValue.eq(utils.parseEther(paymentOptions.offerCurrency.amount))
+    dealValue.eq(
+      utils.parseUnits(paymentOptions.offerCurrency.amount, asset.decimals)
+    )
   ) {
     return asset.currency;
   }
@@ -319,7 +321,9 @@ const checkPaidAmountProd = (
   if (
     paymentOptions.preferredCurrency &&
     paymentOptions.preferredCurrency.currency === asset.currency &&
-    dealValue.eq(utils.parseEther(paymentOptions.preferredCurrency.amount))
+    dealValue.eq(
+      utils.parseUnits(paymentOptions.preferredCurrency.amount, asset.decimals)
+    )
   ) {
     return asset.currency;
   }

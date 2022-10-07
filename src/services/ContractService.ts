@@ -131,7 +131,7 @@ export class ContractService {
 
         const dealValue = BN.from(dealStorage.value);
 
-        if (dealValue.eq(utils.parseEther(price))) {
+        if (dealValue.eq(utils.parseUnits(price, asset.decimals))) {
           if (asset.currency !== this.offer.price.currency) {
             await dealRepository.updateDeal(
               serviceId,
@@ -143,7 +143,12 @@ export class ContractService {
           }
         } else if (
           this.offer.quote &&
-          dealValue.eq(utils.parseEther(String(this.offer.quote.sourceAmount)))
+          dealValue.eq(
+            utils.parseUnits(
+              String(this.offer.quote.sourceAmount),
+              asset.decimals
+            )
+          )
         ) {
           if (asset.currency !== this.offer.quote.sourceCurrency) {
             await dealRepository.updateDeal(
