@@ -49,14 +49,7 @@ export default class JiraService {
     bookingRequest: GroupBookingRequestDBValue
   ): Promise<CreatedIssue> {
     const parameters = this.createGroupBookingIssueParameters(bookingRequest);
-    try {
-      const result = await this.client.issues.createIssue(parameters);
-      console.log(result);
-      return result;
-    } catch (e) {
-      console.log(JSON.stringify(e));
-      throw e;
-    }
+    return await this.client.issues.createIssue(parameters);
   }
 
   private createGroupBookingIssueParameters(

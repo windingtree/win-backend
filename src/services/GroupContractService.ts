@@ -353,14 +353,13 @@ const createTicket = async (
 };
 
 const sendEmail = async (data: GroupBookingRequestDBValue) => {
-  if (process.env.NODE_IS_TEST !== 'true') {
-    const emailService = new GroupBookingEmailService();
-    emailService.setMessage(
-      data.rooms[0].offer.accommodation.name,
-      data.requestId,
-      data.contact
-    );
-    // Exception will be raised here if SendGrid is down
-    await emailService.sendEmail();
+  if (process.env.NODE_IS_TEST == 'true') {
+    return;
   }
+
+  const emailService = new GroupBookingEmailService();
+  emailService.setMessage(data);
+
+  // Exception will be raised here if SendGrid is down
+  await emailService.sendEmail();
 };
