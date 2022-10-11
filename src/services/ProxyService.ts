@@ -456,8 +456,8 @@ export class ProxyService {
       _id: offer.accommodation._id?.toString()
     };
 
-    data.serviceId = serviceProviderId;
-    data.provider = getContractServiceId(data.offerId);
+    data.serviceId = getContractServiceId(data.offerId);
+    data.provider = serviceProviderId;
 
     return {
       ...data,
@@ -528,8 +528,8 @@ export class ProxyService {
         disclosures: offer.disclosures
       },
       offerId: offer.id,
-      provider: getContractServiceId(offer.id),
-      serviceId: serviceProviderId
+      provider: serviceProviderId,
+      serviceId: getContractServiceId(offer.id)
     };
   }
 
