@@ -188,19 +188,23 @@ const toOrganizerDetailsString = (contact: OrganizerInformation): string => {
   str += `name: ${contact.firstName} ${contact.lastName}\n`;
   str += `email: ${contact.emailAddress}\n`;
   str += `phone: ${contact.phoneNumber}`;
+  if (contact.billingInfo && !contact.billingInfo.companyName) {
+    str += `Billing Address: ${toBillingAddressString(
+      contact.billingInfo.address
+    )}\n`;
+  }
   return str;
 };
 
 const toOrganizationDetailsString = (contact: OrganizerInformation): string => {
   let str = '';
-  if (contact.corporateInfo) {
-    if (contact.corporateInfo.companyName)
-      str += `Company Name: ${contact.corporateInfo.companyName}\n`;
+  if (contact.billingInfo && contact.billingInfo.companyName) {
+    str += `Company Name: ${contact.billingInfo.companyName}\n`;
     str += `Billing Address: ${toBillingAddressString(
-      contact.corporateInfo.billingAddress
+      contact.billingInfo.address
     )}\n`;
-    if (contact.corporateInfo.vatNumber)
-      str += `VAT Number: ${contact.corporateInfo.vatNumber} \n`;
+    if (contact.billingInfo.vatNumber)
+      str += `VAT Number: ${contact.billingInfo.vatNumber} \n`;
   } else {
     str += 'The customer is not a corporate.';
   }
