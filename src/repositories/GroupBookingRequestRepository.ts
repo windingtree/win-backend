@@ -54,6 +54,7 @@ export class GroupBookingRequestRepository {
     contract: NetworkInfo,
     dealStorage: DealStorage,
     blockchainUserAddresses: string[],
+    paymentCurrency: string,
     errorMessage: string
   ): Promise<void> {
     const collection = await this.getCollection();
@@ -65,6 +66,7 @@ export class GroupBookingRequestRepository {
           contract,
           dealStorage,
           blockchainUserAddresses,
+          paymentCurrency,
           errorMessage
         }
       }

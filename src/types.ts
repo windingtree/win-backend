@@ -217,6 +217,7 @@ export interface GroupBookingRequestDBValue {
   contract?: NetworkInfo;
   organizerBlockchainAddress?: string[];
   errorMessage?: string;
+  paymentCurrency?: string;
   rewardOption?: RewardType;
 }
 

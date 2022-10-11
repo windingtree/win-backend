@@ -33,6 +33,7 @@ export const groupDealWorker = async (job: Job) => {
       data.contract = paymentInfo.networkInfo;
       data.dealStorage = paymentInfo.dealStorage;
       data.blockchainUserAddresses = paymentInfo.blockchainUserAddresses;
+      data.paymentCurrency = paymentInfo.paidCurrency;
       data.status = 'depositPaid';
       job.update(data);
     } catch (e) {
@@ -60,6 +61,7 @@ export const groupDealWorker = async (job: Job) => {
     data.contract = paymentInfo.networkInfo;
     data.dealStorage = paymentInfo.dealStorage;
     data.blockchainUserAddresses = paymentInfo.blockchainUserAddresses;
+    data.paymentCurrency = paymentInfo.paidCurrency;
     data.status = 'depositPaid';
     await groupBookingRequestRepository.updateBlockchainInfo(
       data.requestId,
@@ -67,6 +69,7 @@ export const groupDealWorker = async (job: Job) => {
       data.contract,
       data.dealStorage,
       data.blockchainUserAddresses,
+      data.paymentCurrency,
       ''
     );
     data.status = 'stored';
@@ -274,10 +277,7 @@ const createTicket = async (
   if (jiraDisableNotifications === 'false') {
     const jiraService = new JiraService();
     // Exception will be raised here if Jira is down
-    const response = await jiraService.createJiraTicket(
-      data.rooms,
-      data.contact
-    );
+    const response = await jiraService.createJiraTicket(data);
     return response;
   } else {
     return {
@@ -289,14 +289,13 @@ const createTicket = async (
 };
 
 const sendEmail = async (data: GroupBookingRequestDBValue) => {
-  if (process.env.NODE_IS_TEST !== 'true') {
-    const emailService = new GroupBookingEmailService();
-    emailService.setMessage(
-      data.rooms[0].offer.accommodation.name,
-      data.requestId,
-      data.contact
-    );
-    // Exception will be raised here if SendGrid is down
-    await emailService.sendEmail();
+  if (process.env.NODE_IS_TEST == 'true') {
+    return;
   }
+
+  const emailService = new GroupBookingEmailService();
+  emailService.setMessage(data);
+
+  // Exception will be raised here if SendGrid is down
+  await emailService.sendEmail();
 };
