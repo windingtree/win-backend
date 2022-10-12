@@ -10,7 +10,13 @@ import {
   OrganizerInformation,
   RewardType,
   GroupBookingDeposits,
-  PricePlan
+  PricePlan,
+  WinAccommodation,
+  PriceItem,
+  Disclosures,
+  Price,
+  PricePlansReferences,
+  Expiration
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
@@ -79,7 +85,18 @@ export interface UserRequest {
 }
 
 //todo rename
-export interface OfferBackEnd extends OfferDbValue {
+export interface OfferBackEnd {
+  _id?: string;
+  id: string;
+  accommodation: WinAccommodation;
+  pricedItems: PriceItem[];
+  disclosures: Disclosures;
+  price: Price;
+  pricePlansReferences: PricePlansReferences;
+  expiration: Date;
+  arrival: string;
+  departure: string;
+  provider: string;
   accommodationId: string;
   requestHash: string;
   sessionId: string;
@@ -155,7 +172,7 @@ export interface DealDBValue {
 }
 
 export interface DealDTO {
-  offer: OfferDbValue;
+  offer: OfferBackEnd;
   offerId: string;
   createdAt: Date;
   status: DealStatus;
@@ -185,7 +202,7 @@ export type RewardWorkerData = {
 
 export interface GroupRoom {
   quantity: number;
-  offer: OfferDbValue;
+  offer: OfferBackEnd;
 }
 
 // These are the steps of a deal in this order
