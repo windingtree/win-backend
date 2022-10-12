@@ -252,7 +252,7 @@ export class ProxyService {
           pricePlansReferences,
           arrival: new Date(searchBody.accommodation.arrival).toISOString(),
           departure: new Date(searchBody.accommodation.departure).toISOString(),
-          expiration: new Date(offer.expiration).toISOString(),
+          expiration: new Date(offer.expiration),
           price: offer.price,
           provider: provider as HotelProviders,
           pricedItems: [],
@@ -293,7 +293,9 @@ export class ProxyService {
     const cashedOffers = (
       await offerRepository.getBySession(sessionId, requestHash)
     ).filter((offer) => {
-      return DateTime.fromISO(offer.expiration).diffNow('minutes').minutes > 10;
+      return (
+        DateTime.fromJSDate(offer.expiration).diffNow('minutes').minutes > 10
+      );
     });
 
     if (!cashedOffers.length) {
@@ -438,7 +440,7 @@ export class ProxyService {
       accommodation: offer.accommodation,
       accommodationId: offer.accommodationId,
       pricePlansReferences: offer.pricePlansReferences,
-      expiration: expiration.toISOString(),
+      expiration: expiration,
       pricedItems: data.offer.pricedItems,
       disclosures: data.offer.disclosures,
       price: data.offer.price,
