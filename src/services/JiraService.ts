@@ -8,7 +8,7 @@ import {
   jiraGroupIssueId,
   appEnvironment
 } from '../config';
-import { GroupBookingRequestDBValue, GroupRoom } from '../types';
+import { GroupBookingRequestDBValue, GroupRoom, OfferBackEnd } from '../types';
 import {
   GroupBookingDeposits,
   OfferDbValue,
@@ -179,7 +179,7 @@ const toTotalString = (totals: GroupBookingDeposits): string => {
   return str;
 };
 
-const toOfferProvider = (offer: OfferDbValue): string => {
+const toOfferProvider = (offer: OfferBackEnd): string => {
   const str = `\nOffer coming from ${offer.provider}\n`;
   return str;
 };
