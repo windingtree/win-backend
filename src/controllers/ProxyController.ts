@@ -72,10 +72,11 @@ export class ProxyController {
     next: NextFunction
   ) {
     try {
-      const { accommodationId } = req.params;
+      const { providerHotelId } = req.params;
       const data = await proxyService.getAccommodation(
-        accommodationId,
-        req.sessionId
+        providerHotelId,
+        req.sessionId,
+        req.body
       );
 
       res.json(data);

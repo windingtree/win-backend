@@ -65,10 +65,7 @@ export class OfferRepository {
     );
   }
 
-  public async getBySession(
-    sessionId: string,
-    requestHash: string
-  ): Promise<OfferBackEnd[]> {
+  public async getBySession(requestHash: string): Promise<OfferBackEnd[]> {
     const result: OfferBackEnd[] = [];
     const collection = await this.getCollection();
 
@@ -76,7 +73,7 @@ export class OfferRepository {
       return [];
     }
 
-    const cursor = await collection.find({ sessionId, requestHash });
+    const cursor = await collection.find({ requestHash });
 
     await cursor.forEach((item) => {
       result.push(item);

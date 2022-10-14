@@ -18,6 +18,7 @@ import { QueueService } from '../src/services/QueueService';
 import { GroupQueueService } from '../src/services/GroupQueueService';
 import { GroupBookingRequest } from '@windingtree/glider-types/dist/win';
 import { RewardQueueService } from '../src/services/RewardQueueService';
+import { HotelQueueService } from '../src/services/HotelQueueService';
 
 let appService: ServerService;
 
@@ -38,7 +39,6 @@ describe('test', async () => {
   let walletAccessToken;
   let walletRefreshToken;
   let sessionToken;
-  let providerHotelId;
 
   const staffLogin = 'test_staff_super_long_login';
   const staffPass = '123456qwerty';
@@ -318,6 +318,9 @@ describe('test', async () => {
     let pricedOfferId;
     let amadeusPricedOfferId;
     let accommodationId;
+    let providerHotelId;
+    let providerAccommodationId;
+    let requestBody;
 
     it('get all offers by rectangle with wrong data', async () => {
       const body = {
@@ -359,7 +362,7 @@ describe('test', async () => {
       arrival.setDate(today.getDate() + day);
       departure.setDate(today.getDate() + day + 1);
 
-      const body = {
+      requestBody = {
         accommodation: {
           location: {
             lat: 52.3727598,
@@ -385,7 +388,7 @@ describe('test', async () => {
 
       const res = await requestWithSupertest
         .post('/api/hotels/offers/search')
-        .send(body)
+        .send(requestBody)
         .set('Accept', 'application/json')
         .expect(200);
 
@@ -415,6 +418,8 @@ describe('test', async () => {
           res.body.offers[offerKey].pricePlansReferences[key].accommodation;
         if (key !== accommodationId) {
           amadeusOfferId = offerKey;
+          providerHotelId =
+            res.body.accommodations[accommodationId].providerHotelId;
           break;
         }
       }
@@ -422,7 +427,8 @@ describe('test', async () => {
 
     it('get cashed hotel info', async () => {
       const res = await requestWithSupertest
-        .get(`/api/hotels/${accommodationId}`)
+        .post(`/api/hotels/${providerHotelId}`)
+        .send(requestBody)
         .set('Accept', 'application/json')
         .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
@@ -430,22 +436,21 @@ describe('test', async () => {
       expect(res.body).to.be.a('object');
       expect(res.body.accommodations[accommodationId]).to.be.a('object');
 
-      providerHotelId = res.body.accommodations[accommodationId].hotelId;
+      providerAccommodationId =
+        res.body.accommodations[accommodationId].hotelId;
     }).timeout(10000);
 
     it('get cashed hotel info shared by link', async () => {
       const res = await requestWithSupertest
-        .get(`/api/hotels/${accommodationId}`)
+        .post(`/api/hotels/${providerHotelId}`)
+        .send(requestBody)
         .set('Accept', 'application/json')
         .expect(200);
 
       expect(res.body).to.be.a('object');
       const accommodation =
         res.body.accommodations[Object.keys(res.body.accommodations)[0]];
-      expect(accommodation.hotelId).to.be.eq(providerHotelId);
-      expect(Object.keys(res.body.accommodations)[0]).to.be.not.eq(
-        accommodationId
-      );
+      expect(accommodation.hotelId).to.be.eq(providerAccommodationId);
     }).timeout(15000);
 
     // it('get offer price', async () => {
@@ -836,5 +841,6 @@ describe('test', async () => {
     await QueueService.getInstance().close();
     await GroupQueueService.getInstance().close();
     await RewardQueueService.getInstance().close();
+    await HotelQueueService.getInstance().close();
   });
 });

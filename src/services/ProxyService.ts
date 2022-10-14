@@ -33,6 +33,7 @@ import {
   SearchResponse
 } from '@windingtree/glider-types/dist/accommodations';
 import { Quote } from '@windingtree/glider-types/dist/simard';
+import { HotelQueueService } from './HotelQueueService';
 
 export class ProxyService {
   public async getProxiesOffers(
@@ -64,7 +65,7 @@ export class ProxyService {
     const { lon, lat, radius } = body.accommodation.location;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
     const requestHash = utils.id(JSON.stringify(body));
-    const cashedOffers = await this.getCachedOffers(sessionId, requestHash);
+    const cashedOffers = await this.getCachedOffers(requestHash);
     if (cashedOffers) {
       cashedOffers.offers = await this.addRates(cashedOffers.offers);
       return cashedOffers;
@@ -176,7 +177,8 @@ export class ProxyService {
         const hotel: WinAccommodation = {
           ...value,
           id: key,
-          provider: provider,
+          providerHotelId: utils.id(`${provider}_${value.hotelId}`),
+          provider,
           createdAt: new Date(),
           location
         };
@@ -190,6 +192,7 @@ export class ProxyService {
           hotelLocation: hotel.location,
           provider: String(hotel.provider), //todo remove String() after use new glider types
           providerAccommodationId: hotel.hotelId,
+          providerHotelId: utils.id(`${provider}_${value.hotelId}`),
           requestBody: searchBody,
           requestHash: requestHash,
           sessionId,
@@ -203,6 +206,7 @@ export class ProxyService {
 
       await hotelRepository.bulkCreate(Array.from(hotels));
       await userRequestRepository.bulkCreate(Array.from(requests));
+      HotelQueueService.getInstance().addHotelJobs(Array.from(hotels));
 
       const sortedHotels = Array.from(hotels);
 
@@ -287,11 +291,10 @@ export class ProxyService {
   }
 
   private async getCachedOffers(
-    sessionId: string,
     requestHash: string
   ): Promise<SearchResults | null> {
     const cashedOffers = (
-      await offerRepository.getBySession(sessionId, requestHash)
+      await offerRepository.getBySession(requestHash)
     ).filter((offer) => {
       return (
         DateTime.fromJSDate(offer.expiration).diffNow('minutes').minutes > 10
@@ -536,26 +539,27 @@ export class ProxyService {
   }
 
   public async getAccommodation(
-    accommodationId: string,
-    sessionId: string
+    providerHotelId: string,
+    sessionId: string,
+    body: SearchBody
   ): Promise<SearchResults> {
-    const userRequest = await userRequestRepository.getRequestByAccommodationId(
-      accommodationId
+    const requestHash = utils.id(JSON.stringify(body));
+    const userRequest = await userRequestRepository.getRequestByProviderHotelId(
+      providerHotelId,
+      requestHash
     );
 
     if (!userRequest) {
       throw ApiError.NotFound('offer not found');
     }
 
+    const accommodationId = userRequest.accommodationId;
+
     let offers = await offerRepository.getByAccommodation(accommodationId);
     let accommodation = await hotelRepository.getOne(accommodationId);
     let newAccommodationId = '';
 
-    if (
-      !offers.length ||
-      !accommodation ||
-      userRequest.sessionId !== sessionId
-    ) {
+    if (!offers.length || !accommodation) {
       const searchBody: SearchBody = userRequest.requestBody;
       searchBody.accommodation.location = {
         lon: userRequest.hotelLocation.coordinates[0],

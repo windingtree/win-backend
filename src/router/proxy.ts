@@ -19,8 +19,8 @@ export default (router: Router): void => {
     sessionMiddleware,
     proxyController.getPricedOffer
   );
-  router.get(
-    '/hotels/:accommodationId',
+  router.post(
+    '/hotels/:providerHotelId',
     sessionMiddleware,
     proxyController.getAccommodation
   );
