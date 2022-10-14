@@ -89,7 +89,7 @@ export class BookingService {
       } else {
         await dealRepository.updateDeal(
           offer.id,
-          'paymentError',
+          'networkError',
           `Booking failed by status ${order.status}`
         );
       }
@@ -99,7 +99,7 @@ export class BookingService {
       }
       await dealRepository.updateDeal(
         offer.id,
-        'paymentError',
+        'networkError',
         'Booking failed' + e.message
       );
     }
@@ -163,9 +163,12 @@ export class BookingService {
     const deal = await dealRepository.getDeal(offerId);
 
     if (
-      ['booked', 'transactionError', 'creationFailed', 'cancelled'].includes(
-        deal.status
-      )
+      [
+        'booked',
+        'paymentValidationError',
+        'creationFailed',
+        'cancelled'
+      ].includes(deal.status)
     ) {
       return;
     }
@@ -228,6 +231,7 @@ export class BookingService {
         await this.booking(deal.offer, deal.dealStorage, passengers);
       } else {
         console.log(e);
+        await dealRepository.updateDeal(deal.offer.id, 'serverError', e);
       }
     }
   }

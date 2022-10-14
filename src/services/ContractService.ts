@@ -43,9 +43,10 @@ export class ContractService {
             this.stop();
           }
         })
-        .catch((e) => {
+        .catch(async (e) => {
           if (process.env.NODE_IS_TEST !== 'true') {
             console.log(e);
+            await dealRepository.updateDeal(this.offer.id, 'serverError', e);
           }
         });
     });
@@ -112,7 +113,7 @@ export class ContractService {
         if (!asset) {
           await dealRepository.updateDeal(
             serviceId,
-            'transactionError',
+            'paymentValidationError',
             `Asset with coin address ${address} not found`
           );
           this.stop();
@@ -122,7 +123,7 @@ export class ContractService {
         if (!['USD', this.offer.price.currency].includes(asset.currency)) {
           await dealRepository.updateDeal(
             serviceId,
-            'transactionError',
+            'paymentValidationError',
             'Invalid currency of offer'
           );
           this.stop();
@@ -135,7 +136,7 @@ export class ContractService {
           if (asset.currency !== this.offer.price.currency) {
             await dealRepository.updateDeal(
               serviceId,
-              'transactionError',
+              'paymentValidationError',
               `Invalid payment currency: ${this.offer.price.currency} while expected ${asset.currency}`
             );
             this.stop();
@@ -153,7 +154,7 @@ export class ContractService {
           if (asset.currency !== this.offer.quote.sourceCurrency) {
             await dealRepository.updateDeal(
               serviceId,
-              'transactionError',
+              'paymentValidationError',
               'Invalid payment currency'
             );
             this.stop();
@@ -162,7 +163,7 @@ export class ContractService {
         } else {
           await dealRepository.updateDeal(
             serviceId,
-            'transactionError',
+            'paymentValidationError',
             'Invalid value of offer'
           );
           this.stop();

@@ -150,8 +150,10 @@ export type DealStatus =
   | 'paid'
   | 'pending'
   | 'booked'
-  | 'paymentError'
-  | 'transactionError'
+  | 'serverError'
+  | 'paymentError' //not using now (only in the case when the WinPay smart contract emits DealExpired error)
+  | 'paymentValidationError'
+  | 'networkError'
   | 'creationFailed'
   | 'cancelled';
 
