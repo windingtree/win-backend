@@ -4,6 +4,9 @@ import { GroupBookingRequestDBValue } from '../types';
 import { groupDealWorker } from './GroupContractService';
 import { redisHost, redisPassword, redisPort, redisUsername } from '../config';
 import LogService from './LogService';
+import groupBookingRequestRepository from '../repositories/GroupBookingRequestRepository';
+
+const maxNbAttempts = 100;
 
 export class GroupQueueService {
   private static _instance: GroupQueueService = new GroupQueueService();
@@ -33,7 +36,7 @@ export class GroupQueueService {
     this.dealScheduler = new QueueScheduler('GroupDeal', this.connectionConfig);
     this.dealQueue = new Queue('GroupDeal', {
       defaultJobOptions: {
-        attempts: 100,
+        attempts: maxNbAttempts,
         backoff: {
           delay: backoffDelay,
           type: 'fixed'
@@ -73,6 +76,63 @@ export class GroupQueueService {
 
     this.dealWorker.on('completed', async (job: Job) => {
       LogService.green(`Job completed for Request: ${job.id}`);
+    });
+
+    this.dealWorker.on('failed', async (job: Job, error: Error) => {
+      let newError = false;
+      const data: GroupBookingRequestDBValue = job.data;
+
+      if (!data.lastError || data.lastError.message !== error.message) {
+        // If the error is the same, it has already been logged
+        newError = true;
+        data.lastError = error;
+      }
+
+      // Update the deal in db if it exists
+      if (data.status !== 'pending' && newError) {
+        try {
+          await groupBookingRequestRepository.updateLastError(
+            data.requestId,
+            error
+          );
+          job.update(data);
+        } catch (e) {
+          LogService.yellow(
+            `Groups: reqId: ${data.requestId}: mongodb: ${e.message}`
+          );
+        }
+      }
+
+      // If it is the last retry, we log that.
+      if (job.attemptsMade === maxNbAttempts) {
+        if (data.status === 'pending') {
+          LogService.yellow(
+            `Groups: reqId: ${data.requestId}: no payment received after ${maxNbAttempts} attempts`
+          );
+        } else if (data.status == 'dealError') {
+          // If a payment has been made in blockchain, log in red.
+          LogService.red(
+            `Groups: reqId: ${data.requestId}: process stopped after ${maxNbAttempts} attempts with payment error: ${error.message}`
+          );
+        } else {
+          LogService.yellow(
+            `Groups: reqId: ${data.requestId}: process stopped after ${maxNbAttempts} attempts: ${error.message}`
+          );
+        }
+        return;
+      }
+
+      // No deal created in blockchain yet, no need to log that.
+      if (data.status === 'pending') {
+        return;
+      }
+
+      // Error has already been logged in the past
+      if (!newError) {
+        return;
+      }
+
+      LogService.yellow(`Groups: reqId: ${data.requestId}: ${error.message}`);
     });
   }
 

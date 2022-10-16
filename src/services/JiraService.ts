@@ -11,7 +11,6 @@ import {
 import { GroupBookingRequestDBValue, GroupRoom, OfferBackEnd } from '../types';
 import {
   GroupBookingDeposits,
-  OfferDbValue,
   OrganizerInformation
 } from '@windingtree/glider-types/dist/win';
 import { CreatedIssue } from 'jira.js/out/version3/models';

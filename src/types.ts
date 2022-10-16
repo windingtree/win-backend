@@ -6,7 +6,6 @@ import {
 } from '@windingtree/glider-types/dist/accommodations';
 import {
   MongoLocation,
-  OfferDbValue,
   OrganizerInformation,
   RewardType,
   GroupBookingDeposits,
@@ -15,8 +14,7 @@ import {
   PriceItem,
   Disclosures,
   Price,
-  PricePlansReferences,
-  Expiration
+  PricePlansReferences
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
@@ -230,6 +228,7 @@ export interface GroupBookingRequestDBValue {
   depositOptions: GroupBookingDeposits;
   status: GroupBookingRequestStatus;
   serviceId: string;
+  lastError?: Error;
   jiraTicket?: CreatedIssue;
   dealStorage?: DealStorage;
   blockchainUserAddresses?: string[];
