@@ -92,8 +92,9 @@ export class GroupQueueService {
           job.update(data);
         } catch (e) {
           LogService.yellow(
-            `Groups: reqId: ${data.requestId}: mongodb: ${e.message}`
+            `Groups: reqId: ${data.requestId}: issue updating newError: mongodb: ${e.message}`
           );
+          return;
         }
       }
 
