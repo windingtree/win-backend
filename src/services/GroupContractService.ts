@@ -90,11 +90,15 @@ export const groupDealWorker = async (job: Job) => {
     job.update(data);
   }
 
-  if (data.status === 'ticketCreated' && data.jiraTicket) {
+  if (data.status === 'ticketCreated') {
     await groupBookingRequestRepository.updateJiraInfo(
       data.requestId,
       data.status,
-      data.jiraTicket
+      data.jiraTicket ?? {
+        id: 'undefined',
+        key: 'undefined',
+        self: 'undefined'
+      }
     );
     data.status = 'ticketStored';
     job.update(data);

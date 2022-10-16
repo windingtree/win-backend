@@ -6,7 +6,10 @@ import { redisHost, redisPassword, redisPort, redisUsername } from '../config';
 import LogService from './LogService';
 import groupBookingRequestRepository from '../repositories/GroupBookingRequestRepository';
 
-const maxNbAttempts = 100;
+const backoffDelay = 10 * 1000; // delay before retrying a failed job.
+// Note: bullMQ supports custom backoff policy, it might be interesting to investigate that...
+const maxNbAttempts = 180; // 30min / 10s = 180.
+const initialDelay = 30 * 1000; // Start polling 30s after the booking request.
 
 export class GroupQueueService {
   private static _instance: GroupQueueService = new GroupQueueService();
@@ -28,17 +31,12 @@ export class GroupQueueService {
         'QueueService class instantiation failed. Use QueueService.getInstance() instead of new operator.'
       );
     }
-    let backoffDelay = 5 * 1000; // Wait 5s before retry a failed job.
-    // Reduce delay for tests.
-    if (process.env.NODE_IS_TEST === 'true') {
-      backoffDelay = 2 * 1000;
-    }
     this.dealScheduler = new QueueScheduler('GroupDeal', this.connectionConfig);
     this.dealQueue = new Queue('GroupDeal', {
       defaultJobOptions: {
         attempts: maxNbAttempts,
         backoff: {
-          delay: backoffDelay,
+          delay: process.env.NODE_IS_TEST ? 2 * 1000 : backoffDelay, // reduce delay for tests
           type: 'fixed'
         },
         removeOnComplete: true
@@ -57,13 +55,9 @@ export class GroupQueueService {
     key: string,
     value: GroupBookingRequestDBValue
   ): Promise<void> {
-    let delay = 30 * 1000; // Start 30s after the booking request.
-    if (process.env.NODE_IS_TEST === 'true') {
-      delay = 1 * 1000; // Reduce delay for tests.
-    }
     await this.dealQueue.add(key, value, {
       jobId: key,
-      delay: delay
+      delay: process.env.NODE_IS_TEST ? 1 * 1000 : initialDelay // reduce delay for tests.
     });
   }
 
@@ -146,9 +140,6 @@ export class GroupQueueService {
 
   // TODO: handle blockchain event.
   // We should store the event in the pending Deals, and prioritize it in the queue (and put it back in the queue if it failed and is waiting a new attempt)
-
-  // TODO: Log all exceptions returned by the worker...
-  // The only exception that is not really interesting is the lack of deal, unless this is the last attempt...
 
   public async close(): Promise<void> {
     await this.dealWorker?.close();
