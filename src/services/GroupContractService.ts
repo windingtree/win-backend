@@ -38,7 +38,7 @@ export const groupDealWorker = async (job: Job) => {
       job.update(data);
     } catch (e) {
       if (e instanceof DealError) {
-        // If the deal exist, we create the database record, even if there is an error.
+        // If the deal exists, we create the database record, even if there is an error.
         data.contract = e.networkInfo;
         data.dealStorage = e.dealStorage;
         data.blockchainUserAddresses = e.blockchainUserAddresses;
@@ -47,7 +47,7 @@ export const groupDealWorker = async (job: Job) => {
         await groupBookingRequestRepository.createGroupBookingRequest(data);
         job.update(data);
       }
-      throw e;
+      throw new Error(e.message);
     }
   }
 
@@ -90,11 +90,15 @@ export const groupDealWorker = async (job: Job) => {
     job.update(data);
   }
 
-  if (data.status === 'ticketCreated' && data.jiraTicket) {
+  if (data.status === 'ticketCreated') {
     await groupBookingRequestRepository.updateJiraInfo(
       data.requestId,
       data.status,
-      data.jiraTicket
+      data.jiraTicket ?? {
+        id: 'undefined',
+        key: 'undefined',
+        self: 'undefined'
+      }
     );
     data.status = 'ticketStored';
     job.update(data);
@@ -136,7 +140,7 @@ const checkPaymentOnBlockchains = async (
 
     if (attemptsMade === 1) {
       throw new DealError(
-        'Fail to test the retry',
+        'Voluntary failure to test the retry',
         networkInfo,
         dealStorage,
         blockchainUserAddresses
@@ -274,17 +278,20 @@ const checkPaidAmount = (
 const createTicket = async (
   data: GroupBookingRequestDBValue
 ): Promise<CreatedIssue> => {
-  if (jiraDisableNotifications === 'false') {
-    const jiraService = new JiraService();
-    // Exception will be raised here if Jira is down
-    const response = await jiraService.createJiraTicket(data);
-    return response;
-  } else {
+  if (jiraDisableNotifications) {
     return {
       id: 'JiraDisabled',
       key: 'JiraDisabled',
       self: 'JiraDisabled'
     };
+  }
+  try {
+    const jiraService = new JiraService();
+    // Exception will be raised here if Jira is down
+    const response = await jiraService.createJiraTicket(data);
+    return response;
+  } catch (e) {
+    throw new Error(`Jira: ${e.message}`);
   }
 };
 
@@ -292,10 +299,13 @@ const sendEmail = async (data: GroupBookingRequestDBValue) => {
   if (process.env.NODE_IS_TEST == 'true') {
     return;
   }
+  try {
+    const emailService = new GroupBookingEmailService();
+    emailService.setMessage(data);
 
-  const emailService = new GroupBookingEmailService();
-  emailService.setMessage(data);
-
-  // Exception will be raised here if SendGrid is down
-  await emailService.sendEmail();
+    // Exception will be raised here if SendGrid is down
+    await emailService.sendEmail();
+  } catch (e) {
+    throw new Error(`SendGrid: ${e.message}`);
+  }
 };
