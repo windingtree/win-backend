@@ -85,6 +85,21 @@ export class ProxyController {
     }
   }
 
+  public async getHotelInfo(
+    req: SessionRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { providerHotelId } = req.params;
+      const data = await proxyService.getHotelInfo(providerHotelId);
+
+      res.json(data);
+    } catch (e) {
+      next(e);
+    }
+  }
+
   public async searchGroupOffers(
     req: SessionRequest,
     res: Response,

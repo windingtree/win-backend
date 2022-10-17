@@ -440,6 +440,17 @@ describe('test', async () => {
         res.body.accommodations[accommodationId].hotelId;
     }).timeout(10000);
 
+    it('get cashed hotel info without prices', async () => {
+      const res = await requestWithSupertest
+        .get(`/api/hotels/${providerHotelId}`)
+        .set('Accept', 'application/json')
+        .set('Cookie', [`sessionToken=${sessionToken}`])
+        .expect(200);
+
+      expect(res.body).to.be.a('object');
+      expect(res.body.hotelId).to.be.eq(providerAccommodationId);
+    }).timeout(10000);
+
     it('get cashed hotel info shared by link', async () => {
       const res = await requestWithSupertest
         .post(`/api/hotels/${providerHotelId}`)

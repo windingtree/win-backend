@@ -34,6 +34,7 @@ import {
 } from '@windingtree/glider-types/dist/accommodations';
 import { Quote } from '@windingtree/glider-types/dist/simard';
 import { HotelQueueService } from './HotelQueueService';
+import cachedHotelRepository from '../repositories/CachedHotelRepository';
 
 export class ProxyService {
   public async getProxiesOffers(
@@ -603,6 +604,34 @@ export class ProxyService {
         [newAccommodationId || accommodationId]: accommodation
       },
       offers: offersMap
+    };
+  }
+
+  public async getHotelInfo(
+    providerHotelId: string
+  ): Promise<WinAccommodation> {
+    const cachedHotel = await cachedHotelRepository.getOne(providerHotelId);
+
+    if (!cachedHotel) {
+      throw ApiError.NotFound('Hotel not found');
+    }
+
+    return {
+      _id: String(cachedHotel._id),
+      checkinoutPolicy: cachedHotel.checkinoutPolicy,
+      contactInformation: cachedHotel.contactInformation,
+      description: cachedHotel.description,
+      hotelId: cachedHotel.hotelId,
+      id: cachedHotel.providerHotelId,
+      location: cachedHotel.location,
+      media: cachedHotel.media,
+      name: cachedHotel.name,
+      otherPolicies: cachedHotel.otherPolicies,
+      provider: cachedHotel.provider,
+      providerHotelId: cachedHotel.providerHotelId,
+      rating: cachedHotel.rating,
+      roomTypes: cachedHotel.roomTypes,
+      type: cachedHotel.type
     };
   }
 }

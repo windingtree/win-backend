@@ -24,4 +24,9 @@ export default (router: Router): void => {
     sessionMiddleware,
     proxyController.getAccommodation
   );
+  router.get(
+    '/hotels/:providerHotelId',
+    sessionMiddleware,
+    proxyController.getHotelInfo
+  );
 };

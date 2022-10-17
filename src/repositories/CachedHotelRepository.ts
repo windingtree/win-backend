@@ -29,28 +29,11 @@ export class CachedHotelRepository {
   }
 
   public async getOne(
-    accommodationId: string
+    providerHotelId: string
   ): Promise<CachedWinAccommodation | null> {
     const collection = await this.getCollection();
 
-    return await collection.findOne({ id: accommodationId });
-  }
-
-  public async getByIds(ids: string[]): Promise<CachedWinAccommodation[]> {
-    const result: CachedWinAccommodation[] = [];
-    const collection = await this.getCollection();
-
-    if ((await collection.countDocuments()) === 0) {
-      return [];
-    }
-
-    const cursor = await collection.find({ providerHotelId: { $in: ids } });
-
-    await cursor.forEach((item) => {
-      result.push(item);
-    });
-
-    return result;
+    return await collection.findOne({ providerHotelId });
   }
 }
 
