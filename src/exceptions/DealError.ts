@@ -11,7 +11,7 @@ export default class DealError extends Error {
     dealStorage: DealStorage,
     blockchainUserAddresses: string[]
   ) {
-    super(message);
+    super(`DealError: ${message}`);
     this.networkInfo = networkInfo;
     this.dealStorage = dealStorage;
     this.blockchainUserAddresses = blockchainUserAddresses;

@@ -8,18 +8,18 @@ import {
   AccommodationType,
   CheckInOutPolicy,
   ContactInformation,
-  Disclosures,
   GroupBookingDeposits,
   Media,
   MongoLocation,
   OrganizerInformation,
-  Price,
-  PriceItem,
   PricePlan,
   PricePlansReferences,
   RewardType,
   RoomTypes,
-  WinAccommodation
+  WinAccommodation,
+  PriceItem,
+  Disclosures,
+  Price
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
@@ -154,8 +154,10 @@ export type DealStatus =
   | 'paid'
   | 'pending'
   | 'booked'
-  | 'paymentError'
-  | 'transactionError'
+  | 'serverError'
+  | 'paymentError' //not using now (only in the case when the WinPay smart contract emits DealExpired error)
+  | 'paymentValidationError'
+  | 'networkError'
   | 'creationFailed'
   | 'cancelled';
 
@@ -252,6 +254,7 @@ export interface GroupBookingRequestDBValue {
   depositOptions: GroupBookingDeposits;
   status: GroupBookingRequestStatus;
   serviceId: string;
+  lastError?: Error;
   jiraTicket?: CreatedIssue;
   dealStorage?: DealStorage;
   blockchainUserAddresses?: string[];
