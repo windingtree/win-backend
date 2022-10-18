@@ -278,7 +278,7 @@ const checkPaidAmount = (
 const createTicket = async (
   data: GroupBookingRequestDBValue
 ): Promise<CreatedIssue> => {
-  if (jiraDisableNotifications) {
+  if (jiraDisableNotifications === 'true') {
     return {
       id: 'JiraDisabled',
       key: 'JiraDisabled',
@@ -296,7 +296,7 @@ const createTicket = async (
 };
 
 const sendEmail = async (data: GroupBookingRequestDBValue) => {
-  if (process.env.NODE_IS_TEST == 'true') {
+  if (process.env.NODE_IS_TEST === 'true') {
     return;
   }
   try {
