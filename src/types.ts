@@ -8,18 +8,18 @@ import {
   AccommodationType,
   CheckInOutPolicy,
   ContactInformation,
+  Disclosures,
   GroupBookingDeposits,
   Media,
   MongoLocation,
   OrganizerInformation,
+  Price,
+  PriceItem,
   PricePlan,
   PricePlansReferences,
   RewardType,
   RoomTypes,
-  WinAccommodation,
-  PriceItem,
-  Disclosures,
-  Price
+  WinAccommodation
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
