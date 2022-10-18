@@ -1413,10 +1413,10 @@
   dependencies:
     web-streams-polyfill "^3.1.1"
 
-"@windingtree/glider-types@^2.14.0":
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/@windingtree/glider-types/-/glider-types-2.14.0.tgz#ad330e2eaec334040c02fffa7caf1e908f5dfe5a"
-  integrity sha512-bKdmBOZVaBElKPnf1b4NEMNJfSW/HIae1xhjdlb5mDmTstQRsiQdJeqvnzQnQgUacU6lU8lVyTUGYgkfFB5oGw==
+"@windingtree/glider-types@^2.15.0":
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/@windingtree/glider-types/-/glider-types-2.15.0.tgz#d2c87f7d5f022ad6db8f50f5749e5531c0db10f6"
+  integrity sha512-JV6bpO8wPwMBN9VTPbVutYNEzgwEugPSJy993aycjoRlbO1wQhU1G7SwMgbZG4l2aKmzPyed5hMhoqxzQ1T6kg==
 
 "@windingtree/org.id-auth@1.0.0-beta.47", "@windingtree/org.id-auth@^1.0.0-beta.47":
   version "1.0.0-beta.47"

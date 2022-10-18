@@ -66,7 +66,7 @@ export class ProxyService {
     const { lon, lat, radius } = body.accommodation.location;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
     const requestHash = utils.id(JSON.stringify(body));
-    const cashedOffers = await this.getCachedOffers(requestHash);
+    const cashedOffers = await this.getCachedOffers(sessionId, requestHash);
     if (cashedOffers) {
       cashedOffers.offers = await this.addRates(cashedOffers.offers);
       return cashedOffers;
@@ -292,10 +292,11 @@ export class ProxyService {
   }
 
   private async getCachedOffers(
+    sessionId: string,
     requestHash: string
   ): Promise<SearchResults | null> {
     const cashedOffers = (
-      await offerRepository.getBySession(requestHash)
+      await offerRepository.getBySession(sessionId, requestHash)
     ).filter((offer) => {
       return (
         DateTime.fromJSDate(offer.expiration).diffNow('minutes').minutes > 10

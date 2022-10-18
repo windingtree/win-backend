@@ -1,5 +1,5 @@
 import MongoDBService from '../services/MongoDBService';
-import { DBName } from '../config';
+import { DBName, enableSessionSearch } from '../config';
 import { Collection } from 'mongodb';
 import { OfferBackEnd } from '../types';
 
@@ -65,7 +65,10 @@ export class OfferRepository {
     );
   }
 
-  public async getBySession(requestHash: string): Promise<OfferBackEnd[]> {
+  public async getBySession(
+    sessionId: string,
+    requestHash: string
+  ): Promise<OfferBackEnd[]> {
     const result: OfferBackEnd[] = [];
     const collection = await this.getCollection();
 
@@ -73,7 +76,13 @@ export class OfferRepository {
       return [];
     }
 
-    const cursor = await collection.find({ requestHash });
+    const query: { [keys: string]: string } = { requestHash };
+
+    if (enableSessionSearch) {
+      query.sessionId = sessionId;
+    }
+
+    const cursor = await collection.find(query);
 
     await cursor.forEach((item) => {
       result.push(item);
