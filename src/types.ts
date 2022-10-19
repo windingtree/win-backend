@@ -5,16 +5,21 @@ import {
   PassengerSearch
 } from '@windingtree/glider-types/dist/accommodations';
 import {
+  AccommodationType,
+  CheckInOutPolicy,
+  ContactInformation,
+  Disclosures,
+  GroupBookingDeposits,
+  Media,
   MongoLocation,
   OrganizerInformation,
-  RewardType,
-  GroupBookingDeposits,
-  PricePlan,
-  WinAccommodation,
-  PriceItem,
-  Disclosures,
   Price,
-  PricePlansReferences
+  PriceItem,
+  PricePlan,
+  PricePlansReferences,
+  RewardType,
+  RoomTypes,
+  WinAccommodation
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
@@ -76,6 +81,7 @@ export interface UserRequest {
   accommodationId: string;
   provider: string;
   providerAccommodationId: string;
+  providerHotelId: string;
   hotelLocation: MongoLocation;
   startDate: Date;
   requestBody: SearchBody;
@@ -169,6 +175,26 @@ export interface DealDBValue {
   message?: string;
   rewardOption?: RewardType;
   userEmailAddress?: string;
+}
+
+export interface CachedWinAccommodation {
+  hotelId: string;
+  providerHotelId: string;
+  name: string;
+  type: AccommodationType;
+  description: string;
+  rating: number;
+  contactInformation: ContactInformation;
+  checkinoutPolicy: CheckInOutPolicy;
+  otherPolicies: string[];
+  media: Media;
+  roomTypes: {
+    [k: string]: RoomTypes;
+  };
+  _id?: ObjectId;
+  location: MongoLocation;
+  provider?: string;
+  [k: string]: unknown;
 }
 
 export interface DealDTO {

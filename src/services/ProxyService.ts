@@ -33,6 +33,8 @@ import {
   SearchResponse
 } from '@windingtree/glider-types/dist/accommodations';
 import { Quote } from '@windingtree/glider-types/dist/simard';
+import { HotelQueueService } from './HotelQueueService';
+import cachedHotelRepository from '../repositories/CachedHotelRepository';
 
 export class ProxyService {
   public async getProxiesOffers(
@@ -176,7 +178,8 @@ export class ProxyService {
         const hotel: WinAccommodation = {
           ...value,
           id: key,
-          provider: provider,
+          providerHotelId: utils.id(`${provider}_${value.hotelId}`),
+          provider,
           createdAt: new Date(),
           location
         };
@@ -190,6 +193,7 @@ export class ProxyService {
           hotelLocation: hotel.location,
           provider: String(hotel.provider), //todo remove String() after use new glider types
           providerAccommodationId: hotel.hotelId,
+          providerHotelId: utils.id(`${provider}_${value.hotelId}`),
           requestBody: searchBody,
           requestHash: requestHash,
           sessionId,
@@ -203,6 +207,7 @@ export class ProxyService {
 
       await hotelRepository.bulkCreate(Array.from(hotels));
       await userRequestRepository.bulkCreate(Array.from(requests));
+      HotelQueueService.getInstance().addHotelJobs(Array.from(hotels));
 
       const sortedHotels = Array.from(hotels);
 
@@ -536,26 +541,27 @@ export class ProxyService {
   }
 
   public async getAccommodation(
-    accommodationId: string,
-    sessionId: string
+    providerHotelId: string,
+    sessionId: string,
+    body: SearchBody
   ): Promise<SearchResults> {
-    const userRequest = await userRequestRepository.getRequestByAccommodationId(
-      accommodationId
+    const requestHash = utils.id(JSON.stringify(body));
+    const userRequest = await userRequestRepository.getRequestByProviderHotelId(
+      providerHotelId,
+      requestHash
     );
 
     if (!userRequest) {
       throw ApiError.NotFound('offer not found');
     }
 
+    const accommodationId = userRequest.accommodationId;
+
     let offers = await offerRepository.getByAccommodation(accommodationId);
     let accommodation = await hotelRepository.getOne(accommodationId);
     let newAccommodationId = '';
 
-    if (
-      !offers.length ||
-      !accommodation ||
-      userRequest.sessionId !== sessionId
-    ) {
+    if (!offers.length || !accommodation) {
       const searchBody: SearchBody = userRequest.requestBody;
       searchBody.accommodation.location = {
         lon: userRequest.hotelLocation.coordinates[0],
@@ -599,6 +605,34 @@ export class ProxyService {
         [newAccommodationId || accommodationId]: accommodation
       },
       offers: offersMap
+    };
+  }
+
+  public async getHotelInfo(
+    providerHotelId: string
+  ): Promise<WinAccommodation> {
+    const cachedHotel = await cachedHotelRepository.getOne(providerHotelId);
+
+    if (!cachedHotel) {
+      throw ApiError.NotFound('Hotel not found');
+    }
+
+    return {
+      _id: String(cachedHotel._id),
+      checkinoutPolicy: cachedHotel.checkinoutPolicy,
+      contactInformation: cachedHotel.contactInformation,
+      description: cachedHotel.description,
+      hotelId: cachedHotel.hotelId,
+      id: cachedHotel.providerHotelId,
+      location: cachedHotel.location,
+      media: cachedHotel.media,
+      name: cachedHotel.name,
+      otherPolicies: cachedHotel.otherPolicies,
+      provider: cachedHotel.provider,
+      providerHotelId: cachedHotel.providerHotelId,
+      rating: cachedHotel.rating,
+      roomTypes: cachedHotel.roomTypes,
+      type: cachedHotel.type
     };
   }
 }

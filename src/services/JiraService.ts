@@ -1,12 +1,12 @@
 import { Version3Client } from 'jira.js';
 import { CreateIssue } from 'jira.js/out/version3/parameters';
 import {
-  jiraURL,
+  appEnvironment,
   jiraEmailAddress,
-  jiraToken,
-  jiraProjectId,
   jiraGroupIssueId,
-  appEnvironment
+  jiraProjectId,
+  jiraToken,
+  jiraURL
 } from '../config';
 import { GroupBookingRequestDBValue, GroupRoom, OfferBackEnd } from '../types';
 import {

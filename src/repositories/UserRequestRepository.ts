@@ -18,12 +18,16 @@ export class UserRequestRepository {
     return database.collection(this.collectionName);
   }
 
-  public async getRequestByAccommodationId(
-    accommodationId: string
+  public async getRequestByProviderHotelId(
+    providerHotelId: string,
+    requestHash: string
   ): Promise<UserRequestDbData | null> {
     const collection = await this.getCollection();
-    const query = { accommodationId };
-    const result = await collection.findOne(query);
+
+    const query = { providerHotelId, requestHash };
+    const cursor = await collection.find(query);
+    const data = await cursor.toArray();
+    const result = data[data.length - 1];
 
     if (!result) {
       return null;
