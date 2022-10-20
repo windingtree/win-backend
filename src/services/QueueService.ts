@@ -49,7 +49,9 @@ export class QueueService {
   }
 
   public async addDealJob(key: string, value: DealWorkerData): Promise<void> {
-    await this.dealQueue.add(key, value, { delay: 5 * 60 * 1000 }); // 5 minutes
+    await this.dealQueue.add(key, value, {
+      delay: this.getThrottleTime(value.startTime)
+    });
   }
 
   public async runDealWorker(): Promise<void> {
@@ -57,7 +59,12 @@ export class QueueService {
       'Deal',
       async (job: Job) => {
         const data: DealWorkerData = job.data;
-        await bookingService.checkFailedDeal(data.id, data.passengers);
+        const startTime = data.startTime || DateTime.now();
+        await bookingService.checkFailedDeal(
+          data.id,
+          data.passengers,
+          startTime
+        );
       },
       {
         ...this.connectionConfig,
@@ -139,5 +146,33 @@ export class QueueService {
     await this.dealScheduler.close();
     await this.dealQueue.close();
     await this.contractQueue.close();
+  }
+
+  private getThrottleTime(dateTime: DateTime): number {
+    const minutes = dateTime.diffNow('minutes').minutes;
+    const minuteInMs = 60 * 1000;
+
+    const timings = [
+      {
+        throttle: 5 * minuteInMs, // every 5 min
+        timeout: 3 * 60 // 3 hours
+      },
+      {
+        throttle: 30 * minuteInMs, // every 30 min
+        timeout: 9 * 60 // 9 hours
+      },
+      {
+        throttle: 60 * minuteInMs, // every  60 min
+        timeout: 24 * 60 // 24 hours
+      }
+    ];
+
+    for (const timing of timings) {
+      if (Math.abs(minutes) < timing.timeout) {
+        return timing.throttle;
+      }
+    }
+
+    return 24 * 60 * minuteInMs; //1 time per day
   }
 }

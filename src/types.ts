@@ -24,6 +24,7 @@ import {
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
 import { CreatedIssue } from 'jira.js/out/version3/models';
+import { DateTime } from 'luxon';
 
 export interface User {
   login: string;
@@ -216,6 +217,7 @@ export type HotelProviders = 'derbySoft' | 'amadeus';
 export type DealWorkerData = {
   id: string;
   passengers: { [key: string]: PassengerBooking };
+  startTime: DateTime;
 };
 
 export type DealType = 'Standard' | 'Group';

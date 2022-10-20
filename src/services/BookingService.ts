@@ -16,6 +16,7 @@ import { PassengerBooking } from '@windingtree/glider-types/dist/accommodations'
 import { DealDBValue, DealDTO, DealStorage, OfferBackEnd } from '../types';
 import { getContractServiceId, parseEmailAddress } from '../utils';
 import { QueueService } from './QueueService';
+import { DateTime } from 'luxon';
 
 export class BookingService {
   public async booking(
@@ -158,7 +159,8 @@ export class BookingService {
 
   public async checkFailedDeal(
     offerId: string,
-    passengers: { [key: string]: PassengerBooking }
+    passengers: { [key: string]: PassengerBooking },
+    startTime: DateTime
   ): Promise<void> {
     const deal = await dealRepository.getDeal(offerId);
 
@@ -176,7 +178,8 @@ export class BookingService {
     //create similar job for check one more time
     await QueueService.getInstance().addDealJob(offerId, {
       id: offerId,
-      passengers
+      passengers,
+      startTime
     });
 
     const url = getUrlByKey(deal.offer.provider);
