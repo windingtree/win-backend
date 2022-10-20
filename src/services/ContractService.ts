@@ -11,6 +11,7 @@ import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { QueueService } from './QueueService';
 import { Job } from 'bullmq';
 import { getContractServiceId } from '../utils';
+import { DateTime } from 'luxon';
 
 export class ContractService {
   protected offer: OfferBackEnd;
@@ -101,7 +102,8 @@ export class ContractService {
 
         await QueueService.getInstance().addDealJob(serviceId, {
           id: serviceId,
-          passengers: this.passengers
+          passengers: this.passengers,
+          startTime: DateTime.now()
         });
 
         const network = getNetworkInfo(chainId);
@@ -213,7 +215,8 @@ export class ContractService {
     QueueService.getInstance()
       .addContractJob(this.offer.id, {
         id: this.offer.id,
-        passengers: this.passengers
+        passengers: this.passengers,
+        startTime: DateTime.now()
       })
       .then((job) => {
         if (job) {
