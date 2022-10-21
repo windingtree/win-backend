@@ -5,6 +5,7 @@ import { QueueService } from './services/QueueService';
 import { GroupQueueService } from './services/GroupQueueService';
 import { RewardQueueService } from './services/RewardQueueService';
 import { HotelQueueService } from './services/HotelQueueService';
+import { CurrencyQueueService } from './services/CurrencyQueueService';
 
 process.on('unhandledRejection', async (error) => {
   console.log(error);
@@ -23,6 +24,8 @@ const main = async (): Promise<void> => {
   await GroupQueueService.getInstance().runGroupDealWorker();
   await RewardQueueService.getInstance().runRewardsWorker();
   await HotelQueueService.getInstance().runHotelWorker();
+  await CurrencyQueueService.getInstance().runCurrencyWorker();
+  await CurrencyQueueService.getInstance().addCurrencyJob();
 
   await server.start();
 };

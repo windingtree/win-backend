@@ -29,4 +29,5 @@ export default (router: Router): void => {
     sessionMiddleware,
     proxyController.getHotelInfo
   );
+  router.get('/currencies', sessionMiddleware, proxyController.getCurrencies);
 };

@@ -273,3 +273,11 @@ export interface PaymentInfo {
   dealStorage: DealStorage;
   blockchainUserAddresses: string[];
 }
+
+export interface CurrencyDbValue {
+  code: string;
+  name: string;
+  symbol: string;
+  rateFromBaseCurrency: number;
+  decimals: number;
+}
