@@ -3,6 +3,7 @@ import { NextFunction, Response } from 'express';
 import proxyService from '../services/ProxyService';
 import ApiError from '../exceptions/ApiError';
 import { DateTime } from 'luxon';
+import currencyService from '../services/CurrencyService';
 
 export class ProxyController {
   public async searchOffers(
@@ -127,6 +128,20 @@ export class ProxyController {
       const offers = await proxyService.getGroupOffers(req.body, req.sessionId);
 
       res.json(offers);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  public async getCurrencies(
+    req: SessionRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const data = await currencyService.getCurrencies();
+
+      res.json(data);
     } catch (e) {
       next(e);
     }

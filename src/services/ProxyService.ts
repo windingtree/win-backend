@@ -472,7 +472,7 @@ export class ProxyService {
     };
   }
 
-  private async getRates(
+  public async getRates(
     currencies: string[]
   ): Promise<{ [k: string]: number }> {
     const rates = {};
