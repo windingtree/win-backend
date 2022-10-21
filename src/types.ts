@@ -109,6 +109,12 @@ export interface OfferBackEnd {
   pricePlan: PricePlan;
   quote?: Quote;
   refundability?: RefundabilityPolicy;
+  searchParams: SearchParams;
+}
+
+export interface SearchParams {
+  roomCount: number;
+  guests: [PassengerSearch, ...PassengerSearch[]];
 }
 
 export interface AuthRequest extends Request {
