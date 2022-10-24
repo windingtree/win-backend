@@ -16,6 +16,7 @@ import { utils } from 'ethers';
 import {
   MongoLocation,
   Offer,
+  RefundabilityPolicy,
   SearchResults,
   WinAccommodation,
   WinPricedOffer
@@ -249,7 +250,8 @@ export class ProxyService {
           isAmountBeforeTax: offer.price.isAmountBeforeTax,
           decimalPlaces: offer.price.decimalPlaces
         };
-
+        //this is to ensure we always get refundability policy in FE (so far derbysoft does not return that)
+        this.decorateOfferWithDefaultRefundabilityPolicy(offer);
         const offerDBValue: OfferBackEnd = {
           id: k,
           accommodation,
@@ -264,7 +266,10 @@ export class ProxyService {
           disclosures: [],
           requestHash,
           sessionId,
-          pricePlan
+          pricePlan,
+          refundability: offer.refundability
+            ? offer.refundability
+            : this.getDefaultRefundabilityPolicy()
         };
 
         offersSet.add(offerDBValue);
@@ -453,7 +458,8 @@ export class ProxyService {
       sessionId: offer.sessionId,
       requestHash: offer.requestHash,
       pricePlan: offer.pricePlan,
-      quote
+      quote,
+      refundability: offer?.refundability
     };
 
     await offerRepository.upsertOffer(offerDBValue);
@@ -608,6 +614,15 @@ export class ProxyService {
     };
   }
 
+  private decorateOfferWithDefaultRefundabilityPolicy(offer: Offer) {
+    //in case offer does not have refundability policy, we need to assume it's non refundable (most restrictive option)
+    if (!offer.refundability) {
+      offer.refundability = this.getDefaultRefundabilityPolicy();
+    }
+  }
+  private getDefaultRefundabilityPolicy(): RefundabilityPolicy {
+    return { type: 'non_refundable' };
+  }
   public async getHotelInfo(
     providerHotelId: string
   ): Promise<WinAccommodation> {
