@@ -36,4 +36,4 @@ jobs:
           DOTENV_BASE64: ${{ secrets.DOTENV_BASE64 }}
         run: |
           echo "${DOTENV_BASE64}" | base64 -w 0 --decode > .env
-          yarn test
+          yarn test:ci

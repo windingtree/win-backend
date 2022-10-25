@@ -24,6 +24,8 @@
     "lint": "npx eslint . --ext .ts",
     "lint:fix": "npx eslint . --ext .ts --fix && npx prettier --write .",
     "test": "NODE_IS_TEST=true npx mocha --maxWorkers=15 -r ts-node/register test/**/*.spec.ts",
+    "test:integration": "cross-env TEST_PROFILE=integration yarn test",
+    "test:ci": "cross-env TEST_PROFILE=ci yarn test",
     "clean": "rm -rf dist",
     "coverage": "c8 --all --exclude typechain* --exclude coverage --exclude dist --exclude src/proto* --exclude test npm test && c8 report --all --exclude typechain* --exclude coverage --exclude dist --exclude test --exclude src/proto* -r html",
     "build": "yarn clean && yarn tsc -p tsconfig-build.json",
