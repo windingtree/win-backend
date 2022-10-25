@@ -19,7 +19,8 @@ import {
   PricePlansReferences,
   RewardType,
   RoomTypes,
-  WinAccommodation
+  WinAccommodation,
+  RefundabilityPolicy
 } from '@windingtree/glider-types/dist/win';
 import { NetworkInfo } from '@windingtree/win-commons/dist/types';
 import { Quote } from '@windingtree/glider-types/dist/simard';
@@ -107,6 +108,7 @@ export interface OfferBackEnd {
   sessionId: string;
   pricePlan: PricePlan;
   quote?: Quote;
+  refundability?: RefundabilityPolicy;
 }
 
 export interface AuthRequest extends Request {
