@@ -333,7 +333,8 @@ export class ProxyService {
       offersMap[v.id] = {
         expiration: new Date(v.expiration).toISOString(),
         price: v.price,
-        pricePlansReferences: v.pricePlansReferences
+        pricePlansReferences: v.pricePlansReferences,
+        refundability: v.refundability
       };
     });
 
