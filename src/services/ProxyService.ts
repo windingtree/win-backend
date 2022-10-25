@@ -269,7 +269,11 @@ export class ProxyService {
           pricePlan,
           refundability: offer.refundability
             ? offer.refundability
-            : this.getDefaultRefundabilityPolicy()
+            : this.getDefaultRefundabilityPolicy(),
+          searchParams: {
+            guests: searchBody.passengers,
+            roomCount: Number(searchBody.accommodation.roomCount)
+          }
         };
 
         offersSet.add(offerDBValue);
@@ -459,7 +463,8 @@ export class ProxyService {
       requestHash: offer.requestHash,
       pricePlan: offer.pricePlan,
       quote,
-      refundability: offer?.refundability
+      refundability: offer?.refundability,
+      searchParams: offer.searchParams
     };
 
     await offerRepository.upsertOffer(offerDBValue);

@@ -29,6 +29,19 @@ export default class EmailSenderService {
     const end_date = `${formatEmailDate(
       new Date(offer.departure)
     )} ${checkOut}`;
+    const room =
+      offer.accommodation.roomTypes[
+        Object.keys(offer.accommodation.roomTypes)[0]
+      ];
+
+    const adults = offer.searchParams.guests.find((i) => i.type === 'ADT');
+    const childs = offer.searchParams.guests.find((i) => i.type === 'CHD');
+
+    const accommodationName = offer.accommodation.name;
+    const googleMapsLink = `https://www.google.com/maps?hl=en&q=${encodeURIComponent(
+      accommodationName
+    )}`;
+
     this.message = {
       from: this.fromEmail,
       personalizations: [
@@ -40,7 +53,7 @@ export default class EmailSenderService {
             }
           ],
           dynamic_template_data: {
-            name: offer.accommodation.name,
+            name: accommodationName,
             price: `${offer.price?.public} ${offer.price?.currency}`,
             start_date,
             end_date,
@@ -55,7 +68,13 @@ export default class EmailSenderService {
                   ', '
                 ) || 'N/A'
             },
-            token_id: tokenId
+            token_id: tokenId,
+            room: room.name,
+            room_description: room.description,
+            rooms_count: offer.searchParams.roomCount,
+            adult_guests_count: adults?.count || 0,
+            child_guests_count: childs?.count || 0,
+            google_maps_link: googleMapsLink
           }
         }
       ],
