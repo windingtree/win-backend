@@ -6,11 +6,11 @@ import { CurrencyResponse } from '@windingtree/glider-types/dist/win';
 
 export class CurrencyService {
   public async getCurrencies(): Promise<CurrencyResponse> {
-    const currencies = await currencyRepository.getAll();
-    const currenciesMap: CurrencyResponse = {};
+    const allCurrencies = await currencyRepository.getAll();
+    const currencies = {};
 
-    currencies?.forEach((v) => {
-      currenciesMap[v.code] = {
+    allCurrencies?.forEach((v) => {
+      currencies[v.code] = {
         name: v.name,
         symbol: v.symbol,
         rateFromBaseCurrency: v.rateFromBaseCurrency,
@@ -18,7 +18,12 @@ export class CurrencyService {
       };
     });
 
-    return currenciesMap;
+    const response = {
+      baseCurrency: 'USD',
+      currencies
+    };
+
+    return response;
   }
 
   public async upsertCurrenciesRates(): Promise<void> {
@@ -28,16 +33,14 @@ export class CurrencyService {
     for (const currency in currencies) {
       const rate: number = rates[currency];
 
-      if (currency !== 'USD') {
-        console.log(currency);
-        await currencyRepository.upsert({
-          code: currency,
-          name: currencies[currency].name,
-          symbol: currencies[currency].symbol,
-          rateFromBaseCurrency: rate,
-          decimals: currencies[currency].decimals
-        });
-      }
+      console.log(currency);
+      await currencyRepository.upsert({
+        code: currency,
+        name: currencies[currency].name,
+        symbol: currencies[currency].symbol,
+        rateFromBaseCurrency: rate,
+        decimals: currencies[currency].decimals
+      });
     }
   }
 }
