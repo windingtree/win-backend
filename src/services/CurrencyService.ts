@@ -28,12 +28,11 @@ export class CurrencyService {
 
   public async upsertCurrenciesRates(): Promise<void> {
     const currencies: CurrencyMeta = getCurrenciesTemplate();
-    console.log(currencies);
+
     const rates = await proxyService.getRates(Object.keys(currencies));
     for (const currency in currencies) {
       const rate: number = rates[currency];
 
-      console.log(currency);
       await currencyRepository.upsert({
         code: currency,
         name: currencies[currency].name,
