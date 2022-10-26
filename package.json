@@ -42,7 +42,7 @@
     "@sendgrid/mail": "^7.7.0",
     "@types/yamljs": "^0.2.31",
     "@web-std/file": "^3.0.2",
-    "@windingtree/glider-types": "3.1.0",
+    "@windingtree/glider-types": "^4.0.0",
     "@windingtree/win-commons": "1.12.0",
     "@windingtree/win-pay": "^1.8.0",
     "axios": "^0.27.2",
