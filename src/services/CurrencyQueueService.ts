@@ -38,7 +38,6 @@ export class CurrencyQueueService {
   }
 
   public async addCurrencyJob(withDelay = false): Promise<void> {
-    //todo add check should be only one job in queue
     await this.currencyQueue.add(
       DateTime.now().toISOTime(),
       {},
@@ -53,7 +52,10 @@ export class CurrencyQueueService {
       'Currency',
       async () => {
         await currencyService.upsertCurrenciesRates();
-        await this.addCurrencyJob(true);
+        const jobsCount = await this.currencyQueue.getDelayedCount();
+        if (jobsCount === 0) {
+          await this.addCurrencyJob(true);
+        }
       },
       {
         ...this.connectionConfig,
