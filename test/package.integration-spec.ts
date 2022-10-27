@@ -348,7 +348,7 @@ describe('test', async () => {
       };
 
       await requestWithSupertest
-        .post('/api/hotels/offers/search')
+        .post('/api/accommodations/offers/search')
         .send(body)
         .set('Accept', 'application/json')
         .expect(400);
@@ -387,7 +387,7 @@ describe('test', async () => {
       };
 
       const res = await requestWithSupertest
-        .post('/api/hotels/offers/search')
+        .post('/api/accommodations/offers/search')
         .send(requestBody)
         .set('Accept', 'application/json')
         .expect(200);
@@ -427,7 +427,7 @@ describe('test', async () => {
 
     it('get cashed hotel info', async () => {
       const res = await requestWithSupertest
-        .post(`/api/hotels/${providerHotelId}`)
+        .post(`/api/accommodations/${providerHotelId}`)
         .send(requestBody)
         .set('Accept', 'application/json')
         .set('Cookie', [`sessionToken=${sessionToken}`])
@@ -448,12 +448,12 @@ describe('test', async () => {
         .expect(200);
 
       expect(res.body).to.be.a('object');
-      expect(res.body.EUR).to.be.a('object');
+      expect(res.body.currencies.EUR).to.be.a('object');
     }).timeout(10000);
 
     it('get cashed hotel info without prices', async () => {
       const res = await requestWithSupertest
-        .get(`/api/hotels/${providerHotelId}`)
+        .get(`/api/accommodations/${providerHotelId}`)
         .set('Accept', 'application/json')
         .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
@@ -464,7 +464,7 @@ describe('test', async () => {
 
     it('get cashed hotel info shared by link', async () => {
       const res = await requestWithSupertest
-        .post(`/api/hotels/${providerHotelId}`)
+        .post(`/api/accommodations/${providerHotelId}`)
         .send(requestBody)
         .set('Accept', 'application/json')
         .expect(200);
@@ -477,7 +477,7 @@ describe('test', async () => {
 
     // it('get offer price', async () => {
     //   const res = await requestWithSupertest
-    //     .post(`/api/hotels/offers/${offerId}/price`)
+    //     .post(`/api/accommodations/offers/${offerId}/price`)
     //     .send({})
     //     .set('Accept', 'application/json')
     //     .set('Cookie', [`sessionToken=${sessionToken}`])
@@ -489,7 +489,7 @@ describe('test', async () => {
 
     it('get amadeus offer price', async () => {
       const res = await requestWithSupertest
-        .post(`/api/hotels/offers/${amadeusOfferId}/price`)
+        .post(`/api/accommodations/offers/${amadeusOfferId}/price`)
         .send({})
         .set('Accept', 'application/json')
         .set('Cookie', [`sessionToken=${sessionToken}`])
@@ -501,7 +501,7 @@ describe('test', async () => {
 
     it('get cached amadeus offer price', async () => {
       const res = await requestWithSupertest
-        .get(`/api/hotels/offers/${amadeusOfferId}/price`)
+        .get(`/api/accommodations/offers/${amadeusOfferId}/price`)
         .set('Accept', 'application/json')
         .set('Cookie', [`sessionToken=${sessionToken}`])
         .expect(200);
