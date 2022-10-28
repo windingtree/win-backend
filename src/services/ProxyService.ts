@@ -14,28 +14,25 @@ import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
 import { utils } from 'ethers';
 import {
-  MongoLocation,
   Offer,
-  RefundabilityPolicy,
   SearchResults,
   WinAccommodation,
   WinPricedOffer
 } from '@windingtree/glider-types/dist/win';
 import { DateTime } from 'luxon';
 import userRequestRepository from '../repositories/UserRequestRepository';
+import { OfferBackEnd, SearchBody } from '../types';
 import {
-  HotelProviders,
-  OfferBackEnd,
-  SearchBody,
-  UserRequestDbData
-} from '../types';
-import {
+  Accommodation,
   SearchCriteria,
   SearchResponse
 } from '@windingtree/glider-types/dist/accommodations';
 import { Quote } from '@windingtree/glider-types/dist/simard';
-import { HotelQueueService } from './HotelQueueService';
 import cachedHotelRepository from '../repositories/CachedHotelRepository';
+import accommodationService from './handlers/AccommodationService';
+import offerService from './handlers/OfferService';
+import { HandlerServiceConfig } from './handlers/helpers';
+import currencyService from './CurrencyService';
 
 export class ProxyService {
   public async getProxiesOffers(
@@ -115,24 +112,12 @@ export class ProxyService {
       throw ApiError.NotFound('Offers not found');
     }
 
-    const sortedHotels = await hotelRepository.searchByRadius(
-      lon,
-      lat,
-      radius,
-      Object.keys(commonData.accommodations)
-    );
-
-    const sortedAccommodations: Record<string, WinAccommodation> = {};
-
-    sortedHotels.forEach((hotel: WinAccommodation) => {
-      sortedAccommodations[hotel.id] = {
-        ...commonData.accommodations[hotel.id],
-        location: hotel.location,
-        id: hotel.id
-      };
-    });
-
-    commonData.accommodations = sortedAccommodations;
+    commonData.accommodations =
+      await accommodationService.getSortedAccommodations(
+        body.accommodation.location,
+        Object.keys(commonData.accommodations),
+        commonData.accommodations
+      );
 
     return commonData;
   }
@@ -153,133 +138,32 @@ export class ProxyService {
 
     for (const provider in providersData) {
       const data: SearchResponse = providersData[provider];
-      if (!data) {
+      if (!data || !Object.keys(data.offers).length) {
         continue;
       }
 
-      if (!Object.keys(data.offers).length) {
-        continue;
-      }
+      const accommodations: { [key: string]: Accommodation } =
+        data.accommodations;
 
-      const accommodations = data.accommodations;
+      const serviceConfig: HandlerServiceConfig = {
+        provider,
+        searchBody,
+        requestHash,
+        sessionId
+      };
 
-      const hotels = new Set<WinAccommodation>();
-      const hotelsMap: Record<string, WinAccommodation> = {};
-      const requests = new Set<UserRequestDbData>();
+      const [processedHotels, hotelsMap] =
+        await accommodationService.processAccommodations(
+          accommodations,
+          serviceConfig
+        );
 
-      for (const [key, value] of Object.entries(accommodations)) {
-        const location: MongoLocation = {
-          coordinates: [
-            Number(value.location?.long),
-            Number(value.location?.lat)
-          ],
-          type: 'Point'
-        };
-
-        const hotel: WinAccommodation = {
-          ...value,
-          id: key,
-          providerHotelId: utils.id(`${provider}_${value.hotelId}`),
-          provider,
-          createdAt: new Date(),
-          location
-        };
-
-        hotels.add(hotel);
-        hotelsMap[key] = hotel;
-
-        requests.add({
-          _id: null,
-          accommodationId: key,
-          hotelLocation: hotel.location,
-          provider: String(hotel.provider), //todo remove String() after use new glider types
-          providerAccommodationId: hotel.hotelId,
-          providerHotelId: utils.id(`${provider}_${value.hotelId}`),
-          requestBody: searchBody,
-          requestHash: requestHash,
-          sessionId,
-          startDate: new Date(searchBody.accommodation.arrival)
-        });
-      }
-
-      if (!hotels.size) {
-        continue;
-      }
-
-      await hotelRepository.bulkCreate(Array.from(hotels));
-      await userRequestRepository.bulkCreate(Array.from(requests));
-      HotelQueueService.getInstance().addHotelJobs(Array.from(hotels));
-
-      const sortedHotels = Array.from(hotels);
-
-      const { offers } = data;
-
-      const offersSet = new Set<OfferBackEnd>();
-
-      Object.keys(offers).map((k) => {
-        const offer = offers[k];
-        const { pricePlansReferences } = offer;
-        const { roomType } =
-          pricePlansReferences[Object.keys(pricePlansReferences)[0]];
-        const accommodationId =
-          pricePlansReferences[Object.keys(pricePlansReferences)[0]]
-            .accommodation;
-        const accommodation = {
-          ...sortedHotels.find((v) => v.id === accommodationId)
-        } as WinAccommodation;
-        let pricePlan = {};
-        if (data.pricePlans) {
-          pricePlan = data.pricePlans[Object.keys(pricePlansReferences)[0]];
-        }
-        if (accommodation.roomTypes && accommodation.roomTypes[roomType]) {
-          accommodation.roomTypes = {
-            [roomType]: accommodation.roomTypes[roomType]
-          };
-        }
-
-        offer.price = {
-          currency: offer.price.currency,
-          private: offer.price.private
-            ? String(offer.price.private)
-            : undefined,
-          public: String(offer.price.public),
-          commission: offer.price.commission
-            ? String(offer.price.commission)
-            : undefined,
-          taxes: offer.price.taxes ? String(offer.price.taxes) : undefined,
-          isAmountBeforeTax: offer.price.isAmountBeforeTax,
-          decimalPlaces: offer.price.decimalPlaces
-        };
-        //this is to ensure we always get refundability policy in FE (so far derbysoft does not return that)
-        this.decorateOfferWithDefaultRefundabilityPolicy(offer);
-        const offerDBValue: OfferBackEnd = {
-          id: k,
-          accommodation,
-          accommodationId,
-          pricePlansReferences,
-          arrival: new Date(searchBody.accommodation.arrival).toISOString(),
-          departure: new Date(searchBody.accommodation.departure).toISOString(),
-          expiration: new Date(offer.expiration),
-          price: offer.price,
-          provider: provider as HotelProviders,
-          pricedItems: [],
-          disclosures: [],
-          requestHash,
-          sessionId,
-          pricePlan,
-          refundability: offer.refundability
-            ? offer.refundability
-            : this.getDefaultRefundabilityPolicy(),
-          searchParams: {
-            guests: searchBody.passengers,
-            roomCount: Number(searchBody.accommodation.roomCount)
-          }
-        };
-
-        offersSet.add(offerDBValue);
-      });
-
-      await offerRepository.bulkCreate(Array.from(offersSet));
+      await offerService.processOffers(
+        data.offers,
+        data.pricePlans,
+        processedHotels,
+        serviceConfig
+      );
 
       commonData.accommodations = {
         ...commonData.accommodations,
@@ -484,44 +368,18 @@ export class ProxyService {
     };
   }
 
-  public async getRates(
-    currencies: string[]
-  ): Promise<{ [k: string]: number }> {
-    const rates = {};
-    for (const currency of currencies) {
-      const ratesData = {
-        source: currency,
-        target: 'USD'
-      };
-      try {
-        const quoteRes = await axios.get(`${simardUrl}/rates`, {
-          params: ratesData,
-          headers: { Authorization: `Bearer ${simardJwt}` }
-        });
-        rates[currency] = quoteRes.data.rate;
-      } catch (e) {
-        // error
-      }
-    }
-
-    return rates;
-  }
-
   private async addRates(offers: { [k: string]: Offer }): Promise<{
     [k: string]: Offer;
   }> {
-    const currencies: string[] = [
-      ...new Set(Object.values(offers).map((offer) => offer.price.currency))
-    ];
-
-    const rates = await this.getRates(currencies);
+    const rates = await currencyService.getCurrencies();
 
     for (const key in offers) {
       const offer = offers[key];
       const { currency } = offer.price;
-      if (currency !== 'USD' && rates[currency]) {
+      if (currency !== rates.baseCurrency && rates.currencies[currency]) {
+        const rate = rates.currencies[currency].rateFromBaseCurrency;
         const usdPrice =
-          parseFloat(offer.price.public || '0') * rates[currency];
+          parseFloat(offer.price.public || '0') * parseFloat(rate);
         offers[key].convertedPrice = {
           USD: usdPrice.toFixed(2)
         };
@@ -620,41 +478,18 @@ export class ProxyService {
     };
   }
 
-  private decorateOfferWithDefaultRefundabilityPolicy(offer: Offer) {
-    //in case offer does not have refundability policy, we need to assume it's non refundable (most restrictive option)
-    if (!offer.refundability) {
-      offer.refundability = this.getDefaultRefundabilityPolicy();
-    }
-  }
-  private getDefaultRefundabilityPolicy(): RefundabilityPolicy {
-    return { type: 'non_refundable' };
-  }
   public async getHotelInfo(
     providerHotelId: string
   ): Promise<WinAccommodation> {
-    const cachedHotel = await cachedHotelRepository.getOne(providerHotelId);
+    const cachedAccommodation = await cachedHotelRepository.getOne(
+      providerHotelId
+    );
 
-    if (!cachedHotel) {
+    if (!cachedAccommodation) {
       throw ApiError.NotFound('Hotel not found');
     }
 
-    return {
-      _id: String(cachedHotel._id),
-      checkinoutPolicy: cachedHotel.checkinoutPolicy,
-      contactInformation: cachedHotel.contactInformation,
-      description: cachedHotel.description,
-      hotelId: cachedHotel.hotelId,
-      id: cachedHotel.providerHotelId,
-      location: cachedHotel.location,
-      media: cachedHotel.media,
-      name: cachedHotel.name,
-      otherPolicies: cachedHotel.otherPolicies,
-      provider: cachedHotel.provider,
-      providerHotelId: cachedHotel.providerHotelId,
-      rating: cachedHotel.rating,
-      roomTypes: cachedHotel.roomTypes,
-      type: cachedHotel.type
-    };
+    return accommodationService.getWinAccommodation(cachedAccommodation);
   }
 }
 
