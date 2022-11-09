@@ -155,6 +155,7 @@ export interface SearchBody {
     arrival: string;
     departure: string;
     roomCount?: number;
+    hotelIds?: string[];
   };
   passengers: [PassengerSearch, ...PassengerSearch[]];
 }
@@ -288,4 +289,9 @@ export interface CurrencyDbValue {
   symbol: string;
   rateFromBaseCurrency: number;
   decimals: number;
+}
+
+export interface ProviderAwareIdentifier {
+  providerName: string;
+  uniqueId: string;
 }

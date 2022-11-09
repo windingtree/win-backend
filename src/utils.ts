@@ -8,6 +8,7 @@ import cc, { CurrencyCodeRecord } from 'currency-codes';
 import { simardJwt, simardUrl } from './config';
 import axios from 'axios';
 import Big from 'big.js';
+import { ProviderAwareIdentifier } from './types';
 
 export const makeCircumscribedSquare: (
   lon: number,
@@ -144,4 +145,55 @@ export const convertAmount = async (
   });
 
   return quoteRes.data;
+};
+
+const utf8ToHex = (str: string): string => {
+  str = str || '';
+  return `0x${Buffer.from(str, 'utf8').toString('hex')}`;
+};
+const hexToUTF8 = (str: string): string => {
+  str = str || '';
+  if (str.startsWith('0x')) {
+    str = str.substring(2);
+  }
+  return `${Buffer.from(str, 'hex').toString('utf8')}`;
+};
+
+export const encodeProviderId = (
+  providerName: string,
+  uniqueID: string,
+  separator = ':'
+): string => {
+  return encodeProviderIdWithType(
+    { providerName: providerName, uniqueId: uniqueID },
+    separator
+  );
+};
+export const encodeProviderIdWithType = (
+  id: ProviderAwareIdentifier,
+  separator = ':'
+): string => {
+  if (!id) {
+    throw new Error('Invalid ID parameter');
+  }
+  const { providerName, uniqueId } = id;
+  let concat = `${providerName}${separator}${uniqueId}`;
+  if (concat.length < 31) {
+    concat = String(concat + separator).padEnd(32, ' ');
+  }
+  return utf8ToHex(concat);
+};
+
+export const decodeProviderId = (
+  hexifiedId: string,
+  separator = ':'
+): ProviderAwareIdentifier => {
+  const decoded = hexToUTF8(hexifiedId).split(separator);
+  if (decoded.length < 2) {
+    throw new Error('Unable to decode provider ID');
+  }
+  return {
+    providerName: decoded[0],
+    uniqueId: decoded[1]
+  };
 };
