@@ -8,7 +8,11 @@ import {
   simardUrl
 } from '../config';
 import hotelRepository from '../repositories/HotelRepository';
-import { getContractServiceId, makeCircumscribedSquare } from '../utils';
+import {
+  decodeProviderId,
+  getContractServiceId,
+  makeCircumscribedSquare
+} from '../utils';
 import LogService from './LogService';
 import offerRepository from '../repositories/OfferRepository';
 import ApiError from '../exceptions/ApiError';
@@ -20,7 +24,6 @@ import {
   WinPricedOffer
 } from '@windingtree/glider-types/dist/win';
 import { DateTime } from 'luxon';
-import userRequestRepository from '../repositories/UserRequestRepository';
 import { OfferBackEnd, SearchBody } from '../types';
 import {
   Accommodation,
@@ -53,13 +56,24 @@ export class ProxyService {
     );
   }
 
+  public async getSingleProxyOffers(
+    body: SearchBody,
+    sessionId: string,
+    providerName
+  ): Promise<SearchResults> {
+    return await this.proxiesSearch(body, sessionId, this.getProviderPromise, [
+      providerName
+    ]);
+  }
+
   private async proxiesSearch(
     body: SearchBody,
     sessionId: string,
     getProviderPromise: (
       providerUrl: string,
       resBody: SearchCriteria
-    ) => Promise<AxiosResponse>
+    ) => Promise<AxiosResponse>,
+    providerNames = Object.keys(providersUrls)
   ): Promise<SearchResults> {
     const { lon, lat, radius } = body.accommodation.location;
     const rectangle = makeCircumscribedSquare(lon, lat, radius);
@@ -81,7 +95,7 @@ export class ProxyService {
     const promises: Promise<AxiosResponse>[] = [];
     const providersNameArray: string[] = [];
 
-    for (const providerName in providersUrls) {
+    for (const providerName of providerNames) {
       promises.push(getProviderPromise(providersUrls[providerName], resBody));
 
       providersNameArray.push(providerName);
@@ -415,67 +429,10 @@ export class ProxyService {
     sessionId: string,
     body: SearchBody
   ): Promise<SearchResults> {
-    const requestHash = utils.id(JSON.stringify(body));
-    const userRequest = await userRequestRepository.getRequestByProviderHotelId(
-      providerHotelId,
-      requestHash
-    );
-
-    if (!userRequest) {
-      throw ApiError.NotFound('offer not found');
-    }
-
-    const accommodationId = userRequest.accommodationId;
-
-    let offers = await offerRepository.getByAccommodation(accommodationId);
-    let accommodation = await hotelRepository.getOne(accommodationId);
-    let newAccommodationId = '';
-
-    if (!offers.length || !accommodation) {
-      const searchBody: SearchBody = userRequest.requestBody;
-      searchBody.accommodation.location = {
-        lon: userRequest.hotelLocation.coordinates[0],
-        lat: userRequest.hotelLocation.coordinates[1],
-        radius: 5
-      };
-      const search = await this.getProxiesOffers(
-        userRequest.requestBody,
-        sessionId
-      );
-
-      for (const [key, value] of Object.entries(search.accommodations)) {
-        if (value.hotelId === userRequest.providerAccommodationId) {
-          newAccommodationId = key;
-          break;
-        }
-      }
-
-      offers = await offerRepository.getByAccommodation(newAccommodationId);
-      accommodation = await hotelRepository.getOne(newAccommodationId);
-    }
-
-    if (!accommodation || !offers.length) {
-      throw ApiError.NotFound('offer not found');
-    }
-
-    const offersMap: {
-      [k: string]: Offer;
-    } = {};
-
-    offers.forEach((v) => {
-      offersMap[v.id] = {
-        expiration: new Date(v.expiration).toISOString(),
-        price: v.price,
-        pricePlansReferences: v.pricePlansReferences
-      };
-    });
-
-    return {
-      accommodations: {
-        [newAccommodationId || accommodationId]: accommodation
-      },
-      offers: offersMap
-    };
+    const { uniqueId: accommodationId, providerName } =
+      decodeProviderId(providerHotelId);
+    body.accommodation.accommodationId = [accommodationId];
+    return await this.getSingleProxyOffers(body, sessionId, providerName);
   }
 
   public async getHotelInfo(

@@ -13,6 +13,7 @@ import hotelRepository from '../../repositories/HotelRepository';
 import userRequestRepository from '../../repositories/UserRequestRepository';
 import { HotelQueueService } from '../HotelQueueService';
 import { HandlerServiceConfig } from './helpers';
+import { encodeProviderId } from '../../utils';
 
 type KeyAccommodation = {
   [key: string]: Accommodation;
@@ -40,7 +41,7 @@ export class AccommodationService {
       const hotel: WinAccommodation = {
         ...value,
         id: key,
-        providerHotelId: utils.id(`${provider}_${value.hotelId}`),
+        providerHotelId: encodeProviderId(provider, value.hotelId),
         provider,
         createdAt: new Date(),
         location
@@ -55,7 +56,7 @@ export class AccommodationService {
         hotelLocation: hotel.location,
         provider: String(hotel.provider),
         providerAccommodationId: hotel.hotelId,
-        providerHotelId: utils.id(`${provider}_${value.hotelId}`),
+        providerHotelId: encodeProviderId(provider, value.hotelId),
         requestBody: searchBody,
         requestHash: requestHash,
         sessionId,
