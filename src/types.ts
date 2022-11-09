@@ -155,7 +155,7 @@ export interface SearchBody {
     arrival: string;
     departure: string;
     roomCount?: number;
-    accommodationId?: string[];
+    hotelIds?: string[];
   };
   passengers: [PassengerSearch, ...PassengerSearch[]];
 }

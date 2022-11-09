@@ -431,7 +431,7 @@ export class ProxyService {
   ): Promise<SearchResults> {
     const { uniqueId: accommodationId, providerName } =
       decodeProviderId(providerHotelId);
-    body.accommodation.accommodationId = [accommodationId];
+    body.accommodation.hotelIds = [accommodationId];
     return await this.getSingleProxyOffers(body, sessionId, providerName);
   }
 
