@@ -74,7 +74,20 @@ export default class EmailSenderService {
             rooms_count: offer.searchParams.roomCount,
             adult_guests_count: adults?.count || 0,
             child_guests_count: childs?.count || 0,
-            google_maps_link: googleMapsLink
+            google_maps_link: googleMapsLink,
+            refundable:
+              offer.refundability &&
+              offer.refundability.type === 'refundable_with_deadline'
+                ? true
+                : false,
+            deadline:
+              offer.refundability && offer.refundability.deadline
+                ? offer.refundability.deadline
+                : '',
+            penaltyAmount:
+              offer.refundability && offer.refundability.penaltyAmount
+                ? offer.refundability.penaltyAmount
+                : ''
           }
         }
       ],

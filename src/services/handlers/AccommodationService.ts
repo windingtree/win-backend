@@ -8,7 +8,6 @@ import {
   Location,
   UserRequestDbData
 } from '../../types';
-import { utils } from 'ethers';
 import hotelRepository from '../../repositories/HotelRepository';
 import userRequestRepository from '../../repositories/UserRequestRepository';
 import { HotelQueueService } from '../HotelQueueService';
