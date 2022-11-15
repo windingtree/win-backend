@@ -448,7 +448,7 @@ export class ProxyService {
     body.accommodation.location.lon = AccommodationService.getAccommodationLon(
       cachedAccommodation.location
     );
-    body.accommodation.location.radius = 2; // minimum radius of search 1 accommodation
+    body.accommodation.location.radius = 2; // minimum radius of search 1 accommodation (meters)
     return await this.getSingleProxyOffers(body, sessionId, providerName);
   }
 
