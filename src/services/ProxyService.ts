@@ -32,7 +32,9 @@ import {
 } from '@windingtree/glider-types/dist/accommodations';
 import { Quote } from '@windingtree/glider-types/dist/simard';
 import cachedHotelRepository from '../repositories/CachedHotelRepository';
-import accommodationService from './handlers/AccommodationService';
+import accommodationService, {
+  AccommodationService
+} from './handlers/AccommodationService';
 import offerService from './handlers/OfferService';
 import { HandlerServiceConfig } from './handlers/helpers';
 import currencyService from './CurrencyService';
@@ -431,7 +433,22 @@ export class ProxyService {
   ): Promise<SearchResults> {
     const { uniqueId: accommodationId, providerName } =
       decodeProviderId(providerHotelId);
+    const cachedAccommodation = await cachedHotelRepository.getOne(
+      providerHotelId
+    );
+
+    if (!cachedAccommodation) {
+      throw ApiError.NotFound('Accommodation not found');
+    }
+
     body.accommodation.hotelIds = [accommodationId];
+    body.accommodation.location.lat = AccommodationService.getAccommodationLat(
+      cachedAccommodation.location
+    );
+    body.accommodation.location.lon = AccommodationService.getAccommodationLon(
+      cachedAccommodation.location
+    );
+    body.accommodation.location.radius = 2; // minimum radius of search 1 accommodation (meters)
     return await this.getSingleProxyOffers(body, sessionId, providerName);
   }
 
@@ -443,8 +460,10 @@ export class ProxyService {
     );
 
     if (!cachedAccommodation) {
-      throw ApiError.NotFound('Hotel not found');
+      throw ApiError.NotFound('Accommodation not found');
     }
+
+    cachedAccommodation.roomTypes = {};
 
     return accommodationService.getWinAccommodation(cachedAccommodation);
   }
