@@ -431,7 +431,17 @@ export class ProxyService {
   ): Promise<SearchResults> {
     const { uniqueId: accommodationId, providerName } =
       decodeProviderId(providerHotelId);
+    const cachedAccommodation = await cachedHotelRepository.getOne(
+      providerHotelId
+    );
     body.accommodation.hotelIds = [accommodationId];
+    body.accommodation.location.lat = Number(
+      cachedAccommodation?.location.coordinates[1]
+    );
+    body.accommodation.location.lon = Number(
+      cachedAccommodation?.location.coordinates[0]
+    );
+    body.accommodation.location.radius = 2;
     return await this.getSingleProxyOffers(body, sessionId, providerName);
   }
 
@@ -445,6 +455,8 @@ export class ProxyService {
     if (!cachedAccommodation) {
       throw ApiError.NotFound('Hotel not found');
     }
+
+    cachedAccommodation.roomTypes = {};
 
     return accommodationService.getWinAccommodation(cachedAccommodation);
   }
