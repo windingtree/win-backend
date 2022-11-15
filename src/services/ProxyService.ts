@@ -32,7 +32,9 @@ import {
 } from '@windingtree/glider-types/dist/accommodations';
 import { Quote } from '@windingtree/glider-types/dist/simard';
 import cachedHotelRepository from '../repositories/CachedHotelRepository';
-import accommodationService from './handlers/AccommodationService';
+import accommodationService, {
+  AccommodationService
+} from './handlers/AccommodationService';
 import offerService from './handlers/OfferService';
 import { HandlerServiceConfig } from './handlers/helpers';
 import currencyService from './CurrencyService';
@@ -434,12 +436,17 @@ export class ProxyService {
     const cachedAccommodation = await cachedHotelRepository.getOne(
       providerHotelId
     );
+
+    if (!cachedAccommodation) {
+      throw ApiError.NotFound('Accommodation not found');
+    }
+
     body.accommodation.hotelIds = [accommodationId];
-    body.accommodation.location.lat = Number(
-      cachedAccommodation?.location.coordinates[1]
+    body.accommodation.location.lat = AccommodationService.getAccommodationLat(
+      cachedAccommodation.location
     );
-    body.accommodation.location.lon = Number(
-      cachedAccommodation?.location.coordinates[0]
+    body.accommodation.location.lon = AccommodationService.getAccommodationLon(
+      cachedAccommodation.location
     );
     body.accommodation.location.radius = 2;
     return await this.getSingleProxyOffers(body, sessionId, providerName);
@@ -453,7 +460,7 @@ export class ProxyService {
     );
 
     if (!cachedAccommodation) {
-      throw ApiError.NotFound('Hotel not found');
+      throw ApiError.NotFound('Accommodation not found');
     }
 
     cachedAccommodation.roomTypes = {};

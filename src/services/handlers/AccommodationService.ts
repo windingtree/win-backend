@@ -120,6 +120,14 @@ export class AccommodationService {
 
     return sortedAccommodations;
   }
+
+  public static getAccommodationLat(location: MongoLocation) {
+    return location.coordinates[1];
+  }
+
+  public static getAccommodationLon(location: MongoLocation) {
+    return location.coordinates[0];
+  }
 }
 
 export default new AccommodationService();
