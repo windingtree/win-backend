@@ -253,7 +253,6 @@ export class ProxyService {
 
     hotels.some((hotel) => {
       const room = hotel.roomTypes[firstOfferRoomTypeId];
-      console.log(room);
       if (room) {
         accommodations[hotel.id] = hotel;
         return true;
