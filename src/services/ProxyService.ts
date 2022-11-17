@@ -242,8 +242,20 @@ export class ProxyService {
       [k: string]: WinAccommodation;
     } = {};
 
+    const firstOfferRoomTypeId =
+      offersMap[Object.keys(offersMap)[0]]?.pricePlansReferences[
+        Object.keys(offersMap)[0]
+      ]?.roomType;
+
+    if (!firstOfferRoomTypeId) {
+      return null;
+    }
+
     hotels.forEach((hotel) => {
-      accommodations[hotel.id] = hotel;
+      const room = hotel.roomTypes[firstOfferRoomTypeId];
+      if (room) {
+        accommodations[hotel.id] = hotel;
+      }
     });
 
     return {
@@ -436,7 +448,6 @@ export class ProxyService {
     const cachedAccommodation = await cachedHotelRepository.getOne(
       providerHotelId
     );
-
     if (!cachedAccommodation) {
       throw ApiError.NotFound('Accommodation not found');
     }
