@@ -251,10 +251,12 @@ export class ProxyService {
       return null;
     }
 
-    hotels.forEach((hotel) => {
+    hotels.some((hotel) => {
       const room = hotel.roomTypes[firstOfferRoomTypeId];
+      console.log(room);
       if (room) {
         accommodations[hotel.id] = hotel;
+        return true;
       }
     });
 
