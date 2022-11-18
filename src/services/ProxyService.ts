@@ -204,7 +204,7 @@ export class ProxyService {
     sessionId: string,
     requestHash: string
   ): Promise<SearchResults | null> {
-    const cashedOffers = (
+    const cachedOffers = (
       await offerRepository.getBySession(sessionId, requestHash)
     ).filter((offer) => {
       return (
@@ -212,51 +212,36 @@ export class ProxyService {
       );
     });
 
-    if (!cashedOffers.length) {
+    if (!cachedOffers.length) {
       return null;
     }
 
-    const hotelIds: string[] = [
-      ...new Set(cashedOffers.map((offer) => offer.accommodationId))
-    ];
-    const hotels = await hotelRepository.getByIds(hotelIds);
+    const accommodations: {
+      [k: string]: WinAccommodation;
+    } = {};
 
-    if (!hotels.length) {
-      return null;
+    for (const offer of cachedOffers) {
+      if (accommodations[offer.accommodationId]) {
+        accommodations[offer.accommodationId].roomTypes = {
+          ...accommodations[offer.accommodationId].roomTypes,
+          ...offer.accommodation.roomTypes
+        };
+      } else {
+        accommodations[offer.accommodationId] = offer.accommodation;
+      }
     }
 
     const offersMap: {
       [k: string]: Offer;
     } = {};
 
-    cashedOffers.forEach((v) => {
+    cachedOffers.forEach((v) => {
       offersMap[v.id] = {
         expiration: new Date(v.expiration).toISOString(),
         price: v.price,
         pricePlansReferences: v.pricePlansReferences,
         refundability: v.refundability
       };
-    });
-
-    const accommodations: {
-      [k: string]: WinAccommodation;
-    } = {};
-
-    const firstOfferRoomTypeId =
-      offersMap[Object.keys(offersMap)[0]]?.pricePlansReferences[
-        Object.keys(offersMap)[0]
-      ]?.roomType;
-
-    if (!firstOfferRoomTypeId) {
-      return null;
-    }
-
-    hotels.some((hotel) => {
-      const room = hotel.roomTypes[firstOfferRoomTypeId];
-      if (room) {
-        accommodations[hotel.id] = hotel;
-        return true;
-      }
     });
 
     return {
