@@ -19,6 +19,7 @@ import { GroupQueueService } from '../src/services/GroupQueueService';
 import { GroupBookingRequest } from '@windingtree/glider-types/dist/win';
 import { RewardQueueService } from '../src/services/RewardQueueService';
 import { HotelQueueService } from '../src/services/HotelQueueService';
+import { RateLimiterService } from '../src/services/RateLimiterService';
 
 let appService: ServerService;
 
@@ -864,5 +865,6 @@ describe('test', async () => {
     await GroupQueueService.getInstance().close();
     await RewardQueueService.getInstance().close();
     await HotelQueueService.getInstance().close();
+    await RateLimiterService.getInstance().close();
   });
 });

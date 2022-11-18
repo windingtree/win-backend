@@ -5,6 +5,7 @@ import { sessionTokenMaxAge } from '../config';
 import { getRequestIpAddress } from '../utils';
 import { NextFunction, Response } from 'express';
 import { SessionRequest } from '../types';
+import { RateLimiterService } from '../services/RateLimiterService';
 
 export default async (
   req: SessionRequest,
@@ -46,6 +47,15 @@ export default async (
 
 const createSession = async (res: Response, ip: string, userAgent: string) => {
   const sessionToken = await sessionService.makeSession(ip, userAgent);
+
+  const rateLimit: boolean = await RateLimiterService.getInstance().process(
+    'sessions',
+    ip
+  );
+
+  if (!rateLimit) {
+    return ApiError.UnauthorizedError();
+  }
 
   res.cookie('sessionToken', sessionToken, {
     maxAge: sessionTokenMaxAge,

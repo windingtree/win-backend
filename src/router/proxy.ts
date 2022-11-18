@@ -58,5 +58,6 @@ export default (router: Router): void => {
     sessionMiddleware,
     proxyController.getHotelInfo
   );
-  router.get('/currencies', sessionMiddleware, proxyController.getCurrencies);
+  //todo return sessionMiddleware after front add withCred for request
+  router.get('/currencies', proxyController.getCurrencies);
 };
