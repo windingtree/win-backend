@@ -327,11 +327,7 @@ export class ProxyService {
       commission: data.offer.price.commission
         ? String(data.offer.price.commission)
         : undefined,
-      taxes: data.offer.price.taxes
-        ? String(data.offer.price.taxes)
-        : undefined,
-      isAmountBeforeTax: data.offer.price.isAmountBeforeTax,
-      decimalPlaces: data.offer.price.decimalPlaces
+      taxes: data.offer.price.taxes ? String(data.offer.price.taxes) : undefined
     };
 
     for (const item of data.offer.pricedItems) {

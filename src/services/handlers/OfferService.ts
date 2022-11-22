@@ -49,10 +49,9 @@ export class OfferService {
         commission: offer.price.commission
           ? String(offer.price.commission)
           : undefined,
-        taxes: offer.price.taxes ? String(offer.price.taxes) : undefined,
-        isAmountBeforeTax: offer.price.isAmountBeforeTax,
-        decimalPlaces: offer.price.decimalPlaces
+        taxes: offer.price.taxes ? String(offer.price.taxes) : undefined
       };
+
       //this is to ensure we always get refundability policy in FE (so far derbysoft does not return that)
       this.decorateOfferWithDefaultRefundabilityPolicy(offer);
       const offerDBValue: OfferBackEnd = {
