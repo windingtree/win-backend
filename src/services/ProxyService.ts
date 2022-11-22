@@ -7,7 +7,6 @@ import {
   simardJwt,
   simardUrl
 } from '../config';
-import hotelRepository from '../repositories/HotelRepository';
 import {
   decodeProviderId,
   getContractServiceId,
@@ -55,6 +54,19 @@ export class ProxyService {
       body,
       sessionId,
       this.getProviderGroupSearchPromise
+    );
+  }
+
+  public async getSingleGroupOffers(
+    body: SearchBody,
+    sessionId: string,
+    providerName
+  ): Promise<SearchResults> {
+    return await this.proxiesSearch(
+      body,
+      sessionId,
+      this.getProviderGroupSearchPromise,
+      [providerName]
     );
   }
 
@@ -441,7 +453,14 @@ export class ProxyService {
     body.accommodation.location.lon = AccommodationService.getAccommodationLon(
       cachedAccommodation.location
     );
-    body.accommodation.location.radius = 2; // minimum radius of search 1 accommodation (meters)
+    // minimum radius of search 1 accommodation (meters)
+    body.accommodation.location.radius = 2;
+
+    //group booking mode
+    if (Number(body.accommodation.roomCount) >= 10) {
+      return await this.getSingleGroupOffers(body, sessionId, providerName);
+    }
+
     return await this.getSingleProxyOffers(body, sessionId, providerName);
   }
 
